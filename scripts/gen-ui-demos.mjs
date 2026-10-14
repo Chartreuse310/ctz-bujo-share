@@ -152,7 +152,7 @@ const body = `<!-- ================= 01 首页 = 日页 + 侧栏 ===============
       <div class="card full"><h3>趋势</h3><div class="sub" id="trendSub"></div><div id="trendChart"></div></div>
     </div>
     <footer class="note">
-      <b>四个屏幕</b>：上方顺序为<b>本月 → 今日 → 集子·标签 → 统计</b>，默认落在<b>今日</b>。四屏通用一套左右滑切换：触屏横滑、触控板横滑、键盘 ← → 都能翻。<br>
+      <b>四个屏幕</b>：顺序为<b>本月 → 今日 → 集子·标签 → 统计</b>，默认落在<b>今日</b>。四屏通用一套左右滑切换：触屏横滑、触控板横滑、键盘 ← → 都能翻。<br>
       <b>栏宽统一</b>：三处共用同一套栅格 —— 次级栏 236px / 栏间距 56px / 主栏自适应。<b>滚动条</b>：全站不显示（内容仍可滚动）。<br>
       <b>月视图</b>：左月历等比压缩、整体锁定在视口内；右列表独立滚动，滚动时月历不动。
     </footer>
@@ -905,8 +905,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.
 .card .sub{margin-bottom:16px}
 footer.note{margin-top:34px;padding-top:16px}
 
-/* 月视图：原 .shell 用 height:calc(100vh - var(--top))，顶栏删了但要给底部导航留位 */
-.shell{height:calc(100vh - var(--tab) - 24px);height:calc(100dvh - var(--tab) - 24px);padding:0 40px 16px}
+/* 月视图：原 .shell 用 height:calc(100vh - var(--top))，顶栏删了但要给底部导航留位。
+   高度 = 视口 - 导航高 - 24px；底部内边距必须吃掉「导航胶囊 + 距底 18px + 呼吸间距」，
+   否则品牌行下方的内容（月历图例）会被胶囊压住——1440×900 / 1280×800 / 1920×1080
+   三档实测各被压 13px，故 padding-bottom 取 calc(var(--tab) - 8px)（=44px），
+   使内容底边高于胶囊顶边约 15px。设计文档 §12.5「G 的底部导航约束」。 */
+.shell{height:calc(100vh - var(--tab) - 24px);height:calc(100dvh - var(--tab) - 24px);padding:0 40px calc(var(--tab) - 8px)}
 .side,.rail{top:24px}
 .side{max-height:calc(100dvh - var(--tab) - 48px)}
 .month-top{padding:16px 0 12px}
