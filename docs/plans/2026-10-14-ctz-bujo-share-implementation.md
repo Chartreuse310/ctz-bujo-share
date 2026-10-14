@@ -1862,8 +1862,8 @@ collections:
     slug: books-films-music
 
 tags:
-  - name: 论文阶段
-    slug: thesis-stage
+  - name: PhD V2.0 P1.1
+    slug: phd-v2-0-p1-1
   - name: 跑步
     slug: running
   - name: 吉他
@@ -1885,7 +1885,7 @@ title: 把时间轴画成了图
 date: 2026-10-14
 highlight: true
 collection: 博士学位论文
-tags: [论文阶段]
+tags: ["PhD V2.0 P1.1"]
 ---
 
 画到一半发现，真正难的不是排列顺序，是给每一段找边界。边界一定下来，之前觉得互相矛盾的两段其实不冲突。
@@ -2560,7 +2560,7 @@ test("集子页与 tag 页按登记表生成", () => {
     "collection/drawing/index.html",
     "collection/phd-thesis/index.html",
     "collection/books-films-music/index.html",
-    "tag/thesis-stage/index.html",
+    "tag/phd-v2-0-p1-1/index.html",
     "tag/running/index.html",
   ]) {
     assert.ok(existsSync(join(OUT, p)), `缺少 ${p}`);
