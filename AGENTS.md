@@ -1,0 +1,127 @@
+# AGENTS.md
+
+给在本仓库工作的 Agent 的项目指令。**开始动手前先读完本文件**；凡涉及具体事实（字段名、路径、阈值、约束）而不确定，先读设计文档，不要凭印象作答。
+
+## 1. 项目是什么
+
+把 bujo（Bullet Journal）的记录方式搬到 Web 的**公开**线上日记与思考分享站：无后端、无账号、完全公开。
+
+- 写作形态：本地写 Markdown → 跑一次构建 → 产出静态站。内容就在本仓库里。
+- 技术路线（已锁定）：**Eleventy（只当模板层）+ `lib/` 自定义纯函数 + `zod` 校验**；`lib/` 不得 import Eleventy，统计在构建时算成 JSON，图表用手写内联 SVG。
+- 页面结构（已定稿）：四屏导航 **本月 | 今日 | 集子·标签 | 统计**，可左右滑切换，默认落「今日」。
+- 视觉基线（已定稿）：**D 编辑体 + G1 细线底栏**，原型 `docs/ui-demos/g1-line.html`。CSS 从该文件移植，**不重新设计**。
+
+## 2. 当前状态（2026-10-14）
+
+- 设计文档已定稿；**代码尚未开始**（`package.json` / `lib/` / `src/` / `content/` 都还不存在）。
+- 实现计划已写好但**未提交、也未经用户批准**：`docs/plans/2026-10-14-ctz-bujo-share-implementation.md`。
+- 计划末尾有 3 个待用户拍板的问题（YAML 解析依赖用 `js-yaml` / 包管理器 npm 还是 pnpm / 统计页窗口切换形式）。**用户点头后才开始写代码。**
+
+## 3. 真相源与优先级
+
+| 文件 | 角色 |
+| --- | --- |
+| `docs/superpowers/specs/2026-10-14-ctz-bujo-share-design.md` | **设计决策的唯一真相源**。与原始想法冲突时以它为准。 |
+| `docs/ideas/2026-10-14-bujo-share-原始想法.md` | 需求来源，**不是**设计依据。 |
+| `docs/plans/2026-10-14-ctz-bujo-share-implementation.md` | 实现计划（未批准）。 |
+| `docs/ui-demos/*.html` | 视觉 Prototype（12 份）。**假数据 + 缩写字段**，不是产品代码。 |
+| `.agents/memory/` | DSH 运行时记忆，被 gitignore。有价值的内容要**提炼进设计文档**，不要依赖它。 |
+
+## 4. 工作流
+
+1. **设计先行**。要改已定稿的设计（尤其视觉），先与用户讨论并在设计文档里落笔，再动代码。
+2. **实现计划经批准**后才开始写代码；计划里每个 Task 走 TDD：先写失败测试 → 再写实现 → 再提交。
+3. **一次改动一个 commit**，Conventional Commits 风格（本仓库历史用 `feat:` / `fix:` / `docs:` / `design:` / `chore:` / `test:`，消息写中文）。**不 push**（本仓库无 remote）。
+4. 改完跑验证（见第 6 节），全绿才算做完。
+
+## 5. 硬约束（不得凭自己判断改动）
+
+### 5.1 数据模型
+
+- 三类数据：**条目**（`event` / `thought`，字段完全相同仅 `type` 不同）、**日总结**（独立类型，一天一条，不进主时间轴、不计入事件/思考统计）、**`content/taxonomy.yml` 分类登记表**（集子与 tag 的唯一真相源）。
+- 条目字段：`type` / `title` / `date` / `highlight` / `collection` / `tags` / 正文。实现用**全名**，**不要照搬 demo 的 `h`/`ti`/`t`/`c`/`g` 缩写**。
+- 集子**一对一**、tag **多对多**；不填 `collection` 归入主集子「日常」，URL 固定 `/collection/all/`（不占 slug、不可删）。
+- `highlight` 是**手动标记**的布尔字段，系统**不**自动判定重点；「自动统计」仅指月历格子的数量与符号由构建时算出。
+- 计数单位是**条目**不是字数；日期归属用 `date` 字段，**不用文件修改时间**。
+
+### 5.2 taxonomy 与 slug
+
+- 集子与 tag 都必须在 `content/taxonomy.yml` **显式登记**后才能被引用；未登记的引用 = **构建报错**（并给出可复制的登记片段）。
+- **新增 tag / 集子必须先向用户确认**，Agent 不得擅自登记。集子门槛更高——它是「长期大量记录的方向」。用户现有集子只有**绘画 / 博士学位论文 / 书影音**三个。
+- **不自动生成 slug**。中文显示名 → slug 由用户决定；可以给建议，不得静默写入。
+- 显示名与 URL 分离：`name` 可含中文/大小写/空格；`slug` 强制 `^[a-z0-9]+(-[a-z0-9]+)*$`。**改名只动 `name` 不动 `slug`**，条目只按显示名引用、不写 slug。
+
+### 5.3 校验
+
+- 用 `zod`；校验失败**必须中断构建**，打印「文件路径 + 字段 + 实际值 + 期望值」。
+- **允许未来日期**：条目与日总结都可以写未来日期，**不得**加「日期不得晚于今天」这类规则。
+- 未知 front matter 字段 = 警告（不中断），提示可能是拼写错误。
+
+### 5.4 布局与视觉
+
+- 月视图（单一合并分屏）：**月历整体可见、页面不产生滚动**；右侧列表独立滚动，滚动时**左月历位移必须为 0**。
+- 统一栅格：次级栏 **236px**、栏间距 **56px**、主栏流体。
+- 全站**隐藏滚动条**（内容仍可滚动，用底部渐隐提示）。
+- G1 底栏：通栏、贴底（`bottom:env(safe-area-inset-bottom,0px)`）、栏下用纸色封底、`gap=0`。
+- 字体分工：**标题衬线，小字无衬线**，分界 **17px**；中文小字标签**不用斜体**（伪斜发虚）。
+- 朱红只用于重点与选中态；标记强度要低，忌讳高饱和标记。
+- ⚠️ **视觉是用户经多轮对话迭代定稿的**。它与项目最初设想的「点阵纸 + 手写体 bujo」有实质偏离——**不得**按原始想法擅自回退到 `a-analog`。改动必须先与用户讨论。
+
+## 6. 验证方法（硬规矩）
+
+**禁止靠肉眼看截图判断「不滚动 / 不裁切 / 不遮挡」**，必须用 headless Chrome + CDP 机械实测：
+
+- 量 `documentElement.scrollHeight/clientHeight`（页面是否滚动）、格子 `scrollHeight > clientHeight`（是否裁切）、`getBoundingClientRect` 位移（左月历是否动了）。
+- **悬浮元素做元素级遮挡检测**：容器级矩形相交会漏判，要遍历区域内每个可见元素求交，输出被压元素的类名与文字。
+- **贴底元素不测「下方有无内容」**（定义上恒为假），改测**导航带内网格采样点**：每点 `elementFromPoint`，断言命中底栏、绝不命中内容元素，且底色不透明。
+- 必须覆盖 `@media` 断点**两侧**（760 / 761px）与多个滚动位置。
+- 测横向溢出前**等切屏动画结束**（`.28s`），别把 `translateX(36px)` 的瞬时值当缺陷。
+- 截图要 `Network.setCacheDisabled`；判断样式是否生效**以 `getComputedStyle` 为准**，不看截图。
+- 测交互要先用真实数据状态（如 `#mToday` 回到当月），`file://` 下同路径不同 query 会命中缓存。触滑要派发真实 `Input.dispatchTouchEvent`。
+- 现有验证脚本（需先起 headless Chrome，CDP 端口 **9333**）：`scripts/check-ui-constraints.mjs`、`.agents/occl-g1.mjs`（G1 贴底 + 采样点遮挡，5 档视口 × 4 屏）、`.agents/final-g1.mjs`。
+
+## 7. 命令
+
+**现在是设计/demo 阶段，项目根还没有 `package.json`**，以下分两类。
+
+Demo 与设计阶段（当前可用）：
+
+```bash
+node scripts/gen-ui-demos.mjs        # 从 b-swiss.html 生成 D/E/F/G 各方向 demo
+node scripts/check-ui-constraints.mjs # CDP 硬约束验证（先起 9333 端口的 headless Chrome）
+```
+
+实现计划里的目标命令（代码落地后才存在，见计划 Task 0.1）：
+
+```bash
+npm install
+npm test                # 必须是裸的 node --test，不能写 node --test test/
+npm run build           # eleventy
+npm run serve
+npm run check           # node scripts/check-site-constraints.mjs
+```
+
+已实证的坑（写代码时别踩）：
+
+- `package.json` 的 `"test"` 只能是裸 `node --test`；写 `node --test test/` 在本机 Node v24.17.0 下直接 `Cannot find module`。
+- 裸 `node --test` 会把 `test/` 下**所有** `.js` 当测试跑（连只导出常量的 helper 也算）——**不要在 `test/` 放非测试文件**，fixture 写 `os.tmpdir()`，e2e 产物写 `.e2e-site/`。
+- YAML 必须用 `JSON_SCHEMA`：默认 schema 会把 `2026-02-30` **静默滚成** `2026-03-02`，也会把日期变成 JS `Date` 导致负时区错一天。
+- `page.fileSlug` / `filePathStem` 会**剥掉日期前缀**，条目 slug 必须自己从文件名派生。
+- Eleventy 不原生解析 `.yml`；`src/assets/` 需要显式 passthrough copy。
+- **改逻辑只改 `scripts/gen-ui-demos.mjs`**，不要手改单个 demo HTML（12 份共用生成器才能保证界面逻辑逐字一致）。
+
+## 8. 不要做的事
+
+- 不要擅自新增集子 / tag，不要自动生成 slug。
+- 不要擅自调整已定稿的视觉方向或导航（含回退到「点阵纸 + 手写体」）。
+- 不要把 `docs/ui-demos/` 的假数据或缩写字段搬进实现。
+- 不要给日期加未来上限校验。
+- 不要依赖 `.workbuddy-ai/` 或 `.agents/memory/`（前者被 gitignore、后者是运行时记忆）；有价值的内容提炼进设计文档。
+- 不要引第三方客户端图表库（静态站，构建时算数 + 内联 SVG）。
+- 不要 push（无 remote）；不要为了图省事手改生成产物。
+
+## 9. 环境事实
+
+- 工作目录：`/Users/z/Programs/dev/ctz-bujo-share`
+- Node：v24.17.0 / npm：11.19.0（无 remote，`git tag` 已有 `ui-demo-baseline` 回滚点）
+- 设计文档篇幅较长（604 行）；定位具体条款用 `§` 号：`§4.3` taxonomy、`§5.1` 条目 URL、`§5.2` 月视图、`§6` 统计、`§7` 校验、`§10` 决策状态、`§11` 协作约定、`§12` 设计偏好与硬约束（`§12.3` 验证方法、`§12.5` demo 集、`§12.6` G 底栏重量变体）。
