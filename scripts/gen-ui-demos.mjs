@@ -1071,6 +1071,24 @@ footer.note b{color:var(--ink);font-weight:600}
 .dirbar a:hover{color:#fff;background:rgba(255,255,255,.1)}
 .dirbar a.on{background:var(--accent);color:#fff}`;
 
+/* ------------------------------------------------------------------
+ * 字体规范（设计文档 §12.2）：标题衬线，小字无衬线
+ * 衬线只给「标题级」：h1–h4、大数字（日期 / KPI / 统计数）、品牌字；
+ * 其余一律无衬线——小字号衬线（尤其中文）可读性差，且衬线一多就失去对比。
+ * 以追加覆盖块挂在方向 CSS 末尾：同特异性后者胜出，规则集中可审（设计文档 §12.2），
+ * 不必在几十条散落规则里逐个改。字号分界取 17px（见 §12.2 表格）。
+ * ------------------------------------------------------------------ */
+const sansSmallText = `
+/* ---- 字体规范：标题衬线，小字无衬线 ---- */
+.kicker,.nav button,.brand,.tabbar button,
+.entry .idx,.head h1 em,.month-top h1 em,
+.cell .cap,.dlrow p,.list-empty,.head .aside,
+.rank-row .nm,footer.note,.resrow .t .sub{font-family:var(--sans)}
+/* .resrow .t 是条目标题（15.5px），虽小仍属标题级 → 保持衬线 */
+.resrow .t{font-family:var(--serif)}
+/* 原为斜体衬线的标签改无衬线时一并取消斜体（中文斜体是伪斜，发虚） */
+.kicker,.entry .idx,.head h1 em,.month-top h1 em{font-style:normal}`;
+
 /* G 的矮视口规则：除格子压缩外，底部导航也要更薄 */
 const shortViewportG = () => `
 @media(max-height:760px){
@@ -1121,7 +1139,7 @@ const demos = [
   ['d-edit.html', {
     title: '方向 D · 编辑体 — ctz-bujo-share UI Demo',
     kicker: '方向 D · 编辑体（衬线标题 + 米白纸面）',
-    css: cssD + shortViewport('7px 9px 6px', 1),
+    css: cssD + sansSmallText + shortViewport('7px 9px 6px', 1),
     dirbarActive: 'd',
   }],
   ['e-dotted.html', {
@@ -1139,7 +1157,7 @@ const demos = [
   ['g-bottom.html', {
     title: '方向 G · 底栏编辑体 — ctz-bujo-share UI Demo',
     kicker: '方向 G · 底栏版编辑体（删顶部栏 + 底部居中导航）',
-    css: cssG + shortViewportG(),
+    css: cssG + sansSmallText + shortViewportG(),
     dirbarActive: 'g',
     navPos: 'bottom',
   }],

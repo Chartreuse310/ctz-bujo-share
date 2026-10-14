@@ -283,6 +283,15 @@ footer.note b{color:var(--ink);font-weight:600}
 .dirbar a{color:rgba(255,255,255,.72)}
 .dirbar a:hover{color:#fff;background:rgba(255,255,255,.1)}
 .dirbar a.on{background:var(--accent);color:#fff}
+/* ---- 字体规范：标题衬线，小字无衬线 ---- */
+.kicker,.nav button,.brand,.tabbar button,
+.entry .idx,.head h1 em,.month-top h1 em,
+.cell .cap,.dlrow p,.list-empty,.head .aside,
+.rank-row .nm,footer.note,.resrow .t .sub{font-family:var(--sans)}
+/* .resrow .t 是条目标题（15.5px），虽小仍属标题级 → 保持衬线 */
+.resrow .t{font-family:var(--serif)}
+/* 原为斜体衬线的标签改无衬线时一并取消斜体（中文斜体是伪斜，发虚） */
+.kicker,.entry .idx,.head h1 em,.month-top h1 em{font-style:normal}
 @media(max-height:760px){
   .month-top{padding:14px 0 10px}
   .month-top h1{font-size:25px}
