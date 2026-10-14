@@ -1,6 +1,6 @@
 # ctz-bujo-share 实现计划
 
-**目标**：把已定稿的设计文档（`docs/superpowers/specs/2026-10-14-ctz-bujo-share-design.md`）落成一个可构建、可发布的静态日记站——本地写 Markdown，跑一次构建产出「本月 / 今日 / 集子·标签 / 统计」四屏与条目详情页。
+**目标**：把已定稿的设计文档（`docs/specs/2026-10-14-ctz-bujo-share-design.md`）落成一个可构建、可发布的静态日记站——本地写 Markdown，跑一次构建产出「本月 / 今日 / 集子·标签 / 统计」四屏与条目详情页。
 
 **架构**：Eleventy 只当模板层，`content/` 是纯数据、由 `lib/` 用 zod 校验成普通对象；`src/_data/site.js` 把校验结果喂给模板。`lib/` 不 import Eleventy，因此能脱离构建用 `node --test` 单测。视觉基线是已定稿的 **D 编辑体 + G1 细线底栏**（`docs/ui-demos/g1-line.html`），CSS 从该文件移植，**不重新设计**。
 
@@ -91,7 +91,7 @@ test/e2e.test.js
 scripts/check-site-constraints.mjs   真实站点的硬约束验证（CDP）
 ```
 
-**不改**：`docs/ui-demos/*`（原型冻结，只作视觉参照与 CSS 来源）、`scripts/gen-ui-demos.mjs`、`docs/superpowers/specs/*.md`（定稿设计，除回填变更记录）。
+**不改**：`docs/ui-demos/*`（原型冻结，只作视觉参照与 CSS 来源）、`scripts/gen-ui-demos.mjs`、`docs/specs/*.md`（定稿设计，除回填变更记录）。
 
 **基础约定**
 
@@ -2684,7 +2684,7 @@ git commit -m "test: 真实站点硬约束验证（CDP 遮挡与贴底检测）"
 
 ### Task 4.3：README 与设计文档回填
 
-**文件**：新建 `README.md`；修改 `docs/superpowers/specs/2026-10-14-ctz-bujo-share-design.md`
+**文件**：新建 `README.md`；修改 `docs/specs/2026-10-14-ctz-bujo-share-design.md`
 
 **Step 1**：`README.md` 写「怎么用」——这是给未来的自己看的
 
@@ -2706,7 +2706,7 @@ git commit -m "test: 真实站点硬约束验证（CDP 遮挡与贴底检测）"
 **Step 3**：提交
 
 ```bash
-git add README.md docs/superpowers/specs/2026-10-14-ctz-bujo-share-design.md
+git add README.md docs/specs/2026-10-14-ctz-bujo-share-design.md
 git commit -m "docs: README 与设计文档回填实现期结论"
 ```
 

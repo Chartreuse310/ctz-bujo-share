@@ -14,7 +14,7 @@ import {dirname, join} from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const AGENTS = join(root, 'AGENTS.md');
-const DESIGN = join(root, 'docs/superpowers/specs/2026-10-14-ctz-bujo-share-design.md');
+const DESIGN = join(root, 'docs/specs/2026-10-14-ctz-bujo-share-design.md');
 
 /**
  * 文档中明确标注为「尚未创建」的路径：实现计划批准、代码落地前它们本就不存在。
@@ -83,6 +83,23 @@ for (const c of [...cited].sort((a, b) => a.localeCompare(b, 'en', {numeric: tru
   if (!designSections.has(c)) fails.push(`引用的设计文档条款 §${c} 不存在`);
 }
 notes.push(`条款引用 ${cited.size} 个：${[...cited].join(' ')}`);
+
+// —— 4. docs/README.md（文档注册表）的相对链接 ——
+// 它是 docs/ 的结构真相源；改了目录结构忘了同步它，比忘了改 AGENTS.md 更难发现。
+const REGISTRY = join(root, 'docs/README.md');
+if (!existsSync(REGISTRY)) {
+  fails.push('docs/README.md（文档注册表）不存在——docs/ 分层应有唯一注册表');
+} else {
+  const reg = readFileSync(REGISTRY, 'utf8');
+  let n = 0;
+  for (const m of reg.matchAll(/\]\((?!#)([^)#]+)\)/g)) {
+    n++;
+    const target = join('docs', decodeURIComponent(m[1]));
+    if (!existsSync(join(root, target))) fails.push(`docs/README.md 的链接指向不存在的路径：${target}`);
+  }
+  if (n === 0) fails.push('docs/README.md 里没有解析到任何相对链接（正则可能已失效）');
+  notes.push(`注册表相对链接 ${n} 个，全部可达`);
+}
 
 // —— 输出 ——
 for (const n of notes) console.log(`· ${n}`);

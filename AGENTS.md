@@ -33,13 +33,18 @@
 
 ## 3. 真相源与优先级
 
-| 文件 | 角色 |
-| --- | --- |
-| `docs/superpowers/specs/2026-10-14-ctz-bujo-share-design.md` | **设计决策的唯一真相源**。与原始想法冲突时以它为准。 |
-| `docs/ideas/2026-10-14-bujo-share-原始想法.md` | 需求来源，**不是**设计依据。 |
-| `docs/plans/2026-10-14-ctz-bujo-share-implementation.md` | 实现计划（未批准）。 |
-| `docs/ui-demos/*.html` | 视觉 Prototype（12 份）。**假数据 + 缩写字段**，不是产品代码。 |
-| `.agents/memory/` | DSH 运行时记忆，被 gitignore。有价值的内容要**提炼进设计文档**，不要依赖它。 |
+`docs/` 下按**生命周期阶段**分四层，一层一个用途，互不复述正文（完整注册表见 `docs/README.md`）：
+
+| 目录 | 阶段 | 文件 | 角色 |
+| --- | --- | --- | --- |
+| `docs/ideas/` | ① 想法 | `docs/ideas/2026-10-14-bujo-share-原始想法.md` | 需求来源，**不是**设计依据 |
+| `docs/specs/` | ② 设计 | `docs/specs/2026-10-14-ctz-bujo-share-design.md` | **设计决策的唯一真相源**。与原始想法冲突时以它为准 |
+| `docs/plans/` | ③ 计划 | `docs/plans/2026-10-14-ctz-bujo-share-implementation.md` | 实现计划（未批准） |
+| `docs/ui-demos/` | ② 设计的附件 | `docs/ui-demos/*.html`（12 份） | 视觉 Prototype。**假数据 + 缩写字段**，不是产品代码 |
+
+`.agents/memory/` 是 DSH 运行时记忆（被 gitignore），**不是**项目文档：有价值的内容要**提炼进 `docs/`**，不要依赖它。
+
+> **为什么 `docs/plans/` 不在 `.agents/plans/`**：`plan` skill 的默认落点是 `.agents/plans/`，本仓库**有意偏离**。理由是 `.agents/` 在本仓库已被用作运行时记忆区（`memory/` 被 gitignore），而实现计划是需要你审阅、要入库、要长期留存的交付物——放进一个「可能被忽略或清理」的目录会误导后来人，也会让它游离于 `docs/` 的四层结构之外。**改动此位置前先确认这个理由是否仍成立。**
 
 ## 4. 工作流
 
