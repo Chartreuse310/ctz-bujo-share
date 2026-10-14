@@ -1302,7 +1302,7 @@ test("buildMonthGrid：6 行月（2026-08：周六起始 → 偏移 5，5+31=36 
   assert.equal(g.cells.length, 42);
 });
 
-test("buildMonthGrid：格子只统计 highlight 条目的数量与标题", () => {
+test("buildMonthGrid：格子只统计重点条目的数量与标题；红/黑点按 hasHighlight", () => {
   const entries = [
     { date: "2026-10-03", type: "event",   highlight: true,  title: "重点一" },
     { date: "2026-10-03", type: "thought", highlight: true,  title: "重点二" },
@@ -1313,22 +1313,22 @@ test("buildMonthGrid：格子只统计 highlight 条目的数量与标题", () =
   const c3 = g.cells.find((c) => c.date === "2026-10-03");
   assert.equal(c3.highlightCount, 2);
   assert.equal(c3.captions[0], "重点一");
-  assert.deepEqual(c3.marks.sort(), ["event", "thought"]);
+  assert.equal(c3.hasHighlight, true);        // 红点（含重点）
   // 「当日条目数」用全部条目（含非重点），与 demo 口径一致
   assert.equal(c3.entryCount, 3);
 
   const c8 = g.cells.find((c) => c.date === "2026-10-08");
   assert.equal(c8.highlightCount, 1);
-  assert.deepEqual(c8.marks, ["thought"]);
+  assert.equal(c8.hasHighlight, true);
 });
 
-test("buildMonthGrid：无重点的日子不加标记但保留 entryCount", () => {
+test("buildMonthGrid：无重点的日子黑点（hasHighlight=false）但保留 entryCount", () => {
   const g = buildMonthGrid("2026-10", [
     { date: "2026-10-05", type: "event", highlight: false, title: "x" },
   ]);
   const c = g.cells.find((x) => x.date === "2026-10-05");
   assert.equal(c.highlightCount, 0);
-  assert.deepEqual(c.marks, []);
+  assert.equal(c.hasHighlight, false);       // 黑点：当日只有普通条目
   assert.equal(c.entryCount, 1);
 });
 
@@ -1424,20 +1424,20 @@ export const dayOfYear = (s) => {
 };
 
 /**
- * 月历网格。每格记录「该日重点」相关信息：数量、标题、以及重点是事件还是思考。
+ * 月历网格。每格记录「该日重点」相关信息：数量、标题、以及该日是红点还是黑点。
  *
- * ⚠️ `marks`（bujo 符号 • / ○）只来自 **highlight 条目**，不是全部条目——
- * 设计文档 §5.2：「每格用 bujo 符号标出该日**重点**是事件还是思考」。
- * `entryCount` 才用全部条目（供「该日有记录」这类判断），两者口径不同，不要混。
+ * ⚠️ 点颜色语义（2026-10-14 拍板，设计文档 §5.2）：**红点 = 当日含重点条目，
+ * 黑点 = 当日只有普通条目**——取代 demo 的「黑=事件、红=思考」，不再区分类型。
+ * `entryCount` 用全部条目（供「该日有记录」这类判断），两者口径不同，不要混。
  */
 export function buildMonthGrid(key, entries = [], today = null) {
   const byDate = new Map();
   for (const e of entries) {
     if (monthKey(e.date) !== key) continue;
-    const cell = byDate.get(e.date) || { entryCount: 0, marks: new Set(), highlights: [] };
+    const cell = byDate.get(e.date) || { entryCount: 0, hasHighlight: false, highlights: [] };
     cell.entryCount += 1;                 // 全部条目
-    if (e.highlight) {                    // 只有重点条目才产生符号与数量
-      cell.marks.add(e.type);
+    if (e.highlight) {                    // 红点 = 当日含重点；黑点由模板按 hasHighlight=false 画
+      cell.hasHighlight = true;
       cell.highlights.push(e);
     }
     byDate.set(e.date, cell);
@@ -1460,7 +1460,7 @@ export function buildMonthGrid(key, entries = [], today = null) {
       isToday: date === today,
       entryCount: info ? info.entryCount : 0,
       highlightCount: info ? info.highlights.length : 0,
-      marks: info ? [...info.marks].sort() : [],
+      hasHighlight: Boolean(info && info.hasHighlight),   // 红点/黑点
       captions: info ? info.highlights.map((e) => e.title) : [],
     });
   }
@@ -2375,9 +2375,9 @@ const months = [...new Set([
 **要点**（设计文档 §5.2 + §12.1）
 
 - 结构：`.shell > .month-top + .month-body > (.cal-pane + .list-pane)`
-- 左栏：`.dow` 周一到周日、`.matrix`（用 `buildMonthGrid`，`style="--rows: {{ grid.rows }}"`）、`.cal-foot` 图例（重点日 / 事件 / 思考 / 点格子定位）
-- 每格：日期数字 `.num`、符号 `.mt`（`•` 事件 / `○` 思考，重点加 `.hl` 顶边）、`.cap` 重点标题截断 + `+N`
-- 右栏：`.list-pane > .list-head + .dlrow*`，**只含日总结**（`buildMonthList`），倒序
+- 左栏：`.dow` 周一到周日、`.matrix`（用 `buildMonthGrid`，`style="--rows: {{ grid.rows }}"`）、`.cal-foot` 图例（**红点=重点 / 黑点=普通** / 点格子定位）
+- 每格：日期数字 `.num`、事件点 `.mt`（**红点 `hasHighlight=true` / 黑点 `hasHighlight=false`**，2026-10-14 拍板，不再区分类型）、`.cap` 重点标题截断 + `+N`
+- 右栏：`.list-pane > .list-head + .dlrow*`，**只含日总结**（`buildMonthList`），倒序；日总结行尾**只显示红点**（当日 `highlightCount > 0` 时），不显示黑点
 - 上一月 / 下一月 / 回到本月：真实链接到 `/month/<key>/`
 - 格子点进 `/day/<date>/`（设计文档 §5.2：点格子进日页，不是弹窗）
 - `.cal-foot` 的图例**不得被底栏压住**——`calc(var(--tab) - 8px)` 已处理，但必须用 Task 4.2 的脚本复核
