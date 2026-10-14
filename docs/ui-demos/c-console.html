@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方向 C · 暗色控制台 — ctz-bujo-share UI Demo</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#0d1117;
+  --bg-2:#111721;
+  --panel:#151b24;
+  --panel-2:#1a212c;
+  --line:#232c38;
+  --line-2:#2c3644;
+  --ink:#e6edf3;
+  --ink-2:#98a4b3;
+  --ink-3:#5f6b7a;
+  --amber:#e3b341;
+  --amber-dim:rgba(227,179,65,.14);
+  --ev:#6ea8fe;
+  --ev-dim:rgba(110,168,254,.15);
+  --th:#56d4a0;
+  --th-dim:rgba(86,212,160,.14);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13.5px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(720px 420px at 12% -8%, rgba(110,168,254,.10), transparent 70%),
+    radial-gradient(620px 380px at 92% 0%, rgba(227,179,65,.08), transparent 72%);
+}
+a{color:inherit;text-decoration:none}
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 28px 140px}
+
+/* ---------- top ---------- */
+.top{position:sticky;top:0;z-index:20;background:rgba(13,17,23,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-inner{max-width:1200px;margin:0 auto;padding:0 28px;height:60px;display:flex;align-items:center;gap:18px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--th);box-shadow:0 0 10px var(--th);flex:none}
+.mark{font-family:var(--mono);font-size:14px;letter-spacing:-.01em}
+.mark b{color:var(--amber);font-weight:600}
+.ver{font-family:var(--mono);font-size:10px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:20px;padding:1px 8px}
+.nav{margin-left:auto;display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px}
+.nav button{
+  border:0;background:none;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer;
+  padding:5px 14px;border-radius:6px;transition:.14s;
+}
+.nav button:hover{color:var(--ink);background:var(--panel-2)}
+.nav button.on{background:var(--amber-dim);color:var(--amber);box-shadow:inset 0 0 0 1px rgba(227,179,65,.3)}
+
+/* ---------- screens ---------- */
+.screen{display:none}
+.screen.on{display:block}
+.bar{display:flex;align-items:flex-end;gap:16px;padding:34px 0 16px;flex-wrap:wrap}
+.bar h1{margin:0;font-size:23px;font-weight:650;letter-spacing:-.02em;display:flex;align-items:baseline;gap:12px}
+.bar h1 code{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400}
+.bar .meta{margin-left:auto;display:flex;gap:8px}
+.kv{
+  display:flex;flex-direction:column;gap:2px;padding:7px 13px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+}
+.kv .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.kv .v{font-family:var(--mono);font-size:14px;color:var(--ink)}
+.kv .v.amber{color:var(--amber)}
+
+.layout{display:grid;grid-template-columns:1fr 330px;gap:16px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 20px}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-h h2{margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+.card-h .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+/* ---------- heat calendar ---------- */
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:7px}
+.dow span{font-size:10px;letter-spacing:.1em;color:var(--ink-3);text-align:center}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.day{
+  position:relative;aspect-ratio:1/.86;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel-2);padding:8px 9px;overflow:hidden;cursor:pointer;transition:.14s;
+}
+.day:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.day.void{background:transparent;border-color:transparent;cursor:default}
+.day .d{font-family:var(--mono);font-size:12px;color:var(--ink-2);position:relative;z-index:2}
+.day.today{border-color:var(--amber);box-shadow:0 0 0 1px rgba(227,179,65,.35),0 0 24px -10px var(--amber)}
+.day.today .d{color:var(--amber)}
+.day.hl{background:linear-gradient(160deg,rgba(227,179,65,.16),rgba(227,179,65,.05));border-color:rgba(227,179,65,.35)}
+.day.hl .d{color:var(--amber)}
+.day .spark{position:absolute;left:9px;right:9px;bottom:9px;height:4px;border-radius:2px;background:var(--line-2);overflow:hidden}
+.day .spark i{display:block;height:100%;background:var(--ev);opacity:.85}
+.day .dots{position:absolute;right:8px;top:9px;display:flex;gap:3px}
+.day .dots i{width:6px;height:6px;border-radius:50%;display:block}
+.day .dots i.ev{background:var(--ev)}
+.day .dots i.th{background:var(--th)}
+.day .ttl{position:absolute;left:9px;right:9px;bottom:17px;font-size:10.5px;line-height:1.35;color:var(--ink);opacity:.9;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.day.hl .ttl{color:#f6e3b0}
+.day .cnt{position:absolute;right:9px;bottom:6px;font-family:var(--mono);font-size:9.5px;color:var(--ink-3)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-3)}
+.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* ---------- highlight stream ---------- */
+.stream{display:flex;flex-direction:column;gap:0;max-height:640px;overflow:auto}
+.stream::-webkit-scrollbar{width:6px}
+.stream::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:3px}
+.si{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.si:last-child{border-bottom:0}
+.si .dd{font-family:var(--mono);font-size:12px;color:var(--amber);padding-top:1px}
+.si .dd em{display:block;font-style:normal;font-size:9px;color:var(--ink-3);letter-spacing:.06em}
+.si h4{margin:0 0 3px;font-size:12.5px;font-weight:550;line-height:1.45}
+.si .sub{font-size:10.5px;color:var(--ink-3);font-family:var(--mono)}
+.si .sub b{font-weight:400;color:var(--ink-2)}
+
+/* ---------- log list ---------- */
+.log{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.lr{display:grid;grid-template-columns:150px 260px 1fr 60px;gap:18px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:baseline;transition:.12s}
+.lr:last-child{border-bottom:0}
+.lr:hover{background:var(--panel-2)}
+.lr.head{background:var(--bg-2);position:sticky;top:60px;z-index:5}
+.lr.head span{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.lr .t{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.lr .t b{color:var(--ink);font-weight:500}
+.lr .ttl{font-size:13.5px;font-weight:550}
+.lr:hover .ttl{color:var(--amber)}
+.lr .sum{font-size:12.5px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.lr .go{font-family:var(--mono);font-size:11px;color:var(--ink-3);text-align:right}
+.lr:hover .go{color:var(--amber)}
+
+/* ---------- day view ---------- */
+.day-head{display:flex;align-items:baseline;gap:16px;padding:30px 0 20px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.day-head .big{font-family:var(--mono);font-size:30px;letter-spacing:-.02em}
+.day-head .wd{font-size:13px;color:var(--ink-2)}
+.day-head .st{margin-left:auto;display:flex;gap:8px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.chip{padding:2px 9px;border:1px solid var(--line-2);border-radius:20px}
+.chip.amber{color:var(--amber);border-color:rgba(227,179,65,.4);background:var(--amber-dim)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.note{
+  background:linear-gradient(150deg,rgba(227,179,65,.13),rgba(227,179,65,.03));
+  border:1px solid rgba(227,179,65,.28);border-radius:12px;padding:18px 20px;
+}
+.note .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.note h3{margin:0 0 8px;font-size:18px;font-weight:600;letter-spacing:-.01em;color:#f7e7bd}
+.note p{margin:0;font-size:13px;color:#cbbd97}
+.entry{padding:15px 16px;border:1px solid var(--line);border-radius:11px;background:var(--panel);margin-bottom:10px}
+.entry:last-child{margin-bottom:0}
+.entry .eh{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.entry .eh .sym{font-family:var(--mono);font-size:12px;color:var(--ev)}
+.entry .eh .sym.th{color:var(--th)}
+.entry .eh h4{margin:0;font-size:14.5px;font-weight:550}
+.entry .eh .star{font-size:11px;color:var(--amber);border:1px solid rgba(227,179,65,.4);border-radius:20px;padding:0 7px;margin-left:auto}
+.entry .em{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-bottom:9px}
+.entry .em b{font-weight:400;color:var(--ev)}
+.entry .em b.th{color:var(--th)}
+.entry p{margin:0;font-size:13px;color:var(--ink-2)}
+
+/* ---------- stats ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:4px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px 14px;position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--ev)}
+.kpi.amber::after{background:var(--amber)}
+.kpi.mint::after{background:var(--th)}
+.kpi .l{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.kpi .n{font-family:var(--mono);font-size:30px;line-height:1.25;letter-spacing:-.02em}
+.kpi .d{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.kpi .d.up{color:var(--amber)}
+.kpi .d.dn{color:var(--th)}
+.grid3{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.grid3 .wide{grid-column:1/-1}
+.rank{display:flex;flex-direction:column;gap:9px}
+.rr{display:grid;grid-template-columns:104px 1fr 96px;gap:12px;align-items:center}
+.rr .nm{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr .track{display:flex;height:16px;border-radius:4px;overflow:hidden;background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line)}
+.rr .track i{display:block;height:100%}
+.rr .track i.ev{background:linear-gradient(90deg,rgba(110,168,254,.55),var(--ev))}
+.rr .track i.th{background:linear-gradient(90deg,rgba(86,212,160,.5),var(--th))}
+.rr .v{text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.rr .v .up{color:var(--amber)}
+.rr .v .dn{color:var(--th)}
+.rr .v .nw{color:var(--amber);border:1px solid rgba(227,179,65,.4);border-radius:20px;padding:0 6px;font-size:10px}
+.ax{font-family:var(--mono);font-size:10px;fill:var(--ink-3)}
+@media(max-width:1080px){.layout{grid-template-columns:1fr}.cols{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.lr{grid-template-columns:130px 1fr 50px}.lr .sum{display:none}}
+footer.note{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);line-height:1.9;max-width:860px}
+footer.note b{color:var(--ink-2)}
+
+/* ---------- dir bar ---------- */
+.dirbar{position:fixed;right:22px;bottom:22px;z-index:40;display:flex;align-items:center;gap:3px;background:var(--panel);border:1px solid var(--line-2);border-radius:11px;padding:4px;box-shadow:0 18px 40px -24px #000}
+.dirbar span{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--ink-3);padding:0 9px;text-transform:uppercase}
+.dirbar a{font-size:11.5px;padding:6px 12px;border-radius:7px;color:var(--ink-2)}
+.dirbar a:hover{color:var(--ink);background:var(--panel-2)}
+.dirbar a.on{background:var(--amber-dim);color:var(--amber);box-shadow:inset 0 0 0 1px rgba(227,179,65,.35)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-inner">
+    <span class="dot"></span>
+    <div class="mark">ctz<b>/bujo</b></div>
+    <span class="ver">static · 18 entries</span>
+    <nav class="nav">
+      <button class="on" data-s="month">重点概览</button>
+      <button data-s="daily">月历列表</button>
+      <button data-s="day">日页</button>
+      <button data-s="stats">统计</button>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ 重点概览 ============ -->
+  <section class="screen on" id="s-month">
+    <div class="bar">
+      <h1>重点概览 <code>2026-10</code></h1>
+      <div class="meta">
+        <div class="kv"><span class="k">条目</span><span class="v">18</span></div>
+        <div class="kv"><span class="k">重点日</span><span class="v amber">9</span></div>
+        <div class="kv"><span class="k">有记录</span><span class="v">15 / 31</span></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <div class="card-h"><h2>月历热力</h2><span class="n">周一起始 · 点格子进日页</span></div>
+        <div class="dow"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+        <div class="grid">
+          <div class="day void"></div><div class="day void"></div><div class="day void"></div>
+
+          <div class="day hl"><div class="d">01</div><div class="dots"><i class="ev"></i></div><div class="ttl">看完《沙丘 2》</div><div class="spark"><i style="width:70%"></i></div></div>
+          <div class="day"><div class="d">02</div><div class="dots"><i class="th"></i></div><div class="spark"><i style="width:34%;background:var(--th)"></i></div></div>
+          <div class="day hl"><div class="d">03</div><div class="dots"><i class="ev"></i></div><div class="ttl">第一次跑完 10 公里</div><div class="spark"><i style="width:58%"></i></div></div>
+          <div class="day"><div class="d">04</div></div>
+
+          <div class="day hl"><div class="d">05</div><div class="dots"><i class="th"></i></div><div class="ttl">关于时间轴的想法</div><div class="spark"><i style="width:62%;background:var(--th)"></i></div></div>
+          <div class="day"><div class="d">06</div><div class="dots"><i class="ev"></i></div><div class="spark"><i style="width:30%"></i></div></div>
+          <div class="day"><div class="d">07</div></div>
+
+          <div class="day hl"><div class="d">08</div><div class="dots"><i class="ev"></i></div><div class="ttl">画完第 12 张速写</div><div class="spark"><i style="width:44%"></i></div></div>
+          <div class="day"><div class="d">09</div><div class="dots"><i class="th"></i></div><div class="spark"><i style="width:28%;background:var(--th)"></i></div></div>
+          <div class="day"><div class="d">10</div></div>
+
+          <div class="day hl"><div class="d">11</div><div class="dots"><i class="th"></i></div><div class="ttl">重读了第三章的论证</div><div class="spark"><i style="width:52%;background:var(--th)"></i></div></div>
+          <div class="day"><div class="d">12</div><div class="dots"><i class="ev"></i></div><div class="spark"><i style="width:36%"></i></div></div>
+          <div class="day"><div class="d">13</div></div>
+
+          <div class="day hl today"><div class="d">14</div><div class="dots"><i class="ev"></i><i class="th"></i></div><div class="ttl">把时间轴画成了图</div><div class="cnt">2 条</div></div>
+          <div class="day"><div class="d">15</div></div>
+
+          <div class="day hl"><div class="d">16</div><div class="dots"><i class="ev"></i></div><div class="ttl">给速写本换了新纸</div><div class="spark"><i style="width:48%"></i></div></div>
+          <div class="day"><div class="d">17</div></div>
+          <div class="day"><div class="d">18</div><div class="dots"><i class="th"></i></div><div class="spark"><i style="width:26%;background:var(--th)"></i></div></div>
+
+          <div class="day"><div class="d">19</div></div>
+          <div class="day hl"><div class="d">20</div><div class="dots"><i class="ev"></i></div><div class="ttl">读完《人类简史》</div><div class="spark"><i style="width:74%"></i></div></div>
+          <div class="day"><div class="d">21</div></div>
+          <div class="day"><div class="d">22</div><div class="dots"><i class="th"></i></div><div class="spark"><i style="width:40%;background:var(--th)"></i></div></div>
+
+          <div class="day"><div class="d">23</div></div>
+          <div class="day"><div class="d">24</div></div>
+          <div class="day"><div class="d">25</div><div class="dots"><i class="ev"></i></div><div class="spark"><i style="width:24%"></i></div></div>
+          <div class="day"><div class="d">26</div></div>
+
+          <div class="day hl"><div class="d">27</div><div class="dots"><i class="th"></i></div><div class="ttl">关于构图的困惑</div><div class="spark"><i style="width:56%;background:var(--th)"></i></div></div>
+          <div class="day"><div class="d">28</div></div>
+          <div class="day"><div class="d">29</div></div>
+          <div class="day"><div class="d">30</div><div class="dots"><i class="ev"></i></div><div class="spark"><i style="width:32%"></i></div></div>
+
+          <div class="day void"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--amber)"></i>重点（highlight）</span>
+          <span><i style="background:var(--ev)"></i>事件</span>
+          <span><i style="background:var(--th)"></i>思考</span>
+          <span>底部长条 = 当日条目量</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>重点流</h2><span class="n">9</span></div>
+        <div class="stream">
+          <div class="si"><div class="dd">27<em>周二</em></div><div><h4>关于构图的困惑</h4><div class="sub"><b>思考</b> · 绘画</div></div></div>
+          <div class="si"><div class="dd">20<em>周二</em></div><div><h4>读完《人类简史》</h4><div class="sub"><b>事件</b> · 书影音</div></div></div>
+          <div class="si"><div class="dd">16<em>周五</em></div><div><h4>给速写本换了新纸</h4><div class="sub"><b>事件</b> · 绘画</div></div></div>
+          <div class="si"><div class="dd">14<em>周三</em></div><div><h4>把时间轴画成了图</h4><div class="sub"><b>思考</b> · 博士学位论文</div></div></div>
+          <div class="si"><div class="dd">11<em>周日</em></div><div><h4>重读了第三章的论证</h4><div class="sub"><b>思考</b> · 博士学位论文</div></div></div>
+          <div class="si"><div class="dd">08<em>周四</em></div><div><h4>画完第 12 张速写</h4><div class="sub"><b>事件</b> · 绘画</div></div></div>
+          <div class="si"><div class="dd">05<em>周一</em></div><div><h4>关于时间轴的想法</h4><div class="sub"><b>思考</b> · 博士学位论文</div></div></div>
+          <div class="si"><div class="dd">03<em>周六</em></div><div><h4>第一次跑完 10 公里</h4><div class="sub"><b>事件</b> · 日常</div></div></div>
+          <div class="si"><div class="dd">01<em>周四</em></div><div><h4>看完《沙丘 2》</h4><div class="sub"><b>事件</b> · 书影音</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 月历列表 ============ -->
+  <section class="screen" id="s-daily">
+    <div class="bar">
+      <h1>月历列表 <code>2026-10</code></h1>
+      <div class="meta">
+        <div class="kv"><span class="k">日总结</span><span class="v">15</span></div>
+        <div class="kv"><span class="k">排序</span><span class="v">倒序</span></div>
+      </div>
+    </div>
+
+    <div class="log">
+      <div class="lr head"><span>日期</span><span>简述</span><span>正文摘要</span><span></span></div>
+      <div class="lr"><div class="t"><b>2026-10-30</b> 周五</div><div class="ttl"><a href="#">十月要结束了</a></div><div class="sum">翻了一遍这个月的记录，重点集中在论文和绘画上，跑量比上个月少了一些。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-27</b> 周二</div><div class="ttl"><a href="#">构图还是不对，先放着</a></div><div class="sum">想把两个主体压在同一侧，结果重心全塌了。决定先不画，去看两天画册再说。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-25</b> 周日</div><div class="ttl"><a href="#">录了一小段，杂音很多</a></div><div class="sum">用手机直接录的，底噪明显。当作留个时间戳吧。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-22</b> 周四</div><div class="ttl"><a href="#">和导师聊完，方向收窄了</a></div><div class="sum">原以为要补一整章，其实只要把第三节的论证换一个顺序。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-20</b> 周二</div><div class="ttl"><a href="#">合上书的时候有点舍不得</a></div><div class="sum">读了二十天，最后三十页特意放慢。读完在封底空白处写了日期。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-18</b> 周日</div><div class="ttl"><a href="#">跑步时想通的事</a></div><div class="sum">跑到第七公里突然想明白，纠结的不是选哪个方向，是怕选错。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-16</b> 周五</div><div class="ttl"><a href="#">换了纸，笔尖的阻力变了</a></div><div class="sum">新纸克数高，铅笔的涩感回来了。同一支笔画出完全不同的线。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-14</b> 周三</div><div class="ttl"><a href="#">把想法画成图，一下清楚了</a></div><div class="sum">用三根横轴把「已定 / 待验 / 存疑」摆开，一眼就看出卡在哪。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-11</b> 周日</div><div class="ttl"><a href="#">重读第三章，发现一个漏洞</a></div><div class="sum">去年写的过渡段其实没接上。补了半页，比新写一段还费劲。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-08</b> 周四</div><div class="ttl"><a href="#">画到第 12 张，手感回来了</a></div><div class="sum">前十一张都是热身。第十二张的线终于不抖了。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-06</b> 周二</div><div class="ttl"><a href="#">播客里的那句话</a></div><div class="sum">「记忆不是存档，是每次重写。」记在本子右上角了。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-05</b> 周一</div><div class="ttl"><a href="#">时间轴这件事绕回来了</a></div><div class="sum">三个月前放弃的方案，现在看反而最合适。当时只是不会画。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-03</b> 周六</div><div class="ttl"><a href="#">跑完之后整个人是空的</a></div><div class="sum">十公里，最后一公里完全靠惯性。回家躺了四十分钟才起来洗澡。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-02</b> 周五</div><div class="ttl"><a href="#">色彩笔记</a></div><div class="sum">把最近喜欢的几张画的配色抄了下来，发现都是低饱和 + 一个跳色。</div><div class="go">→</div></div>
+      <div class="lr"><div class="t"><b>2026-10-01</b> 周四</div><div class="ttl"><a href="#">开工第一天，把桌面清空</a></div><div class="sum">只留本子、笔、水杯。晚上的电影是奖励。</div><div class="go">→</div></div>
+    </div>
+  </section>
+
+  <!-- ============ 日页 ============ -->
+  <section class="screen" id="s-day">
+    <div class="day-head">
+      <span class="big">2026-10-14</span>
+      <span class="wd">星期三 · 第 287 天</span>
+      <div class="st"><span class="chip">2 条条目</span><span class="chip">1 条日总结</span><span class="chip amber">1 条重点</span></div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="note">
+          <div class="lbl">今日小结</div>
+          <h3>把想法画成图，一下清楚了</h3>
+          <p>用三根横轴把「已定 / 待验 / 存疑」摆开，之前绕了半个月的问题一眼就看出卡在哪。图比句子诚实。</p>
+        </div>
+      </div>
+      <div>
+        <div class="entry">
+          <div class="eh"><span class="sym th">○</span><h4><a href="#">把时间轴画成了图</a></h4><span class="star">重点</span></div>
+          <div class="em"><b class="th">思考</b> · 博士学位论文 · #论文阶段</div>
+          <p>画到一半发现，真正难的不是排列顺序，是给每一段找边界。边界一定下来，之前觉得互相矛盾的两段其实不冲突。</p>
+        </div>
+        <div class="entry">
+          <div class="eh"><span class="sym">•</span><h4><a href="#">听完关于写作的播客</a></h4></div>
+          <div class="em"><b>事件</b> · 日常 · #播客</div>
+          <p>通勤路上听的一期，讲「先写烂初稿」的那段很有共鸣。回来把播客名记在了本子边上。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 统计 ============ -->
+  <section class="screen" id="s-stats">
+    <div class="bar">
+      <h1>统计 <code>2026-10</code></h1>
+      <div class="meta">
+        <div class="kv"><span class="k">窗口</span><span class="v">本月</span></div>
+        <div class="kv"><span class="k">口径</span><span class="v">条目数</span></div>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="l">事件</div><div class="n">10</div><div class="d up">↑ 25% vs 上月</div></div>
+      <div class="kpi mint"><div class="l">思考</div><div class="n">8</div><div class="d up">↑ 60% vs 上月</div></div>
+      <div class="kpi"><div class="l">日总结</div><div class="n">15</div><div class="d">↑ 2 条</div></div>
+      <div class="kpi"><div class="l">有记录天数</div><div class="n">15</div><div class="d">48% / 31</div></div>
+      <div class="kpi amber"><div class="l">重点条目</div><div class="n">9</div><div class="d">占全部 50%</div></div>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <div class="card-h"><h2>按集子</h2><span class="n">横向</span></div>
+        <div class="rank">
+          <div class="rr"><div class="nm">日常</div><div class="track"><i class="ev" style="width:30%"></i><i class="th" style="width:22%"></i></div><div class="v">5 <span class="up">↑20%</span></div></div>
+          <div class="rr"><div class="nm">书影音</div><div class="track"><i class="ev" style="width:38%"></i></div><div class="v">5 <span class="nw">新增</span></div></div>
+          <div class="rr"><div class="nm">绘画</div><div class="track"><i class="ev" style="width:18%"></i><i class="th" style="width:14%"></i></div><div class="v">4 <span class="dn">↓11%</span></div></div>
+          <div class="rr"><div class="nm">博士学位论文</div><div class="track"><i class="th" style="width:34%"></i></div><div class="v">4 <span class="up">↑33%</span></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>按 tag</h2><span class="n">已登记 5 个</span></div>
+        <div class="rank">
+          <div class="rr"><div class="nm">论文阶段</div><div class="track"><i class="th" style="width:34%"></i></div><div class="v">4 <span class="up">↑33%</span></div></div>
+          <div class="rr"><div class="nm">视频</div><div class="track"><i class="ev" style="width:26%"></i></div><div class="v">3 <span class="dn">↓25%</span></div></div>
+          <div class="rr"><div class="nm">跑步</div><div class="track"><i class="ev" style="width:9%"></i><i class="th" style="width:9%"></i></div><div class="v">2 <span class="dn">↓50%</span></div></div>
+          <div class="rr"><div class="nm">播客</div><div class="track"><i class="ev" style="width:17%"></i></div><div class="v">2 <span class="nw">新增</span></div></div>
+          <div class="rr"><div class="nm">吉他</div><div class="track"><i class="ev" style="width:9%"></i><i class="th" style="width:9%"></i></div><div class="v">2 <span class="dn">↓33%</span></div></div>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-h"><h2>逐月趋势</h2><span class="n">蓝 = 事件 · 绿 = 思考 · 十月为当前</span></div>
+        <svg viewBox="0 0 1080 260" style="width:100%;display:block" role="img" aria-label="逐月趋势折线图">
+          <defs>
+            <linearGradient id="gEv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6ea8fe" stop-opacity=".28"/>
+              <stop offset="100%" stop-color="#6ea8fe" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="gTh" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#56d4a0" stop-opacity=".22"/>
+              <stop offset="100%" stop-color="#56d4a0" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g stroke="#232c38" stroke-width="1">
+            <line x1="54" y1="36" x2="1050" y2="36"/><line x1="54" y1="80" x2="1050" y2="80"/>
+            <line x1="54" y1="124" x2="1050" y2="124"/><line x1="54" y1="168" x2="1050" y2="168"/>
+            <line x1="54" y1="212" x2="1050" y2="212"/>
+          </g>
+          <path d="M94 128 L204 144 L314 110 L424 158 L534 96 L644 128 L754 176 L864 110 L974 78 L1040 78 L1040 212 L94 212 Z" fill="url(#gEv)"/>
+          <path d="M94 144 L204 158 L314 128 L424 110 L534 144 L644 96 L754 128 L864 110 L974 78 L1040 78 L1040 212 L94 212 Z" fill="url(#gTh)" opacity=".8"/>
+          <polyline fill="none" stroke="#6ea8fe" stroke-width="2" points="94,128 204,144 314,110 424,158 534,96 644,128 754,176 864,110 974,78"/>
+          <polyline fill="none" stroke="#56d4a0" stroke-width="2" stroke-dasharray="5 4" points="94,144 204,158 314,128 424,110 534,144 644,96 754,128 864,110 974,78"/>
+          <circle cx="974" cy="78" r="5" fill="#0d1117" stroke="#e3b341" stroke-width="2.5"/>
+          <g class="ax">
+            <text x="14" y="40">12</text><text x="18" y="84">9</text><text x="18" y="128">6</text>
+            <text x="18" y="172">3</text><text x="22" y="216">0</text>
+            <text x="88" y="240">01</text><text x="198" y="240">02</text><text x="308" y="240">03</text>
+            <text x="418" y="240">04</text><text x="528" y="240">05</text><text x="638" y="240">06</text>
+            <text x="748" y="240">07</text><text x="858" y="240">08</text><text x="968" y="240">09</text>
+            <text x="1024" y="240" fill="#e3b341">10</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <footer class="note">
+      <b>方向 C 的取舍</b>：把设计文档第 6 节「统计要能回答『哪个集子写得最多』『某个 tag 逐月涨还是落』」推到前台——首屏就有 KPI、右侧常驻重点流、图表用面积与渐变让趋势一眼可见。适合内容量大、想「读数据」而不是「读本子」的时候。代价是丢了手写与点阵的纸感，且深色底不适合打印；若采纳，建议作为独立可选的暗色主题，而不是默认。
+    </footer>
+  </section>
+
+</div>
+
+<div class="dirbar">
+  <span>Direction</span>
+  <a href="a-analog.html">A 纸质手账</a>
+  <a href="b-swiss.html">B 瑞士墨线</a>
+  <a class="on" href="c-console.html">C 暗色控制台</a>
+</div>
+
+<script>
+document.querySelectorAll('.nav button').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.nav button').forEach(function(x){x.classList.remove('on')});
+    document.querySelectorAll('.screen').forEach(function(x){x.classList.remove('on')});
+    t.classList.add('on');
+    document.getElementById('s-'+t.dataset.s).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
