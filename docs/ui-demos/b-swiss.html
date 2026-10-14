@@ -45,15 +45,22 @@ button{font:inherit;color:inherit}
 .nav button{
   border:0;background:none;cursor:pointer;padding:0;margin-left:26px;
   font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
-  display:flex;align-items:baseline;gap:7px;border-bottom:2px solid transparent;line-height:62px;
+  border-bottom:2px solid transparent;line-height:62px;
 }
-.nav button i{font-style:normal;font-family:var(--mono);font-size:9px;opacity:.7}
 .nav button:hover{color:var(--ink)}
 .nav button.on{color:var(--ink);border-bottom-color:var(--accent)}
 
 /* ---------- screens ---------- */
 .screen{display:none}
 .screen.on{display:block}
+/* 左右滑切换时的推进动画：新页从对应一侧推入 */
+@keyframes pushFromRight{from{transform:translateX(36px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pushFromLeft{from{transform:translateX(-36px);opacity:0}to{transform:none;opacity:1}}
+.screen.anim-fwd.on{animation:pushFromRight .28s cubic-bezier(.22,.72,.28,1) both}
+.screen.anim-back.on{animation:pushFromLeft .28s cubic-bezier(.22,.72,.28,1) both}
+@media (prefers-reduced-motion: reduce){
+  .screen.anim-fwd.on,.screen.anim-back.on{animation:none}
+}
 
 /* ---------- 首页：日页 + 侧栏 ---------- */
 /* 栏宽与「集子 · 标签」页统一：次级栏 236px / 栏间距 56px / 主栏自适应 */
@@ -143,11 +150,13 @@ button{font:inherit;color:inherit}
 .mini-grid button.has{color:var(--ink)}
 .mini-grid button .ul{display:block;width:14px;height:2px;background:var(--ink-3)}
 .mini-grid button.hl .ul{background:var(--accent)}
-/* 本日：灰框 + 淡灰底（始终可见，即使这天正好是选中那天） */
-.mini-grid button.today{background:#f1f1ef;border-color:#d5d5d1;color:var(--ink);font-weight:600}
+/* 选中：黑色 1px 描边，落在外框同一条边上 —— 与「本日」的灰框同粗细同位置 */
+.mini-grid button.sel{border-color:var(--ink);color:var(--ink);font-weight:700}
+/* 本日：灰框 + 淡灰底 */
+.mini-grid button.today{background:#f1f1ef;border-color:#d0d0cc;color:var(--ink);font-weight:600}
 .mini-grid button.today:hover{background:#eaeae7}
-/* 选中（日页当前查看的那天）：黑色内描边，不抢今天的底 */
-.mini-grid button.sel{box-shadow:inset 0 0 0 1.5px var(--ink);color:var(--ink);font-weight:700}
+/* 今天正好是选中那天：灰框内侧紧贴一条同等粗细的黑线，两个框一样大 */
+.mini-grid button.today.sel{box-shadow:inset 0 0 0 1px var(--ink)}
 .mini-grid button.sel .ul{background:var(--ink)}
 .mini-grid button.sel.hl .ul{background:var(--accent)}
 .mini-grid button.void{cursor:default;pointer-events:none}
@@ -326,10 +335,10 @@ footer.note b{color:var(--ink)}
     <div class="mark">ctz<span>/</span>bujo</div>
     <div class="kicker">方向 B · 瑞士墨线 v2</div>
     <nav class="nav">
-      <button class="on" data-s="home"><i>01</i>日页</button>
-      <button data-s="month"><i>02</i>月视图</button>
-      <button data-s="index"><i>03</i>集子 · 标签</button>
-      <button data-s="stats"><i>04</i>统计</button>
+      <button data-s="month">本月</button>
+      <button class="on" data-s="home">今日</button>
+      <button data-s="index">集子 · 标签</button>
+      <button data-s="stats">统计</button>
     </nav>
   </div>
 </div>
@@ -405,9 +414,11 @@ footer.note b{color:var(--ink)}
       <div class="card full"><h3>趋势</h3><div class="sub" id="trendSub"></div><div id="trendChart"></div></div>
     </div>
     <footer class="note">
-      <b>栏宽统一</b>：日页、月视图、集子·标签三处共用同一套栅格 —— 次级栏 <b>236px</b> / 栏间距 <b>56px</b> / 主栏自适应（1160 容器下为 788px）。日页侧栏与集子页左栏因此同宽，翻页时不会左右跳。<br>
-      <b>滚动条</b>：全站不显示滚动条（内容仍可正常滚动），月视图右侧列表底部加了 20px 渐隐提示还有内容。<br>
-      <b>交互</b>：月视图左侧月历按行数等比压缩，整体锁定在视口内；右侧列表独立滚动，滚动时月历纹丝不动。点左侧格子把右侧列表定位并高亮到当天，点右侧某一行才进日页。日页侧栏顶部是小月历，可跨月翻阅并直接跳日。
+      <b>四个屏幕</b>：上方顺序为<b>本月 → 今日 → 集子·标签 → 统计</b>，默认落在<b>今日</b>。四屏通用一套左右滑切换：触屏双指横滑、触控板双指横滑、键盘 ← → 都能翻，到两端会循环。点月视图右侧列表的某一天，会<b>向左推进</b>到那天的日页。<br>
+      <b>栏宽统一</b>：三处共用同一套栅格 —— 次级栏 236px / 栏间距 56px / 主栏自适应，翻页不会左右跳。
+      <b>滚动条</b>：全站不显示滚动条（内容仍可正常滚动）。<br>
+      <b>月视图</b>：左侧月历按行数等比压缩，整体锁定在视口内；右侧列表独立滚动，滚动时月历纹丝不动。点左侧格子把右侧列表定位并高亮到当天，点右侧某一行才进日页。<br>
+      <b>日页侧栏</b>：小月历置顶（灰线 = 有记录，朱红线 = 含重点，灰框 = 今天，黑框 = 正在查看的这天），下方是统计入口。
     </footer>
   </div>
 </section>
@@ -611,10 +622,6 @@ function renderDay(){
 function renderSide(){
   const all = agg(ENTRIES);
   const cur = agg(entriesInMonth(monthKey(TODAY)));
-  const collCount = {}; COLLECTIONS.forEach(c => collCount[c.name] = 0);
-  ENTRIES.forEach(e => collCount[collOf(e)]++);
-  const tagCount = {}; TAGS.forEach(t => tagCount[t.name] = 0);
-  ENTRIES.forEach(e => (e.g||[]).forEach(g => { if(g in tagCount) tagCount[g]++; }));
 
   const p = [];
   // ① 小月历置顶：最快进入某天
@@ -628,20 +635,6 @@ function renderSide(){
       '<div class="p"><div class="n th">'+all.th+'</div><div class="l">思考</div><div class="s">本月 '+cur.th+'</div></div>'+
     '</div>');
   p.push('</div>');
-
-  // ③ 集子
-  p.push('<div class="blk"><div class="blk-h"><h3>集子</h3><span class="lnk" data-go="index">全部 →</span></div><div class="idx">');
-  COLLECTIONS.forEach(c => {
-    p.push('<button data-filter="coll|'+c.name+'" class="'+(c.def ? 'def' : '')+'"><span>'+esc(c.name)+'</span><span class="n">'+collCount[c.name]+'</span></button>');
-  });
-  p.push('</div></div>');
-
-  // ④ 标签
-  p.push('<div class="blk"><div class="blk-h"><h3>标签</h3><span class="lnk" data-go="index">全部 →</span></div><div class="tagwrap">');
-  TAGS.forEach(t => {
-    p.push('<button data-filter="tag|'+t.name+'"><span># '+esc(t.name)+'</span><span class="n">'+tagCount[t.name]+'</span></button>');
-  });
-  p.push('</div></div>');
 
   document.getElementById('sidePane').innerHTML = p.join('');
   renderMini();
@@ -898,19 +891,71 @@ function lineChart(pts, labels){
 }
 
 /* =========================================================
-   交互
+   交互：四个屏幕可左右滑切换
    ========================================================= */
-function go(screen){
+const ORDER = ['month','home','index','stats'];   // 顶部顺序：本月 | 今日 | 集子·标签 | 统计
+function go(screen, dir){
+  const cur = document.querySelector('.screen.on');
+  const next = document.getElementById('s-'+screen);
+  if(!next || next === cur) return;
   document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.s === screen));
-  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 's-'+screen));
   if(location.hash.slice(1) !== screen) history.replaceState(null, '', '#'+screen);
+  if(dir === undefined){                                  // 点导航时按序号推断方向
+    dir = ORDER.indexOf(screen) > ORDER.indexOf(cur.id.slice(2)) ? 'fwd' : 'back';
+  }
+  next.classList.remove('anim-fwd','anim-back');
+  if(dir !== 'none'){
+    void next.offsetWidth;                                 // 强制重排，保证动画可重复触发
+    next.classList.add(dir === 'back' ? 'anim-back' : 'anim-fwd');
+  }
+  next.classList.add('on');
+  cur.classList.remove('on');
   window.scrollTo({top:0});
+  clearTimeout(next._at);
+  next._at = setTimeout(() => next.classList.remove('anim-fwd','anim-back'), 340);
+}
+function goBy(step){                                       // 左右滑 / 方向键
+  const cur = document.querySelector('.nav button.on').dataset.s;
+  const i = (ORDER.indexOf(cur) + step + ORDER.length) % ORDER.length;
+  go(ORDER[i], step > 0 ? 'fwd' : 'back');
 }
 function setDate(d){ state.date = d; state.month = monthKey(d); renderDay(); renderMini(); }
 function setMonth(k){ state.month = k; renderMonth(); renderMini(); }
 function setFilter(type, key){ state.filter = {type:type, key:key}; renderIndex(); }
 
 document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.s)));
+
+/* 触摸滑动 */
+let tsx = 0, tsy = 0, tracking = false;
+document.addEventListener('touchstart', e => {
+  if(e.touches.length !== 1) return;
+  tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tracking = true;
+}, {passive:true});
+document.addEventListener('touchend', e => {
+  if(!tracking) return;
+  tracking = false;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - tsx, dy = t.clientY - tsy;
+  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+  goBy(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+/* 触控板横向滑动（macOS 双指横滑） */
+let wAcc = 0, wT = 0;
+document.addEventListener('wheel', e => {
+  if(Math.abs(e.deltaX) < 24 || Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+  const now = Date.now();
+  if(now - wT > 700) wAcc = 0;
+  wT = now;
+  wAcc += e.deltaX;
+  if(Math.abs(wAcc) > 110){ goBy(wAcc < 0 ? 1 : -1); wAcc = 0; }
+}, {passive:true});
+
+/* 键盘左右方向键 */
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight') goBy(1);
+  else if(e.key === 'ArrowLeft') goBy(-1);
+});
 
 document.addEventListener('click', ev => {
   const t = ev.target.closest('[data-day],[data-date],[data-go],[data-filter],[data-mv],#mPrev,#mNext,#mToday');
