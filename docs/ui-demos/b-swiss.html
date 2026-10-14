@@ -30,6 +30,9 @@ body{
 }
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit}
+/* 全站不显示滚动条：内容仍可滚动，只是不出现滚动条 */
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0;height:0;display:none}
 .wrap{max-width:1160px;margin:0 auto;padding:0 40px 120px}
 
 /* ---------- top rail ---------- */
@@ -53,7 +56,8 @@ button{font:inherit;color:inherit}
 .screen.on{display:block}
 
 /* ---------- 首页：日页 + 侧栏 ---------- */
-.home{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:60px;align-items:start;padding-top:44px}
+/* 栏宽与「集子 · 标签」页统一：次级栏 236px / 栏间距 56px / 主栏自适应 */
+.home{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:56px;align-items:start;padding-top:44px}
 .home-main{min-width:0}
 .dateline{
   display:flex;align-items:baseline;gap:16px;padding:0 0 16px;border-bottom:1px solid var(--ink);
@@ -90,8 +94,6 @@ button{font:inherit;color:inherit}
 
 /* ---------- 侧栏 ---------- */
 .side{position:sticky;top:calc(var(--top) + 24px);max-height:calc(100dvh - var(--top) - 48px);overflow-y:auto;display:flex;flex-direction:column}
-.side::-webkit-scrollbar{width:5px}
-.side::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px}
 .blk{padding:12px 0 13px;border-top:1px solid var(--rule)}
 .blk:first-child{border-top:1px solid var(--ink);padding-top:11px}
 .blk-h{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
@@ -167,8 +169,8 @@ button{font:inherit;color:inherit}
 .month-top .pager button:last-child{border-right:0}
 .month-top .pager button:hover{background:var(--ink);color:#fff}
 
-.month-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 384px}
-.cal-pane{display:flex;flex-direction:column;min-height:0;padding-right:30px}
+.month-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 236px}
+.cal-pane{display:flex;flex-direction:column;min-height:0;padding-right:28px}
 .dow{display:grid;grid-template-columns:repeat(7,1fr);padding:11px 0 8px}
 .dow span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);padding-left:10px}
 .matrix{
@@ -202,25 +204,26 @@ button{font:inherit;color:inherit}
 .cal-foot .k b{width:6px;height:6px;background:var(--navy);display:inline-block}
 .cal-foot .k u{width:6px;height:6px;background:var(--ink-3);display:inline-block;text-decoration:none}
 
-.list-pane{min-height:0;overflow-y:auto;padding-left:30px;border-left:1px solid var(--rule)}
-.list-pane::-webkit-scrollbar{width:7px}
-.list-pane::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
-.list-pane::-webkit-scrollbar-track{background:transparent}
+.list-pane{
+  min-height:0;overflow-y:auto;padding-left:28px;padding-bottom:40px;border-left:1px solid var(--rule);
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);
+  mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);
+}
 .list-head{
   position:sticky;top:0;z-index:2;background:var(--bg);padding:11px 0 8px;border-bottom:1px solid var(--rule);
   display:flex;align-items:baseline;gap:10px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
 }
 .list-head b{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-2);letter-spacing:0}
-.dlrow{padding:15px 0 14px;border-bottom:1px solid var(--rule);cursor:pointer;transition:background .12s}
+.dlrow{padding:14px 0 13px;border-bottom:1px solid var(--rule);cursor:pointer;transition:background .12s}
 .dlrow:hover{background:#f7f6f4}
 .dlrow.flash{background:var(--accent-soft)}
-.dlrow .r1{display:flex;align-items:baseline;gap:9px;font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:5px}
+.dlrow .r1{display:flex;align-items:baseline;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-bottom:4px}
 .dlrow .r1 .d{color:var(--ink);font-weight:500}
 .dlrow .r1 .mk{margin-left:auto;color:var(--accent)}
-.dlrow h4{margin:0 0 4px;font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.dlrow h4{margin:0 0 3px;font-size:13.5px;font-weight:600;letter-spacing:-.01em;line-height:1.45}
 .dlrow:hover h4{color:var(--accent)}
-.dlrow p{margin:0;font-size:12.5px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.list-empty{padding:26px 0;color:var(--ink-3);font-size:13px}
+.dlrow p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.list-empty{padding:26px 0;color:var(--ink-3);font-size:12.5px;line-height:1.7}
 
 /* ---------- 集子 / 标签 ---------- */
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:52px 0 18px;border-bottom:1px solid var(--ink);flex-wrap:wrap}
@@ -278,7 +281,8 @@ footer.note{margin-top:50px;padding-top:18px;border-top:1px solid var(--ink);fon
 footer.note b{color:var(--ink)}
 
 /* ---------- dir bar ---------- */
-.dirbar{position:fixed;right:24px;bottom:24px;z-index:40;display:flex;align-items:center;gap:2px;background:var(--ink);padding:4px}
+.dirbar{position:fixed;right:24px;bottom:24px;z-index:40;display:flex;align-items:center;gap:2px;background:var(--ink);padding:4px;opacity:.42;transition:opacity .18s}
+.dirbar:hover{opacity:1}
 .dirbar span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);padding:0 10px}
 .dirbar a{font-size:11px;letter-spacing:.06em;padding:7px 12px;color:rgba(255,255,255,.72)}
 .dirbar a:hover{color:#fff;background:rgba(255,255,255,.1)}
@@ -398,7 +402,9 @@ footer.note b{color:var(--ink)}
       <div class="card full"><h3>趋势</h3><div class="sub" id="trendSub"></div><div id="trendChart"></div></div>
     </div>
     <footer class="note">
-      <b>v2 的两处结构改动</b>：① 重点概览与月历列表合并为一个左右分栏的月视图——左侧月历<b>整体锁定在视口内</b>（按行数等比压缩，永不出现纵向滚动条），右侧日总结列表<b>独立滚动</b>，滚动右侧时左侧纹丝不动；点左侧格子会把右侧列表定位并高亮到那一天，点右侧某一行才进入日页。② 首页换成日页，右侧常驻侧栏给出统计入口（事件 / 思考计数）、集子列表、标签列表与可跳转的小月历。页面上所有数字都由同一份数据实时算出，改一条数据四个页面同步变。
+      <b>栏宽统一</b>：日页、月视图、集子·标签三处共用同一套栅格 —— 次级栏 <b>236px</b> / 栏间距 <b>56px</b> / 主栏自适应（1160 容器下为 788px）。日页侧栏与集子页左栏因此同宽，翻页时不会左右跳。<br>
+      <b>滚动条</b>：全站不显示滚动条（内容仍可正常滚动），月视图右侧列表底部加了 20px 渐隐提示还有内容。<br>
+      <b>交互</b>：月视图左侧月历按行数等比压缩，整体锁定在视口内；右侧列表独立滚动，滚动时月历纹丝不动。点左侧格子把右侧列表定位并高亮到当天，点右侧某一行才进日页。日页侧栏顶部是小月历，可跨月翻阅并直接跳日。
     </footer>
   </div>
 </section>
@@ -609,6 +615,10 @@ function renderSide(){
   ENTRIES.forEach(e => (e.g||[]).forEach(g => { if(g in tagCount) tagCount[g]++; }));
 
   const p = [];
+  // ① 小月历置顶：最快进入某天
+  p.push('<div class="blk"><div class="blk-h"><h3>小月历</h3><span class="lnk" data-go="month">月视图 →</span></div><div id="miniHost"></div></div>');
+
+  // ② 统计入口
   p.push('<div class="blk">');
   p.push('<div class="blk-h"><h3>统计</h3><span class="lnk" data-go="stats">查看统计 →</span></div>');
   p.push('<div class="stat-pair" data-go="stats" title="进入统计页">'+
@@ -617,19 +627,20 @@ function renderSide(){
     '</div>');
   p.push('</div>');
 
+  // ③ 集子
   p.push('<div class="blk"><div class="blk-h"><h3>集子</h3><span class="lnk" data-go="index">全部 →</span></div><div class="idx">');
   COLLECTIONS.forEach(c => {
     p.push('<button data-filter="coll|'+c.name+'" class="'+(c.def ? 'def' : '')+'"><span>'+esc(c.name)+'</span><span class="n">'+collCount[c.name]+'</span></button>');
   });
   p.push('</div></div>');
 
+  // ④ 标签
   p.push('<div class="blk"><div class="blk-h"><h3>标签</h3><span class="lnk" data-go="index">全部 →</span></div><div class="tagwrap">');
   TAGS.forEach(t => {
     p.push('<button data-filter="tag|'+t.name+'"><span># '+esc(t.name)+'</span><span class="n">'+tagCount[t.name]+'</span></button>');
   });
   p.push('</div></div>');
 
-  p.push('<div class="blk"><div class="blk-h"><h3>小月历</h3></div><div id="miniHost"></div></div>');
   document.getElementById('sidePane').innerHTML = p.join('');
   renderMini();
 }
@@ -709,7 +720,7 @@ function renderMonth(){
 
   // 右：月历列表（只含日总结）
   const lp = [];
-  lp.push('<div class="list-head"><span>月历列表 · 日总结</span><b>'+ds.length+' 条</b></div>');
+  lp.push('<div class="list-head"><span>月历列表</span><b>'+ds.length+' 条</b></div>');
   if(!ds.length){
     lp.push('<div class="list-empty">这个月还没有日总结。<br>左侧格子里的数字是当天的条目数，有红色顶边的日子含重点条目。</div>');
   } else {
@@ -718,7 +729,7 @@ function renderMonth(){
       const hls = byDate(dstr).filter(isHL).length;
       lp.push('<div class="dlrow" data-date="'+dstr+'">'+
         '<div class="r1"><span class="d">'+dstr+'</span><span>'+wdOf(dstr)+'</span>'+
-          (hls ? '<span class="mk">'+hls+' 条重点</span>' : '')+'</div>'+
+          (hls ? '<span class="mk">★'+hls+'</span>' : '')+'</div>'+
         '<h4>'+esc(dl.ti)+'</h4>'+
         '<p>'+esc(dl.b)+'</p>'+
       '</div>');
