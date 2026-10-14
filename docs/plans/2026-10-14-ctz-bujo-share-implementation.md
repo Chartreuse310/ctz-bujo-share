@@ -34,9 +34,9 @@
 
 ---
 
-## 需要用户拍板的 1 个决策
+## 已拍板的 1 个决策
 
-### 决策 1：taxonomy 的 YAML 解析依赖
+### 决策 1：taxonomy 的 YAML 解析依赖 —— ✅ 已定：方案 A（js-yaml），2026-10-14 用户拍板
 
 **问题**：设计文档 §7 写「zod 是除 Eleventy 之外**唯一**引入的依赖」。但实测证明 Eleventy v3 **不原生解析 `.yml`/`.yaml`**，而 `content/taxonomy.yml` 是设计文档指定的分类真相源，必须解析。因此「只加 zod」在物理上做不到。
 
@@ -48,7 +48,7 @@
 | B | 把 `content/taxonomy.yml` 改成 `taxonomy.11tydata.js`（JS 对象），零新依赖 | **改动已定稿的数据格式**，设计文档 §4.3 与 §11 都要改，且用户写 taxonomy 时失去 YAML 的可读性 |
 | C | `import yaml from "js-yaml"` 但**不写进 package.json**（吃 Eleventy 的传递依赖） | 幻影依赖：Eleventy 升级或换 pnpm 严格链接就会**直接构建失败**，不可接受 |
 
-**本计划按 A 编写**。若选 B，只需把 Task 1.2 / 1.4 里的 `readYaml` 换成 `import`，其余任务不变。
+**✅ 用户已拍板选 A（2026-10-14）**，本计划按 A 编写，无需改动。若当初选 B，只需把 Task 1.2 / 1.4 里的 `readYaml` 换成 `import`，其余任务不变。硬规矩：`yaml.load` 必须带 `{ schema: yaml.JSON_SCHEMA }`（Task 1.2 已如此实现并有测试）。
 
 ---
 
