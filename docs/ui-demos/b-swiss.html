@@ -64,10 +64,6 @@ button{font:inherit;color:inherit}
   font-family:var(--mono);font-size:11.5px;color:var(--ink-2);flex-wrap:wrap;
 }
 .dateline b{font-family:var(--sans);font-size:38px;font-weight:800;letter-spacing:-.045em;color:var(--ink);line-height:1}
-.dateline .sp{margin-left:auto;display:flex;border:1px solid var(--rule);background:var(--surface)}
-.dateline .sp button{padding:5px 11px;font-family:var(--mono);font-size:11px;background:none;border:0;border-right:1px solid var(--rule);cursor:pointer;color:var(--ink-2)}
-.dateline .sp button:last-child{border-right:0}
-.dateline .sp button:hover{background:var(--ink);color:#fff}
 
 .pull{margin:34px 0 38px;padding:2px 0 2px 24px;border-left:3px solid var(--accent)}
 .pull .lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
@@ -138,20 +134,27 @@ button{font:inherit;color:inherit}
 .mini-dow,.mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .mini-dow span{font-size:9.5px;color:var(--ink-3);text-align:center;padding-bottom:4px}
 .mini-grid button{
-  position:relative;height:24px;border:1px solid transparent;background:none;cursor:pointer;
-  font-family:var(--mono);font-size:11px;color:var(--ink-3);display:flex;align-items:center;justify-content:center;
+  position:relative;height:26px;border:1px solid transparent;background:none;cursor:pointer;
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
 }
-.mini-grid button:hover{border-color:var(--rule);color:var(--ink)}
+.mini-grid button:hover{border-color:var(--rule);color:var(--ink);background:#f6f6f4}
+/* 有记录：数字下方一条灰线；含重点：换成朱红 */
 .mini-grid button.has{color:var(--ink)}
-.mini-grid button.has::after{content:"";position:absolute;bottom:3px;left:50%;width:3px;height:3px;margin-left:-1.5px;background:var(--ink-3)}
-.mini-grid button.hl::after{background:var(--accent);width:4px;height:4px;margin-left:-2px}
-.mini-grid button.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
-.mini-grid button.sel::after{background:#fff}
-.mini-grid button.today{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+.mini-grid button .ul{display:block;width:14px;height:2px;background:var(--ink-3)}
+.mini-grid button.hl .ul{background:var(--accent)}
+/* 本日：灰框 + 淡灰底（始终可见，即使这天正好是选中那天） */
+.mini-grid button.today{background:#f1f1ef;border-color:#d5d5d1;color:var(--ink);font-weight:600}
+.mini-grid button.today:hover{background:#eaeae7}
+/* 选中（日页当前查看的那天）：黑色内描边，不抢今天的底 */
+.mini-grid button.sel{box-shadow:inset 0 0 0 1.5px var(--ink);color:var(--ink);font-weight:700}
+.mini-grid button.sel .ul{background:var(--ink)}
+.mini-grid button.sel.hl .ul{background:var(--accent)}
 .mini-grid button.void{cursor:default;pointer-events:none}
-.mini-foot{margin-top:6px;font-size:10.5px;color:var(--ink-3);display:flex;gap:12px;flex-wrap:wrap}
-.mini-foot i{display:inline-block;width:4px;height:4px;background:var(--ink-3);margin-right:5px;vertical-align:middle}
+.mini-foot{margin-top:7px;font-size:10.5px;color:var(--ink-3);display:flex;gap:12px;flex-wrap:wrap}
+.mini-foot i{display:inline-block;width:14px;height:2px;background:var(--ink-3);margin-right:5px;vertical-align:middle}
 .mini-foot i.red{background:var(--accent)}
+.mini-foot b{display:inline-block;width:11px;height:11px;background:#f1f1ef;border:1px solid #d5d5d1;margin-right:5px;vertical-align:-1px}
 
 /* ---------- 月视图（左右分栏，各自独立滚动） ---------- */
 .shell{
@@ -578,7 +581,6 @@ function renderDay(){
   p.push('<div class="dateline">');
   p.push('<b>'+d+'</b><span>'+wdOf(d)+'</span><span>第 '+dayOfYear(d)+' 天</span>');
   p.push('<span>'+list.length+' 条条目'+(daily?' · 1 条日总结':'')+(hl?' · '+hl+' 条重点':'')+'</span>');
-  p.push('<span class="sp"><button data-day="'+shiftDay(d,-1)+'">‹ 前一天</button><button data-day="'+shiftDay(d,1)+'">后一天 ›</button></span>');
   p.push('</div>');
 
   if(daily) p.push('<div class="pull"><div class="lbl">今日小结</div><h2>'+esc(daily.ti)+'</h2><p>'+esc(daily.b)+'</p></div>');
@@ -668,11 +670,12 @@ function renderMini(){
     const ds = key+'-'+pad(d);
     const mk = marked[ds];
     const cls = [mk ? 'has' : '', mk && mk.hl ? 'hl' : '', ds === state.date ? 'sel' : '', ds === TODAY ? 'today' : ''].filter(Boolean).join(' ');
-    p.push('<button class="'+cls+'" data-day="'+ds+'" title="'+ds+(mk ? ' · '+mk.n+' 条' : '')+'">'+d+'</button>');
+    p.push('<button class="'+cls+'" data-day="'+ds+'" title="'+ds+(mk ? ' · '+mk.n+' 条' : '')+'">'+
+      '<span>'+d+'</span><i class="ul"></i></button>');
   }
   for(let i = off+n; i % 7 !== 0; i++) p.push('<button class="void"></button>');
   p.push('</div>');
-  p.push('<div class="mini-foot"><span><i></i>有记录</span><span><i class="red"></i>含重点</span><span>点日期进入日页</span></div>');
+  p.push('<div class="mini-foot"><span><i></i>有记录</span><span><i class="red"></i>含重点</span><span><b></b>今天</span><span>进日页</span></div>');
   document.getElementById('miniHost').innerHTML = p.join('');
 }
 
