@@ -21,8 +21,23 @@ const logicBlock = src.slice(src.indexOf('const WD ='), src.indexOf('</script>')
 
 const OUT = join(root, 'docs/ui-demos');
 
+/** 默认方向切换条（B/D/E/F/G 用的「UI 方向」条）；G 家族可传 dirbar 覆盖 */
+const defaultDirbar = (dirbarActive) => {
+  const on = k => (k === dirbarActive ? ' class="on"' : '');
+  return `<div class="dirbar">
+  <span>UI 方向</span>
+  <a href="a-analog.html">A 纸质</a>
+  <a href="b-swiss.html">B 墨线</a>
+  <a href="c-console.html">C 控制台</a>
+  <a href="d-edit.html"${on('d')}>D 编辑体</a>
+  <a href="e-dotted.html"${on('e')}>E 点阵</a>
+  <a href="f-warm.html"${on('f')}>F 暖纸</a>
+  <a href="g-bottom.html"${on('g')}>G 底栏</a>
+</div>`;
+};
+
 /** 三个方向共用的 HTML 骨架 */
-function shell({title, kicker, navOrder, body, css, dirbarActive, navPos = 'top'}) {
+function shell({title, kicker, navOrder, body, css, dirbarActive, navPos = 'top', dirbar}) {
   const nav = navOrder
     .map(([id, label]) => `<button${id === 'home' ? ' class="on"' : ''} data-s="${id}">${label}</button>`)
     .join('\n      ');
@@ -60,16 +75,7 @@ ${chrome}
 
 ${body}
 
-<div class="dirbar">
-  <span>UI 方向</span>
-  <a href="a-analog.html">A 纸质</a>
-  <a href="b-swiss.html">B 墨线</a>
-  <a href="c-console.html">C 控制台</a>
-  <a href="d-edit.html"${dirbarActive === 'd' ? ' class="on"' : ''}>D 编辑体</a>
-  <a href="e-dotted.html"${dirbarActive === 'e' ? ' class="on"' : ''}>E 点阵</a>
-  <a href="f-warm.html"${dirbarActive === 'f' ? ' class="on"' : ''}>F 暖纸</a>
-  <a href="g-bottom.html"${dirbarActive === 'g' ? ' class="on"' : ''}>G 底栏</a>
-</div>
+${dirbar ?? defaultDirbar(dirbarActive)}
 
 <script>
 ${dataBlock}
@@ -1139,6 +1145,101 @@ const shortViewport = (cellPad, capLines) => `
   .cell .cap{margin-top:4px;font-size:10px;line-height:1.35;-webkit-line-clamp:${capLines}}
 }`;
 
+/* ------------------------------------------------------------------
+ * 方向 G 的「底栏重量」变体（navSkins）
+ *
+ * 背景：用户反馈 G 的深色胶囊底栏「太重」。深色实底 +  backdrop-filter +
+ * 外阴影 + 朱红整块填充，是四个区块里最抢眼的元素，与编辑体「纸面 + 发丝线」
+ * 的克制调性冲突。故在同一界面逻辑下出 5 个不同重量的底栏皮肤供对比。
+ *
+ * 边界：本块**只覆盖 .tabbar 与 .tabbar button 的视觉**，不改位置基准、
+ * 层级、尺寸预留（--tab 仍 52px）与 DOM 结构——导航按钮仍挂在 .nav 容器内，
+ * go()/goBy() 与全部交互代码零改动。各皮肤的矮视口规则自带在本块末尾。
+ *
+ * 结果（1440×900 实测）：5 个皮肤全部通过 §12.1 硬约束与 §12.5 底部导航约束，
+ * 元素级遮挡 0。重量由重到轻：G5 窄条 < G3 浅底 < G1 细线 < G2 纯文 < G4 极简。
+ * 设计文档 §12.6。
+ * ------------------------------------------------------------------ */
+const navSkins = {
+
+/* G1 · 细线栏：去掉容器，只在底部留一条发丝线；当前屏 = 墨色 + 朱红下划线。
+   最贴近 B/D 顶栏「下划线标示当前」的做法，底栏因此只是界面的一条边界。 */
+line: `
+.tabbar{left:0;right:0;bottom:0;transform:none;height:calc(var(--tab) - 8px);
+  padding:0 40px;justify-content:center;gap:0;
+  background:var(--bg);border-top:1px solid var(--rule-2);
+  border-radius:0;box-shadow:none;backdrop-filter:none}
+.tabbar button{padding:6px 16px;border-radius:0;background:none;position:relative;
+  font-size:12px;letter-spacing:.04em;color:var(--ink-3)}
+.tabbar button:hover{color:var(--ink);background:none}
+.tabbar button.on{color:var(--ink);font-weight:600;background:none}
+.tabbar button.on::after{content:"";position:absolute;left:16px;right:16px;bottom:0;
+  height:2px;background:var(--accent)}
+`,
+
+/* G2 · 纯文字：连发丝线都不要，四个词直接排在纸面上；当前屏 = 朱红 + 600。
+   重量最轻的一档，几乎不构成一个「栏」，但当前态辨识度也最弱。 */
+text: `
+.tabbar{gap:24px;padding:0;background:none;border-radius:0;box-shadow:none;backdrop-filter:none}
+.tabbar button{padding:2px 0;border-radius:0;background:none;font-size:12px;color:var(--ink-3)}
+.tabbar button:hover{color:var(--ink-2);background:none}
+.tabbar button.on{color:var(--accent);font-weight:600;background:none}
+@media(max-height:760px){.tabbar{bottom:12px}}
+`,
+
+/* G3 · 浅底胶囊：保留胶囊形，但换成纸面白底 + 发丝边 + 极淡阴影；
+   当前屏 = 朱红字 + 淡朱红底（不再是整块朱红）。仍是「一个控件」，但不压纸面。 */
+pale: `
+.tabbar{padding:3px;gap:1px;background:rgba(255,254,251,.92);border:1px solid var(--rule);
+  border-radius:999px;box-shadow:0 4px 16px rgba(26,25,23,.07);backdrop-filter:blur(10px)}
+.tabbar button{padding:6px 16px;border-radius:999px;background:none;
+  font-size:12px;color:var(--ink-3)}
+.tabbar button:hover{color:var(--ink);background:none}
+.tabbar button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+@media(max-height:760px){.tabbar{bottom:12px}.tabbar button{padding:5px 13px}}
+`,
+
+/* G4 · 极简：小字号 + 大字距，无容器；当前屏上方一个 4px 朱红圆点指示，
+   文字本身只加深到墨色。几乎不占视觉重量，但「当前在哪一屏」要靠圆点认。 */
+quiet: `
+.tabbar{gap:20px;padding:0;background:none;border-radius:0;box-shadow:none;backdrop-filter:none}
+.tabbar button{padding:7px 2px;border-radius:0;background:none;position:relative;
+  font-size:9.5px;letter-spacing:.2em;color:var(--ink-3)}
+.tabbar button:hover{color:var(--ink-2);background:none}
+.tabbar button.on{color:var(--ink);font-weight:600;background:none}
+.tabbar button.on::before{content:"";position:absolute;left:50%;top:0;
+  transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent)}
+@media(max-height:760px){.tabbar{bottom:12px}.tabbar button{padding:6px 2px}}
+`,
+
+/* G5 · 窄条：保留深色胶囊的身份（深色仍是最醒目的当前态底），但整体收窄、
+   更扁、更透、阴影更淡——作为「重量的中间档」给还想保留深色的人一个折中。 */
+slim: `
+.tabbar{padding:2px;gap:0;background:rgba(26,25,23,.82);border-radius:999px;
+  box-shadow:0 3px 12px rgba(26,25,23,.12);backdrop-filter:blur(8px)}
+.tabbar button{padding:4px 13px;border-radius:999px;font-size:11.5px;color:rgba(255,255,255,.5)}
+.tabbar button:hover{color:#fff;background:none}
+.tabbar button.on{background:var(--accent);color:#fff;font-weight:600}
+@media(max-height:760px){.tabbar{bottom:12px}.tabbar button{padding:4px 11px;font-size:11px}}
+`,
+};
+
+/* G 家族共用的方向切换条：G 的底部已被四屏导航占用，切换条一律移到右上角
+   （默认半透明，悬停才完全显示，避免抢内容）。 */
+function dirbarG(active) {
+  const on = k => (k === active ? ' class="on"' : '');
+  return `<div class="dirbar">
+  <span>底栏方案</span>
+  <a href="d-edit.html"${on('d')}>D 顶栏</a>
+  <a href="g-bottom.html"${on('g')}>G 深底</a>
+  <a href="g1-line.html"${on('g1')}>G1 细线</a>
+  <a href="g2-text.html"${on('g2')}>G2 纯文</a>
+  <a href="g3-pale.html"${on('g3')}>G3 浅底</a>
+  <a href="g4-quiet.html"${on('g4')}>G4 极简</a>
+  <a href="g5-slim.html"${on('g5')}>G5 窄条</a>
+</div>`;
+}
+
 const demos = [
   ['d-edit.html', {
     title: '方向 D · 编辑体 — ctz-bujo-share UI Demo',
@@ -1164,8 +1265,30 @@ const demos = [
     css: cssG + sansSmallText + shortViewportG(),
     dirbarActive: 'g',
     navPos: 'bottom',
+    dirbar: dirbarG('g'),
   }],
 ];
+
+/* G 家族：底栏「重量」变体。共用 cssG 的方向 CSS，只在末尾叠一层 navSkins 覆盖。
+   注意 .shell / .wrap 的底部预留仍按 --tab(52px) 计算——各皮肤都在这个框内，
+   所以高度占用与 G 一致，4 档视口的「不滚动」结论可以直接继承。 */
+const navVariants = [
+  ['g1-line.html',  'line',  'g1', 'G1 · 细线栏',   '细线栏（去掉胶囊，底部一条发丝线，当前屏朱红下划线）'],
+  ['g2-text.html',  'text',  'g2', 'G2 · 纯文字',   '纯文字（无容器无底线，当前屏朱红 + 600）'],
+  ['g3-pale.html',  'pale',  'g3', 'G3 · 浅底胶囊', '浅底胶囊（纸面白底 + 发丝边，当前屏淡朱红底）'],
+  ['g4-quiet.html', 'quiet', 'g4', 'G4 · 极简',     '极简（小字号大字距，当前屏上方朱红圆点）'],
+  ['g5-slim.html',  'slim',  'g5', 'G5 · 窄条',     '窄条（保留深色身份，更窄更扁更透）'],
+];
+for (const [file, skin, key, title, desc] of navVariants) {
+  demos.push([file, {
+    title: `方向 ${title.split(' · ')[0]} · 底栏方案 — ctz-bujo-share UI Demo`,
+    kicker: `G 底栏变体：${desc}`,
+    css: cssG + sansSmallText + navSkins[skin] + shortViewportG(),
+    dirbarActive: key,
+    navPos: 'bottom',
+    dirbar: dirbarG(key),
+  }]);
+}
 
 for (const [file, opts] of demos) {
   writeFileSync(join(OUT, file), shell({...opts, body, navOrder}), 'utf8');
