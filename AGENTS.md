@@ -27,8 +27,9 @@
 ## 2. 当前状态（2026-10-14）
 
 - 设计文档已定稿；**代码尚未开始**（`package.json` / `lib/` / `src/` / `content/` 都还不存在）。
-- 实现计划已写好但**未提交、也未经用户批准**：`docs/plans/2026-10-14-ctz-bujo-share-implementation.md`。
-- 计划末尾有 3 个待用户拍板的问题（YAML 解析依赖用 `js-yaml` / 包管理器 npm 还是 pnpm / 统计页窗口切换形式）。**用户点头后才开始写代码。**
+- 实现计划已写好并**已入库**（`ce82549`），且已按评审修掉一轮硬缺陷；**仍未经用户批准，不得开工**：`docs/plans/2026-10-14-ctz-bujo-share-implementation.md`。
+- 开工前需用户拍板 2 件事：YAML 解析依赖用 `js-yaml`（推荐）还是改格式；包管理器用 npm（计划按此写）还是 pnpm。**用户点头后才开始写代码。**
+- 计划里的代码可用 `node scripts/verify-plan.mjs` 机械校验（当前 83 tests / 83 pass）。
 
 ## 3. 真相源与优先级
 
@@ -103,7 +104,10 @@ Demo 与设计阶段（当前可用）：
 node scripts/gen-ui-demos.mjs         # 从 b-swiss.html 生成 D/E/F/G 各方向 demo
 node scripts/check-ui-constraints.mjs # CDP 硬约束验证（先起 9333 端口的 headless Chrome）
 node scripts/check-agents-md.mjs      # 改完本文件必跑：标题序号 / 引用路径 / § 条款号
+node scripts/verify-plan.mjs          # 改完实现计划必跑：抽出计划里的 lib/ 代码与测试，真跑 node --test
 ```
+
+**改了实现计划就务必跑 `scripts/verify-plan.mjs`**：计划是 TDD 的，每个 Task 把「实现」与「测试」原文写在文档里；只读很难发现两者互相矛盾（测试永远变不绿）。该脚本把阶段 1 的 `lib/*.js` 与 `test/*.js` 从文档里抽出来装配到临时目录、链上 `zod`/`js-yaml`、真跑一遍 `node --test`，**不改仓库**。当前基线：**83 tests / 83 pass**。
 
 **改了 `AGENTS.md` 就务必跑 `scripts/check-agents-md.mjs`**（第 0 条铁律的落地）：它检查二级标题序号从 0 起连续、无重复标题、反引号里的仓库内路径真实存在、以及文中 `§N.M` 条款号在设计文档里真实存在。文中引用的 `package.json` / `content/taxonomy.yml` 属「尚未创建」豁免项（脚本内 `NOT_YET_CREATED`，有上限，代码落地后应清空）。
 

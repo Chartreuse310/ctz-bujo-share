@@ -756,19 +756,26 @@ test("登记但未使用是允许的（校验器不做使用率检查）", () =>
   assert.equal(t.tags.length, 1);
 });
 
-test("resolveCollection：主集子固定 /collection/all/", () => {
-  const t = validateTaxonomy(ok, "f");
-  assert.equal(resolveCollection(t, "日常").url, "/collection/all/");
-  assert.equal(resolveCollection(t, "绘画").url, "/collection/drawing/");
+test("集子 display name 与主集子同名 → 登记表校验报错（避免 /collection/all/ 被遮蔽）", () => {
+  // 主集子不占 slug、URL 固定 /collection/all/。若允许再登记一个同名集子，
+  // 条目写 `collection: 日常` 就产生歧义，且那个集子的页永远拿不到流量（被静默遮蔽）。
+  // 这里选择在**登记表**层面直接拒绝，而不是在 resolveCollection 里默默让主集子优先。
+  assert.throws(
+    () => validateTaxonomy({
+      default_collection_name: "日常",
+      collections: [{ name: "日常", slug: "daily-log" }],
+      tags: [],
+    }, "f"),
+    (e) => e.name === "ContentError" && /日常/.test(e.message) && /主集子|default_collection_name/.test(e.message)
+  );
 });
 
-test("resolveCollection：集子与主集子同名时不误判", () => {
-  const t = validateTaxonomy({
-    default_collection_name: "日常",
-    collections: [{ name: "日常", slug: "daily-log" }],
-    tags: [],
-  }, "f");
-  assert.equal(resolveCollection(t, "日常").url, "/collection/daily-log/");
+test("resolveCollection：主集子固定 /collection/all/，已登记集子走自己的 slug", () => {
+  const t = validateTaxonomy(ok, "f");
+  assert.equal(resolveCollection(t, "日常").url, "/collection/all/");
+  assert.equal(resolveCollection(t, "日常").isDefault, true);
+  assert.equal(resolveCollection(t, "绘画").url, "/collection/drawing/");
+  assert.equal(resolveCollection(t, "绘画").isDefault, false);
 });
 
 test("resolveTag 输出 /tag/<slug>/", () => {
@@ -821,6 +828,13 @@ export function validateTaxonomy(raw, file) {
     fail(file, i.path.join(".") || "(taxonomy)", actualAt(i, raw), i.message);
   }
   const tax = parsed.data;
+
+  // 主集子的显示名不得再被登记为普通集子：主集子 URL 固定 /collection/all/，
+  // 同名集子的页永远拿不到流量（被静默遮蔽），且条目引用会产生歧义。
+  if (tax.collections.some((c) => c.name === tax.default_collection_name)) {
+    fail(file, "collections.name", tax.default_collection_name,
+      `「${tax.default_collection_name}」是主集子（default_collection_name），不占 slug、URL 固定 /collection/all/，不得再登记为普通集子`);
+  }
 
   for (const [label, rows] of [["collections", tax.collections], ["tags", tax.tags]]) {
     const names = new Map();
@@ -903,6 +917,20 @@ test("文件名日期不存在（2026-02-30）报错", () => {
   assert.throws(() => validateDaily({ title: "t" }, "content/daily/2026-02-30.md", "2026-02-30.md"), /日期/);
 });
 
+test("front matter 里重复写 date 报错（设计文档 §4.2）", () => {
+  // 这条守的是「日期只有一处真相」。守卫必须在 zod 解析前查原始对象——
+  // zod 默认 strip 未知键，解析后 d.date 恒为 undefined，守卫会静默失效。
+  assert.throws(
+    () => validateDaily({ title: "t", date: "2026-10-14" }, "content/daily/2026-10-14.md", "2026-10-14.md"),
+    (e) => e.name === "ContentError" && /date/.test(e.message) && /front matter/.test(e.message)
+  );
+});
+
+test("front matter 不写 date 时正常通过", () => {
+  const r = validateDaily({ title: "t" }, "content/daily/2026-10-14.md", "2026-10-14.md");
+  assert.equal(r.date, "2026-10-14");
+});
+
 test("一天两条日总结报错", () => {
   assert.throws(
     () => assertNoDuplicateDailies([
@@ -951,6 +979,15 @@ export function validateDaily(raw, file, filename) {
     fail(file, "(文件名中的日期)", date, "必须是真实存在的 YYYY-MM-DD");
   }
 
+  // 设计文档 §4.2：日期只从文件名取，不在 front matter 重复写。
+  // ⚠️ 必须在 safeParse **之前**查原始对象：zod 默认 strip 掉未知键，
+  // 解析后再看 d.date 恒为 undefined，守卫会退化成死代码。
+  // （实测复现：写成 `if (!hasOwn(raw,"date")) { if (raw.date !== undefined) … }` 时
+  //   外层成立则内层恒假，从不触发；而 {title, date} 里的 date 被静默丢弃。）
+  if (raw.date !== undefined) {
+    fail(file, "date", raw.date, "日总结的日期只从文件名取，请在 front matter 里删掉 date");
+  }
+
   const parsed = dailySchema.safeParse(raw);
   if (!parsed.success) {
     const i = parsed.error.issues[0];
@@ -958,17 +995,7 @@ export function validateDaily(raw, file, filename) {
     fail(file, i.path.join(".") || "(front matter)", actual, i.message);
   }
   const d = parsed.data;
-  if (!hasOwn(raw, "date")) {
-    // 设计文档 §4.2：日期不在 front matter 重复写。写了就提示，避免两处不一致。
-    if (raw.date !== undefined) {
-      fail(file, "date", raw.date, "日总结的日期只从文件名取，请在 front matter 里删掉 date");
-    }
-  }
   return { ...d, file, date, url: `/day/${date}/` };
-}
-
-function hasOwn(o, k) {
-  return Object.prototype.hasOwnProperty.call(o, k);
 }
 
 /** 一天最多一条日总结。 */
@@ -1269,7 +1296,7 @@ test("buildMonthGrid：格数 = 7 的整数倍，含前后空白格", () => {
   assert.equal(g.cells[34].blank, true);
 });
 
-test("buildMonthGrid：6 行月（2026-08：周六起始 + 31 天 = 37 格 → 42）", () => {
+test("buildMonthGrid：6 行月（2026-08：周六起始 → 偏移 5，5+31=36 格 → 补齐 42）", () => {
   const g = buildMonthGrid("2026-08", []);
   assert.equal(g.rows, 6);
   assert.equal(g.cells.length, 42);
@@ -1397,17 +1424,22 @@ export const dayOfYear = (s) => {
 };
 
 /**
- * 月历网格。每格只记录「是否为重点日」相关信息；数量与符号由 highlight 条目算出
- * （设计文档 §5.2：不需要手工维护月度索引）。
+ * 月历网格。每格记录「该日重点」相关信息：数量、标题、以及重点是事件还是思考。
+ *
+ * ⚠️ `marks`（bujo 符号 • / ○）只来自 **highlight 条目**，不是全部条目——
+ * 设计文档 §5.2：「每格用 bujo 符号标出该日**重点**是事件还是思考」。
+ * `entryCount` 才用全部条目（供「该日有记录」这类判断），两者口径不同，不要混。
  */
 export function buildMonthGrid(key, entries = [], today = null) {
   const byDate = new Map();
   for (const e of entries) {
     if (monthKey(e.date) !== key) continue;
     const cell = byDate.get(e.date) || { entryCount: 0, marks: new Set(), highlights: [] };
-    cell.entryCount += 1;
-    cell.marks.add(e.type);
-    if (e.highlight) cell.highlights.push(e);
+    cell.entryCount += 1;                 // 全部条目
+    if (e.highlight) {                    // 只有重点条目才产生符号与数量
+      cell.marks.add(e.type);
+      cell.highlights.push(e);
+    }
     byDate.set(e.date, cell);
   }
 
@@ -1510,8 +1542,10 @@ const DAILIES = [{ date: "2026-10-01" }, { date: "2026-10-02" }];
 
 test("aggregate：事件/思考/重点/有记录天数", () => {
   const a = aggregate(ENTRIES);
-  assert.equal(a.events, 2);
-  assert.equal(a.thoughts, 2);
+  // 夹具里有 3 个 event（10-01 / 10-03 / 09-10）、1 个 thought（10-02）；
+  // days 是**去重后的日期数**，不是条目数——10-01 与 10-02 各一条，10-03、09-10 各一条，共 4 天。
+  assert.equal(a.events, 3);
+  assert.equal(a.thoughts, 1);
   assert.equal(a.highlights, 1);
   assert.equal(a.total, 4);
   assert.equal(a.days, 4);
@@ -1533,8 +1567,9 @@ test("aggregate：空数组不崩", () => {
 
 test("totals：日总结单独计数，不计入事件/思考（设计文档 §6）", () => {
   const t = totals(ENTRIES, DAILIES);
-  assert.equal(t.events, 2);
-  assert.equal(t.thoughts, 2);
+  // 与 aggregate 同一夹具：3 event / 1 thought（见上一条测试的说明）
+  assert.equal(t.events, 3);
+  assert.equal(t.thoughts, 1);
   assert.equal(t.dailies, 2);
   assert.equal(t.highlights, 1);
   assert.equal(t.total, 4);
@@ -1694,10 +1729,18 @@ export const inRange = (date, r) => date >= r.from && date <= r.to;
 /**
  * 按某个维度（集子 / tag）排行。
  * @param {(e:object)=>string[]} keyOf 取该条目所属的多个维度名
- * @param {string[]} [knownNames] 登记但零条目的也要出现（值为 0）
+ * @param {string[]} [knownNames] 登记但零条目的也要出现（值为 0），并决定同分时的顺序
+ *
+ * 排序：条目数降序；**同分时按登记表顺序（knownNames 的下标）**，未登记的排在其后。
+ * 不要按 name 排序——中文会比码位，得到「书影音」在「绘画」前这种与登记表无关的顺序
+ * （实测：knownNames=["绘画","书影音"] 且都为零时，按 name 排会变成书影音在前）。
  */
 export function rankBy(entries, keyOf, knownNames = []) {
   const acc = new Map();
+  const orderOf = (name) => {
+    const i = knownNames.indexOf(name);
+    return i === -1 ? knownNames.length : i;
+  };
   const bump = (name, e) => {
     const row = acc.get(name) || { name, total: 0, events: 0, thoughts: 0 };
     row.total += 1;
@@ -1707,7 +1750,9 @@ export function rankBy(entries, keyOf, knownNames = []) {
   };
   for (const name of knownNames) acc.set(name, { name, total: 0, events: 0, thoughts: 0 });
   for (const e of entries) for (const name of keyOf(e) || []) bump(name, e);
-  return [...acc.values()].sort((a, b) => b.total - a.total || (a.name < b.name ? -1 : 1));
+  return [...acc.values()].sort(
+    (a, b) => b.total - a.total || orderOf(a.name) - orderOf(b.name)
+  );
 }
 
 /** 环比标注。上期为 0 时显示「新增」而不是 +∞%（设计文档 §6）。 */
@@ -1959,11 +2004,18 @@ import { monthKey } from "../../lib/calendar.js";
 /**
  * 全局数据：内容校验 + 统计预计算（设计文档 §3：统计不放在模板里算）。
  * lib/ 抛出的 ContentError 会让 Eleventy 中断构建，不产出 _site（设计文档 §7）。
+ *
+ * ⚠️ 返回的对象是**模板的唯一接口**。Task 3.x 里模板用到的每个键都必须在这里出现，
+ * 否则渲染出来是 `undefined`（Nunjucks 对缺失键不报错，会静默留空）。
  */
 export default function () {
-  const { taxonomy, entries, dailies } = loadContent(process.cwd());
+  const { taxonomy, entries, dailies, dailyByDate, entriesByDate } = loadContent(process.cwd());
 
-  const today = new Date().toISOString().slice(0, 10);
+  // ⚠️ 用**本地**日期算「今天」，不要用 toISOString()：后者是 UTC，
+  // 在 UTC+8 凌晨（本地 00:00–08:00）会解析成昨天，「今日」页会显示前一天。
+  // （实测：TZ=Asia/Shanghai 本地 2026-10-14 07:00 → toISOString().slice(0,10) = "2026-10-13"）
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const thisMonth = monthKey(today);
   const thisYear = today.slice(0, 4);
 
@@ -1973,6 +2025,10 @@ export default function () {
     ...taxonomy.collections.map((c) => ({ ...c, url: `/collection/${c.slug}/` })),
   ];
   const tags = taxonomy.tags.map((t) => ({ ...t, url: `/tag/${t.slug}/` }));
+
+  // 日页要覆盖的日期 = 有日总结的 ∪ 有条目的（Task 3.3 的分页源）。
+  // 只列日总结会漏掉「有条目但当天没写日总结」的日子。
+  const days = [...new Set([...dailies.map((d) => d.date), ...entries.map((e) => e.date)])].sort();
 
   // 统计页默认窗口 = 本月（设计文档 §10）
   const windows = {};
@@ -2010,9 +2066,24 @@ export default function () {
     thisMonth,
   ])].sort();
 
-  return { taxonomy, entries, dailies, collections, tags, months, today, thisMonth, thisYear, windows };
+  // 统计页三个窗口（Task 3.6 用它做分页源）
+  const windowKeys = ["month", "year", "all"];
+
+  return {
+    taxonomy, entries, dailies, collections, tags,
+    months, days, today, thisMonth, thisYear, windows, windowKeys,
+    // 由 load.js 建好、供日页与首页直接取用的索引（Task 3.1 / 3.3 依赖它们）
+    dailyByDate, entriesByDate,
+  };
 }
 ```
+
+> **接口自检**（Stage 2 收尾前跑一次，避免 Task 3.x 才发现键名对不上）：
+>
+> ```bash
+> npx @11ty/eleventy 2>&1 | tail -3
+> # 另用临时模板打印：site.dailyByDate、site.entriesByDate、site.days、site.windowKeys 都必须有值
+> ```
 
 > 统计这里刻意**预计算全部三个窗口**（本月/本年/全部），而不是等页面切换时再算——站点是静态的，构建时算一次即可，符合设计文档 §6「统计在构建时算好，页面用手写内联 SVG 画图」。
 
@@ -2078,11 +2149,23 @@ grep -c "dirbar" src/assets/style.css
 
 **Step 3**：删掉 `.dirbar` 规则，删完再数一次
 
+> ⚠️ **不能只 `grep -v dirbar` 就完事**。`.dirbar` 的第一条规则**跨两行**：
+> 第 67 行以 `.dirbar{…` 开头，第 68 行是续行 `padding:4px;opacity:.42;transition:opacity .18s}`——
+> 第二行**不含 `dirbar` 字样**。所以按行过滤会删掉第 67 行却留下第 68 行，
+> 结果是 `{` 比 `}` 少一个，**从该处起其后的 CSS 整段失效**，而 `grep -c dirbar` 仍显示 0、
+> 看起来「删干净了」。实测：`grep -v dirbar` 后花括号为 `{ 296 } 297`，已失衡。
+>
+> 正确做法：按**规则块**删除（用编辑器/`sed` 指定行区间，或删除时连带把续行一起处理），
+> 删完**必须再查一次花括号平衡**，而不只是查 `dirbar` 计数。
+
 ```bash
-grep -n "dirbar" src/assets/style.css
+grep -n "dirbar" src/assets/style.css          # 应为空
+# 关键：删完复查括号，必须仍然平衡
+printf 'braces { %s } %s\n' "$(tr -cd '{' < src/assets/style.css | wc -c | tr -d ' ')" "$(tr -cd '}' < src/assets/style.css | wc -c | tr -d ' ')"
+# 预期 { 296 } 296（删掉 .dirbar 的 11 处规则后，两侧同步减少；不平衡即为删坏了）
 ```
 
-预期：无输出。
+预期：`dirbar` 无输出，**且花括号两侧相等**。
 
 **Step 4**：确认关键值没被动过
 
@@ -2379,7 +2462,7 @@ test -d _site/collection/all && echo "OK: 主集子页存在"
 
 ### Task 3.6：统计页（手写内联 SVG）
 
-**文件**：新建 `src/stats.njk` + `src/_includes/trend-svg.njk`
+**文件**：新建 `src/stats.njk` + `src/stats.11tydata.js` + `src/_includes/trend-svg.njk`
 
 **要点**（设计文档 §6）
 
@@ -2387,17 +2470,56 @@ test -d _site/collection/all && echo "OK: 主集子页存在"
 - **不引入客户端图表库**，手写内联 SVG。折线图的实现直接参照 demo 的 `lineChart()`（`docs/ui-demos/g1-line.html:914-934`）：`viewBox="0 0 1000 260"`、4 条水平网格线、事件实线 `#1b3a5c`、思考虚线 `#a3a39e`
 - 排行条宽度 = `value / max * 100%`；事件用墨色、思考用朱红（与 demo 一致）
 - 环比：用 `withDelta()`，上期为 0 显示「新增」
-- 窗口切换：静态站里用三个真实链接 `?w=month|year|all`，或直接渲染三个区块并用 CSS `:target`——**推荐前者**：`/stats/?w=year`，页面读 `page.url` 的查询串。注意 Eleventy 里 `permalink: "/stats/"` 固定，查询串不产生新页面。
+
+**窗口切换：三个真实页面，不用查询串**（这是上一轮草案的硬缺陷，已修）
+
+> ⚠️ **为什么不能用 `?w=year`**：`page.url` 是**构建期**的值，页面在构建时就已生成成静态 HTML。访客的查询串只存在于浏览器地址栏，服务端/构建期永远看不到它——`page.url` 恒为 `/stats/`，`?w=` 分支永远不会生效。查询串还会让同一份 HTML 被重复缓存、且无法被静态托管按路径路由。**静态站的切换必须是「不同 URL」或「客户端行为」，不能是「构建期读查询串」。**
+
+做法：用 `site.windows`（Task 2.3 已**预计算全部三个窗口**，正是为此）分页生成三个真实页面：
+
+| URL | 窗口 | 说明 |
+| --- | --- | --- |
+| `/stats/` | month | 默认页（设计文档 §10：默认本月） |
+| `/stats/year/` | year | 本年 |
+| `/stats/all/` | all | 全部 |
+
+`src/stats.11tydata.js`：
+
+```js
+export default {
+  layout: "base.njk",
+  // 分页源是三个窗口名；site.windows 已经算好了，模板只负责画
+  pagination: { data: "site.windowKeys", size: 1, alias: "w" },
+  permalink: (data) => (data.w === "month" ? "/stats/" : `/stats/${data.w}/`),
+  eleventyExcludeFromCollections: true,
+};
+```
+
+在 `site.js` 的返回值里补一项（供上面分页用）：
+
+```js
+// 统计页三个窗口对应的 URL：month → /stats/（默认），其余 → /stats/<w>/
+const windowKeys = ["month", "year", "all"];
+```
+
+模板里用 `site.windows[w]` 取当前窗口的数据，三个窗口的切换链接是普通 `<a href="/stats/year/">`，并给当前页加 `aria-current="page"`。
+
+- **深链可用**：`/stats/year/` 可直接分享。
+- **零客户端 JS**：纯静态页面，与「不引客户端图表库」的取向一致。
+- **可机械验证**：三个文件都应存在（见下方验证与 Task 4.1）。
 
 **验证**
 
 ```bash
 npx @11ty/eleventy
+ls _site/stats/ _site/stats/year/ _site/stats/all/
 grep -c "<svg" _site/stats/index.html
 grep -o "viewBox=\"0 0 1000 260\"" _site/stats/index.html
+# 三个窗口的数字必须不同（否则说明取数没按窗口切）
+for f in index year all; do grep -o 'class="kpi"' _site/stats/$f/index.html 2>/dev/null | wc -l; done
 ```
 
-**提交**：`feat: 统计页（构建时算好，内联 SVG 绘制）`
+**提交**：`feat: 统计页（三个窗口各一页，构建时算好，内联 SVG 绘制）`
 
 ---
 
@@ -2621,6 +2743,6 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 
 1. **决策 1**：taxonomy 的 YAML 解析——按推荐的 **A（加 `js-yaml`）** 走，还是改格式（B）？
 2. 包管理器用 **npm** 还是 **pnpm**？（本计划按 npm 写）
-3. 统计页的「本月 / 本年 / 全部」切换，用 `?w=` 查询串可以吗？还是你想要别的形式？
+3. ~~统计页的「本月 / 本年 / 全部」切换，用 `?w=` 查询串可以吗？~~ **已定，无需你决定**：查询串在静态站不可能生效（`page.url` 是构建期值），已改为三个真实页面 `/stats/`、`/stats/year/`、`/stats/all/`，见 Task 3.6。
 
 你点头后我就按这个计划开始实现。实现时会走 TDD：每个 Task 先写失败测试，再写实现，再提交。
