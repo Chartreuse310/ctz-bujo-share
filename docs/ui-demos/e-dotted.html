@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方向 E · 点阵（克制版）— ctz-bujo-share UI Demo</title>
+<style>
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0;height:0;display:none}
+.wrap{max-width:1160px;margin:0 auto;padding:0 40px 120px}
+.screen{display:none}
+.screen.on{display:block}
+@keyframes pushFromRight{from{transform:translateX(36px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pushFromLeft{from{transform:translateX(-36px);opacity:0}to{transform:none;opacity:1}}
+.screen.anim-fwd.on{animation:pushFromRight .28s cubic-bezier(.22,.72,.28,1) both}
+.screen.anim-back.on{animation:pushFromLeft .28s cubic-bezier(.22,.72,.28,1) both}
+@media (prefers-reduced-motion: reduce){.screen.anim-fwd.on,.screen.anim-back.on{animation:none}}
+.home{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:56px;align-items:start;padding-top:44px}
+.home-main{min-width:0}
+.side{position:sticky;top:calc(var(--top) + 24px);max-height:calc(100dvh - var(--top) - 48px);overflow-y:auto;display:flex;flex-direction:column}
+.shell{height:calc(100vh - var(--top));height:calc(100dvh - var(--top));display:flex;flex-direction:column;max-width:1160px;margin:0 auto;padding:0 40px 22px}
+.month-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 236px}
+.cal-pane{display:flex;flex-direction:column;min-height:0;padding-right:28px}
+.matrix{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);
+  grid-template-rows:repeat(var(--rows,5),minmax(0,1fr));
+  border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
+.cell{position:relative;min-height:0;overflow:hidden;cursor:pointer;transition:background .12s;
+  border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.cell.void{cursor:default}
+.list-pane{min-height:0;overflow-y:auto;padding-left:28px;padding-bottom:40px;border-left:1px solid var(--rule);
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);
+  mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent)}
+.list-head{position:sticky;top:0;z-index:2;padding:11px 0 8px;border-bottom:1px solid var(--rule);
+  display:flex;align-items:baseline;gap:10px}
+.dlrow{padding:14px 0 13px;border-bottom:1px solid var(--rule);cursor:pointer;transition:background .12s}
+.dlrow .r1{display:flex;align-items:baseline;gap:6px;font-family:var(--mono);font-size:10.5px;margin-bottom:4px}
+.dlrow .r1 .mk{margin-left:auto}
+.index-layout{display:grid;grid-template-columns:236px minmax(0,1fr);gap:56px;align-items:start;padding-top:30px}
+.rail{position:sticky;top:calc(var(--top) + 24px)}
+.rail .blk:first-child{border-top:0;padding-top:0}
+.resrow{display:grid;grid-template-columns:104px minmax(0,1fr) 96px;gap:16px;padding:16px 0;
+  border-bottom:1px solid var(--rule);align-items:baseline}
+.resrow .r{text-align:right;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;margin-top:26px;
+  border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
+.card{padding:24px 26px 28px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.rank-row{display:grid;grid-template-columns:118px 1fr 104px;align-items:center;gap:14px;padding:9px 0;
+  border-bottom:1px solid var(--rule-2)}
+.rank-row:last-child{border-bottom:0}
+.rank-row .stack{display:flex;height:12px;background:var(--rule-2)}
+.rank-row .stack i{display:block;height:100%}
+.rank-row .v{text-align:right;font-family:var(--mono);font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--ink);border-left:1px solid var(--rule)}
+.kpi{padding:24px 20px 20px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.full{grid-column:1/-1}
+.mini-dow,.mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mini-grid button{position:relative;height:26px;border:1px solid transparent;background:none;cursor:pointer;
+  font-family:var(--mono);font-size:11px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;padding:0}
+.mini-grid button.void{cursor:default;pointer-events:none}
+.mini-grid button .ul{display:block;width:14px;height:2px}
+.idx{display:flex;flex-direction:column}
+.idx button{display:flex;align-items:baseline;gap:10px;padding:5px 0;border:0;background:none;cursor:pointer;
+  text-align:left;font-size:12.5px}
+.idx button .n{margin-left:auto;font-family:var(--mono);font-size:11px}
+.tagwrap{display:flex;flex-wrap:wrap;gap:6px}
+.tagwrap button{cursor:pointer;padding:3px 9px;font-size:11px;display:inline-flex;gap:6px;align-items:baseline}
+.tagwrap button .n{font-family:var(--mono);font-size:10px}
+.dirbar{position:fixed;right:24px;bottom:24px;z-index:40;display:flex;align-items:center;gap:2px;
+  padding:4px;opacity:.42;transition:opacity .18s}
+.dirbar:hover{opacity:1}
+.dirbar span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;padding:0 10px}
+.dirbar a{font-size:11px;letter-spacing:.06em;padding:7px 12px}
+@media(max-height:760px){
+  .month-top{padding:14px 0 10px}
+  .cell{padding:7px 9px 6px}
+  .cell .mt{margin-top:5px}
+  .cell .cap{margin-top:5px;-webkit-line-clamp:1}
+  .dow{padding:8px 0 6px}
+}
+@media(max-width:1080px){
+  .home{grid-template-columns:1fr;gap:36px}
+  .side{position:static;max-height:none}
+  .shell{height:auto;padding-bottom:80px}
+  .month-body{grid-template-columns:1fr}
+  .cal-pane{padding-right:0}
+  .matrix{grid-template-rows:repeat(var(--rows,5),112px)}
+  .list-pane{border-left:0;padding-left:0;margin-top:22px;max-height:70vh}
+  .index-layout{grid-template-columns:1fr;gap:28px}
+  .rail{position:static}
+  .grid2{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .resrow{grid-template-columns:92px minmax(0,1fr)}
+  .resrow .r{grid-column:2;justify-content:flex-start;text-align:left;margin-top:6px}
+}
+:root{
+  --bg:#fcfcfa;
+  --surface:#ffffff;
+  --ink:#1c1c1a;
+  --ink-2:#6a6a65;
+  --ink-3:#a2a29c;
+  --rule:#dcdcd6;
+  --rule-2:#eeeee8;
+  --accent:#c2412c;
+  --accent-soft:#faece8;
+  --top:64px;
+  --hand:'Kaiti SC','STKaiti','KaiTi','LXGW WenKai','Noto Serif SC',serif;
+  --sans:'Inter','Helvetica Neue',Arial,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.7;
+  font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(var(--rule) .9px, transparent .9px);
+  background-size:18px 18px;background-position:-1px -1px}
+.top{position:sticky;top:0;z-index:30;height:var(--top);
+  background:rgba(252,252,250,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--ink)}
+.top-inner{max-width:1160px;margin:0 auto;padding:0 40px;height:100%;display:flex;align-items:center;gap:32px}
+.mark{font-family:var(--hand);font-size:21px;font-weight:600;white-space:nowrap;letter-spacing:.02em}
+.mark span{color:var(--accent);font-family:var(--sans);font-size:15px}
+.kicker{font-family:var(--hand);font-size:12px;color:var(--ink-3);border-left:1px solid var(--rule);padding-left:14px;white-space:nowrap}
+.nav{margin-left:auto;display:flex}
+.nav button{border:0;background:none;cursor:pointer;padding:0 2px 3px;margin-left:24px;
+  font-family:var(--hand);font-size:16px;color:var(--ink-3);border-bottom:2px dotted transparent;line-height:62px}
+.nav button:hover{color:var(--ink)}
+.nav button.on{color:var(--ink);border-bottom-color:var(--accent);border-bottom-style:solid;font-weight:600}
+
+.dateline{display:flex;align-items:baseline;gap:16px;padding:0 0 16px;border-bottom:1px solid var(--ink);flex-wrap:wrap}
+.dateline b{font-family:var(--hand);font-size:38px;font-weight:600;line-height:1;letter-spacing:.01em}
+.dateline span{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.pull{margin:32px 0 38px;padding:2px 0 2px 22px;border-left:3px dotted var(--accent);background:var(--surface);padding:20px 22px}
+.pull .lbl{font-family:var(--hand);font-size:12px;letter-spacing:.16em;color:var(--accent);margin-bottom:10px}
+.pull h2{margin:0 0 9px;font-family:var(--hand);font-size:25px;line-height:1.5;font-weight:600;letter-spacing:.015em}
+.pull p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.85;max-width:640px}
+.sect-h{display:flex;align-items:center;gap:14px;margin:0 0 4px}
+.sect-h h3{margin:0;font-family:var(--hand);font-size:13px;letter-spacing:.14em;color:var(--ink-3);font-weight:500}
+.sect-h::after{content:"";flex:1;height:1px;background:var(--rule)}
+.entry{padding:22px 0;border-bottom:1px solid var(--rule)}
+.entry:last-child{border-bottom:0}
+.entry .top-row{display:flex;align-items:baseline;gap:13px}
+.entry .idx{font-family:var(--mono);font-size:11px;color:var(--ink-3);width:24px;flex:none;padding-top:4px}
+.entry h4{margin:0;font-family:var(--hand);font-size:19px;font-weight:600;letter-spacing:.015em;line-height:1.5}
+.entry h4 a:hover{color:var(--accent)}
+.entry .body{margin:11px 0 0 37px;color:var(--ink-2);font-size:13.5px;line-height:1.85;max-width:640px}
+.tags{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0 0 37px}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:2px 9px;border:1px solid var(--rule);
+  color:var(--ink-2);background:var(--surface);white-space:nowrap;border-radius:2px}
+.tag.type{border-color:var(--ink-3);color:var(--ink)}
+.tag.coll{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tag.hl{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.empty{padding:38px 0 42px;color:var(--ink-3);font-size:13px;border-bottom:1px solid var(--rule)}
+.empty b{display:block;color:var(--ink-2);font-family:var(--hand);font-size:18px;font-weight:600;margin-bottom:6px}
+
+.blk{padding:12px 0 13px;border-top:1px solid var(--rule)}
+.blk:first-child{border-top:1px solid var(--ink);padding-top:11px}
+.blk-h{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.blk-h h3{margin:0;font-family:var(--hand);font-size:13px;letter-spacing:.12em;color:var(--ink-3);font-weight:500}
+.blk-h .lnk{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3);cursor:pointer}
+.blk-h .lnk:hover{color:var(--accent)}
+.stat-pair{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule);background:var(--surface);cursor:pointer;transition:.14s;border-radius:3px}
+.stat-pair:hover{border-color:var(--ink-3)}
+.stat-pair .p{padding:11px 12px 10px;border-right:1px solid var(--rule)}
+.stat-pair .p:last-child{border-right:0}
+.stat-pair .p .n{font-family:var(--hand);font-size:27px;font-weight:600;line-height:1}
+.stat-pair .p .l{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--ink-3);margin-top:6px;text-transform:uppercase}
+.stat-pair .p .s{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-top:1px}
+.stat-pair .p .n.ev{color:var(--ink)}
+.stat-pair .p .n.th{color:var(--accent)}
+.idx button{border-bottom:1px solid var(--rule-2);color:var(--ink-2);font-family:var(--hand);font-size:14px}
+.idx button:last-child{border-bottom:0}
+.idx button:hover{color:var(--accent)}
+.idx button .n{color:var(--ink-3)}
+.tagwrap button{border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);border-radius:12px;font-family:var(--hand);font-size:12.5px}
+.tagwrap button:hover{border-color:var(--accent);color:var(--accent)}
+.tagwrap button .n{color:var(--ink-3)}
+.mini-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.mini-head .m{font-family:var(--hand);font-size:13px;letter-spacing:.08em}
+.mini-head button{margin-left:auto;border:1px solid var(--rule);background:var(--surface);width:21px;height:21px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0;border-radius:3px}
+.mini-head button+button{margin-left:4px}
+.mini-head button:hover{border-color:var(--ink-3);color:var(--ink)}
+.mini-dow span{font-family:var(--hand);font-size:11px;color:var(--ink-3);text-align:center;padding-bottom:4px}
+.mini-grid button{color:var(--ink-3);border-radius:3px}
+.mini-grid button:hover{border-color:var(--rule);color:var(--ink);background:var(--rule-2)}
+.mini-grid button.has{color:var(--ink)}
+.mini-grid button .ul{background:var(--ink-3);height:2.5px;border-radius:2px}
+.mini-grid button.hl .ul{background:var(--accent)}
+.mini-grid button.sel{border-color:var(--ink);color:var(--ink);font-weight:700}
+.mini-grid button.today{background:var(--rule-2);border-color:var(--rule);color:var(--ink);font-weight:600}
+.mini-grid button.today.sel{box-shadow:inset 0 0 0 1px var(--ink)}
+.mini-grid button.sel .ul{background:var(--ink)}
+.mini-grid button.sel.hl .ul{background:var(--accent)}
+.mini-foot{margin-top:7px;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);display:flex;gap:11px;flex-wrap:wrap}
+.mini-foot i{display:inline-block;width:14px;height:2.5px;background:var(--ink-3);margin-right:5px;vertical-align:middle;border-radius:2px}
+.mini-foot i.red{background:var(--accent)}
+.mini-foot b{display:inline-block;width:11px;height:11px;background:var(--rule-2);border:1px solid var(--rule);margin-right:5px;vertical-align:-1px;border-radius:2px}
+
+.month-top{display:flex;align-items:flex-end;gap:18px;padding:22px 0 15px;border-bottom:1px solid var(--ink);flex-wrap:wrap}
+.month-top h1{margin:0;font-family:var(--hand);font-size:32px;font-weight:600;letter-spacing:.01em;line-height:1;display:flex;align-items:baseline;gap:14px}
+.month-top h1 em{font-style:normal;font-family:var(--hand);font-size:13px;font-weight:400;color:var(--ink-3);letter-spacing:.14em}
+.month-top .facts{margin-left:auto;display:flex;gap:18px;font-family:var(--mono);font-size:11px;color:var(--ink-2);flex-wrap:wrap}
+.month-top .facts b{font-weight:600;color:var(--ink)}
+.month-top .pager{display:flex;border:1px solid var(--rule);background:var(--surface);border-radius:3px;overflow:hidden}
+.month-top .pager button{padding:6px 12px;font-family:var(--hand);font-size:12.5px;border:0;background:none;cursor:pointer;color:var(--ink-2);border-right:1px solid var(--rule)}
+.month-top .pager button:last-child{border-right:0}
+.month-top .pager button:hover{background:var(--ink);color:var(--surface)}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);padding:11px 0 8px}
+.dow span{font-family:var(--hand);font-size:12px;letter-spacing:.14em;color:var(--ink-3);padding-left:11px}
+.cell{background:var(--surface);padding:9px 10px 8px}
+.cell.void{background:var(--bg)}
+.cell:hover{background:var(--rule-2)}
+.cell.void:hover{background:var(--bg)}
+.cell.hl::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--accent)}
+.cell.today{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.cell .num{font-family:var(--mono);font-size:15px;line-height:1;letter-spacing:-.01em;color:var(--ink-2)}
+.cell.today .num{color:var(--ink);font-weight:600}
+.cell.hl .num{color:var(--accent);font-weight:600}
+.cell .mt{display:flex;align-items:center;gap:4px;margin-top:8px}
+.cell .mt i{display:block;width:6px;height:6px;border-radius:50%}
+.cell .mt i.ev{background:var(--ink-3)}
+.cell .mt i.th{background:var(--accent)}
+.cell .mt .n{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.cell .cap{margin-top:7px;font-family:var(--hand);font-size:11.5px;line-height:1.55;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cal-foot{padding:11px 0 0;display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);align-items:center}
+.cal-foot .k{display:inline-flex;align-items:center;gap:6px}
+.cal-foot .k i{display:inline-block;width:9px;height:3px;background:var(--accent);border-radius:2px}
+.cal-foot .k b{width:6px;height:6px;background:var(--ink-3);display:inline-block;border-radius:50%}
+.cal-foot .k u{width:6px;height:6px;background:var(--accent);display:inline-block;text-decoration:none;border-radius:50%}
+.list-head{background:var(--bg);font-family:var(--hand);font-size:12px;letter-spacing:.14em;color:var(--ink-3)}
+.list-head b{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-2);letter-spacing:0}
+.dlrow:hover{background:var(--rule-2)}
+.dlrow.flash{background:var(--accent-soft)}
+.dlrow .r1{color:var(--ink-3)}
+.dlrow .r1 .d{color:var(--ink);font-weight:500}
+.dlrow .r1 .mk{color:var(--accent)}
+.dlrow h4{margin:0 0 3px;font-family:var(--hand);font-size:15px;font-weight:600;line-height:1.55;letter-spacing:.015em}
+.dlrow:hover h4{color:var(--accent)}
+.dlrow p{margin:0;font-family:var(--hand);font-size:12px;line-height:1.75;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.list-empty{padding:26px 0;color:var(--ink-3);font-family:var(--hand);font-size:13px;line-height:1.8}
+
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:52px 0 18px;border-bottom:1px solid var(--ink);flex-wrap:wrap}
+.head h1{margin:0;font-family:var(--hand);font-size:44px;line-height:1.1;letter-spacing:.015em;font-weight:600}
+.head h1 em{font-style:normal;font-family:var(--hand);font-size:13px;font-weight:400;color:var(--ink-3);letter-spacing:.16em;display:block;margin-bottom:10px}
+.head .aside{font-family:var(--hand);font-size:13px;color:var(--ink-2);max-width:340px;text-align:right;line-height:1.9}
+.head .aside b{color:var(--ink);font-weight:600}
+.res-head{display:flex;align-items:baseline;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.res-head h2{margin:0;font-family:var(--hand);font-size:23px;font-weight:600;letter-spacing:.015em}
+.res-head .cnt{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.res-head .hint{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.resrow .d{font-family:var(--mono);font-size:11px;color:var(--ink-2);line-height:1.5}
+.resrow .t{font-family:var(--hand);font-size:16px;font-weight:600;line-height:1.5}
+.resrow .t a:hover{color:var(--accent)}
+.resrow .t .sub{margin-top:5px;font-family:var(--hand);font-weight:400;font-size:12.5px;color:var(--ink-2);line-height:1.75;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.resrow .r .tag{font-family:var(--mono);font-size:9.5px}
+
+.kpi{background:var(--surface)}
+.kpi .n{font-family:var(--hand);font-size:48px;font-weight:600;line-height:1;letter-spacing:.01em}
+.kpi .n.acc{color:var(--accent)}
+.kpi .n.ev{color:var(--ink)}
+.kpi .l{margin-top:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.kpi .d{margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2)}
+.kpi .d.up{color:var(--accent)}
+.kpi .d.dn{color:var(--ink-2)}
+.seg{display:flex;margin:30px 0 0;border:1px solid var(--rule);width:max-content;background:var(--surface);border-radius:3px;overflow:hidden}
+.seg button{border:0;background:none;font-family:var(--hand);font-size:12.5px;letter-spacing:.12em;padding:8px 19px;cursor:pointer;color:var(--ink-3);border-right:1px solid var(--rule)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--ink);color:var(--surface)}
+.card{background:var(--surface)}
+.card h3{margin:0 0 3px;font-family:var(--hand);font-size:17px;font-weight:600}
+.card .sub{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-bottom:20px}
+.rank-row .nm{font-family:var(--hand);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-row .stack i.ev{background:var(--ink-3)}
+.rank-row .stack i.th{background:var(--accent)}
+.rank-row .v .up{color:var(--accent)}
+.rank-row .v .dn{color:var(--ink-2)}
+.rank-row .v .nw{color:var(--accent);border:1px solid var(--accent);padding:0 4px}
+.axis{font-family:var(--mono);font-size:10px;fill:var(--ink-3)}
+footer.note{margin-top:50px;padding-top:18px;border-top:1px solid var(--ink);font-family:var(--hand);font-size:13px;color:var(--ink-2);line-height:1.95;max-width:880px}
+footer.note b{color:var(--ink);font-weight:600}
+.dirbar{background:var(--ink)}
+.dirbar span{color:rgba(255,255,255,.45)}
+.dirbar a{color:rgba(255,255,255,.72)}
+.dirbar a:hover{color:#fff;background:rgba(255,255,255,.1)}
+.dirbar a.on{background:var(--accent);color:#fff}
+@media(max-height:760px){
+  .month-top{padding:14px 0 10px}
+  .month-top h1{font-size:25px}
+  .dow{padding:8px 0 6px}
+  .cell{padding:7px 9px 6px}
+  .cell .num{font-size:13px}
+  .cell .mt{margin-top:4px}
+  .cell .cap{margin-top:4px;font-size:10px;line-height:1.35;-webkit-line-clamp:1}
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-inner">
+    <div class="mark">ctz<span>/</span>bujo</div>
+    <div class="kicker">方向 E · 点阵 + 手写体（沿用瑞士墨线栅格）</div>
+    <nav class="nav">
+      <button data-s="month">本月</button>
+      <button class="on" data-s="home">今日</button>
+      <button data-s="index">集子 · 标签</button>
+      <button data-s="stats">统计</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= 01 首页 = 日页 + 侧栏 ================= -->
+<section class="screen on" id="s-home">
+  <div class="wrap">
+    <div class="home">
+      <main class="home-main" id="dayMain"></main>
+      <aside class="side" id="sidePane"></aside>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 月视图 ================= -->
+<section class="screen" id="s-month">
+  <div class="shell">
+    <div class="month-top">
+      <h1><em>Month</em><span id="monthTitle">2026 · 10</span></h1>
+      <div class="facts" id="monthFacts"></div>
+      <div class="pager">
+        <button id="mPrev">← 上一月</button>
+        <button id="mToday">回到本月</button>
+        <button id="mNext">下一月 →</button>
+      </div>
+    </div>
+    <div class="month-body">
+      <div class="cal-pane">
+        <div class="dow"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>周日</span></div>
+        <div class="matrix" id="matrix"></div>
+        <div class="cal-foot">
+          <span class="k"><i></i>重点日（highlight）</span>
+          <span class="k"><b></b>事件</span>
+          <span class="k"><u></u>思考</span>
+          <span>右上数字 = 当日条目数 · 点格子定位右侧列表</span>
+        </div>
+      </div>
+      <aside class="list-pane" id="listPane"></aside>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 集子 / 标签 ================= -->
+<section class="screen" id="s-index">
+  <div class="wrap">
+    <div class="head">
+      <h1><em>Index</em>集子 · 标签</h1>
+      <div class="aside">集子<b>一对一</b>（像文件夹），tag <b>多对多</b>（像关键词）。<br>两者都必须先在 taxonomy.yml 里登记。</div>
+    </div>
+    <div class="index-layout">
+      <div class="rail" id="indexRail"></div>
+      <div class="res-list" id="indexList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 统计 ================= -->
+<section class="screen" id="s-stats">
+  <div class="wrap">
+    <div class="head">
+      <h1><em>Statistics</em>统计</h1>
+      <div class="aside">计数单位是<b>条目</b>（一个文件一条）。<br>日总结单独计数，不计入事件 / 思考。</div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="seg" id="winSeg">
+      <button data-w="month" class="on">本月</button>
+      <button data-w="year">本年</button>
+      <button data-w="all">全部</button>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>按集子</h3><div class="sub" id="collSub"></div><div id="collRank"></div></div>
+      <div class="card"><h3>按 tag</h3><div class="sub" id="tagSub">只统计已登记的 tag · 一条可带多个</div><div id="tagRank"></div></div>
+      <div class="card full"><h3>趋势</h3><div class="sub" id="trendSub"></div><div id="trendChart"></div></div>
+    </div>
+    <footer class="note">
+      <b>四个屏幕</b>：上方顺序为<b>本月 → 今日 → 集子·标签 → 统计</b>，默认落在<b>今日</b>。四屏通用一套左右滑切换：触屏横滑、触控板横滑、键盘 ← → 都能翻。<br>
+      <b>栏宽统一</b>：三处共用同一套栅格 —— 次级栏 236px / 栏间距 56px / 主栏自适应。<b>滚动条</b>：全站不显示（内容仍可滚动）。<br>
+      <b>月视图</b>：左月历等比压缩、整体锁定在视口内；右列表独立滚动，滚动时月历不动。
+    </footer>
+  </div>
+</section>
+
+<div class="dirbar">
+  <span>UI 方向</span>
+  <a href="a-analog.html">A 纸质</a>
+  <a href="b-swiss.html">B 墨线</a>
+  <a href="c-console.html">C 控制台</a>
+  <a href="d-edit.html">D 编辑体</a>
+  <a href="e-dotted.html" class="on">E 点阵</a>
+  <a href="f-warm.html">F 暖纸</a>
+</div>
+
+<script>
+const COLLECTIONS = [
+  {name:'日常',         slug:'all',                def:true},
+  {name:'书影音',       slug:'books-films-music'},
+  {name:'绘画',         slug:'drawing'},
+  {name:'博士学位论文', slug:'phd-thesis'}
+];
+const TAGS = [
+  {name:'论文阶段', slug:'thesis-stage'},
+  {name:'视频',     slug:'video'},
+  {name:'跑步',     slug:'running'},
+  {name:'播客',     slug:'podcast'},
+  {name:'吉他',     slug:'guitar'}
+];
+// t: event | thought   c: 集子（省略 = 主集子「日常」）  g: tags   h: highlight
+const ENTRIES = [
+  {d:'2026-01-08',t:'event',  ti:'看完《蜘蛛侠：纵横宇宙》',c:'书影音',g:['视频'],b:'画面密度太高，中途暂停了好几次才跟上。'},
+  {d:'2026-01-15',t:'thought',ti:'一月的进度复盘',        c:'博士学位论文',g:['论文阶段'],b:'写得比预想慢，但第二章的骨架总算搭起来了。'},
+  {d:'2026-01-29',t:'thought',ti:'买了一本新速写本',      c:'绘画',g:[],b:'挑了偏厚的纸，想试试铅笔的涩感。'},
+  {d:'2026-02-05',t:'event',  ti:'通勤播客换成了一档访谈',c:'书影音',g:['播客'],b:'一小时正好一趟地铁，节奏对上了。'},
+  {d:'2026-02-14',t:'thought',ti:'关于练琴的耐心',        g:['吉他'],b:'一直卡在同一个换弦上，承认是手的问题不是琴的问题。'},
+  {d:'2026-02-26',t:'event',  ti:'画了春节的几张',        c:'绘画',g:['视频'],b:'都是家里的角落，画得很松。'},
+  {d:'2026-03-03',t:'thought',ti:'第三章的框架',          c:'博士学位论文',g:['论文阶段'],b:'先列了七个小节，写完发现有三个可以合并。'},
+  {d:'2026-03-11',t:'event',  ti:'看完《漫长的季节》',    c:'书影音',g:['视频'],b:'最后一集的镜头停了很久，没快进。'},
+  {d:'2026-03-18',t:'event',  ti:'报了半马',              g:['跑步'],b:'付完钱才开始紧张。'},
+  {d:'2026-03-24',t:'thought',ti:'关于构图的三条笔记',    c:'绘画',g:[],b:'重心、留白、视线入口，写在速写本扉页。'},
+  {d:'2026-03-30',t:'event',  ti:'听完关于记忆的一期',    c:'书影音',g:['播客'],b:'「记忆不是存档，是每次重写。」——这句后来抄了两次。'},
+  {d:'2026-04-07',t:'thought',ti:'和导师的四月会面',      c:'博士学位论文',g:['论文阶段'],b:'被指出论证顺序有问题，当场没接住。'},
+  {d:'2026-04-16',t:'event',  ti:'半马完赛',              g:['跑步'],b:'两小时零七分，最后三公里全靠跟着人跑。'},
+  {d:'2026-04-25',t:'thought',ti:'关于「看完就忘」',      c:'书影音',g:[],b:'也许忘掉的部分本来就不重要。'},
+  {d:'2026-05-06',t:'event',  ti:'画完第一本速写本',      c:'绘画',g:['视频'],b:'摊开看了一遍，前几页很拘谨。'},
+  {d:'2026-05-19',t:'thought',ti:'把一首歌完整弹下来了',  g:['吉他'],b:'有瑕疵，但第一次没停。'},
+  {d:'2026-05-28',t:'event',  ti:'看完《奥本海默》',      c:'书影音',g:['视频'],b:'三个小时，中间没看手机。'},
+  {d:'2026-06-09',t:'thought',ti:'第六章推倒重来',        c:'博士学位论文',g:['论文阶段'],b:'删掉写了两个月的一节，反而轻松。'},
+  {d:'2026-06-17',t:'event',  ti:'夏天改成夜跑',          g:['跑步'],b:'晚上九点的风比早晨舒服。'},
+  {d:'2026-06-27',t:'thought',ti:'色彩练习的瓶颈',        c:'绘画',g:[],b:'一直在安全的配色里打转。'},
+  {d:'2026-07-08',t:'event',  ti:'听完了整季',            c:'书影音',g:['播客'],b:'做饭的时候听，意外的合适。'},
+  {d:'2026-07-21',t:'thought',ti:'暑假的写作节奏',        c:'博士学位论文',g:['论文阶段'],b:'上午写，下午读，晚上不碰。'},
+  {d:'2026-08-06',t:'event',  ti:'补完了那个剧',          c:'书影音',g:['视频'],b:'拖了半年，两天看完。'},
+  {d:'2026-08-12',t:'thought',ti:'关于线条的练习',        c:'绘画',g:[],b:'把一条线画十遍，看它什么时候开始抖。'},
+  {d:'2026-08-19',t:'event',  ti:'把前奏练顺了',          g:['吉他'],b:'左手终于不用盯着看了。'},
+  {d:'2026-08-24',t:'thought',ti:'开题之后的第一次复盘',  c:'博士学位论文',g:['论文阶段'],h:1,b:'半年过去，原定的三章只写了两章，但方向比开题时清楚。'},
+  {d:'2026-08-30',t:'event',  ti:'听完一档新播客的前三集',c:'书影音',g:['播客'],b:'语速偏快，要放 1.25 倍听。'},
+  {d:'2026-09-04',t:'thought',ti:'速写本的第一页',        c:'绘画',g:[],b:'第一页总是最难下手。'},
+  {d:'2026-09-09',t:'event',  ti:'看完《心灵奇旅》',      c:'书影音',g:['视频'],b:'看到一半睡着了，第二天重看了一遍。'},
+  {d:'2026-09-15',t:'thought',ti:'第二章的重心问题',      c:'博士学位论文',g:['论文阶段'],h:1,b:'论证的重心偏到了方法上，得把问题意识往前挪。'},
+  {d:'2026-09-18',t:'event',  ti:'恢复跑，五公里',        g:['跑步'],b:'配速比四月慢了一分半，但跑完了。'},
+  {d:'2026-09-23',t:'event',  ti:'临摹了一组静物',        c:'绘画',g:['视频'],h:1,b:'第一次觉得「像」不是目标。'},
+  {d:'2026-09-27',t:'thought',ti:'关于「输入过载」的播客',g:['播客'],b:'听到一半开始走神，正好印证了它说的。'},
+  {d:'2026-10-01',t:'event',  ti:'看完《沙丘 2》',        c:'书影音',g:['视频'],h:1,b:'沙的质感和低频一起压过来，值得在影院看。'},
+  {d:'2026-10-02',t:'thought',ti:'关于色彩的一点想法',    c:'绘画',g:[],b:'低饱和的底子上只要一个跳色，画面就活了。'},
+  {d:'2026-10-03',t:'event',  ti:'第一次跑完 10 公里',    g:['跑步'],h:1,b:'最后一公里完全靠惯性。回家躺了四十分钟才起来洗澡。'},
+  {d:'2026-10-05',t:'thought',ti:'关于时间轴的想法',      c:'博士学位论文',g:['论文阶段'],h:1,b:'三个月前放弃的方案，现在看反而最合适。当时只是不会画。'},
+  {d:'2026-10-06',t:'event',  ti:'听完关于睡眠的一期',    c:'书影音',g:['播客'],b:'讲到「睡眠是记忆的整理」时正好在地铁上打了个哈欠。'},
+  {d:'2026-10-08',t:'event',  ti:'画完第 12 张速写',      c:'绘画',g:[],h:1,b:'前十一张都是热身。第十二张的线终于不抖了。'},
+  {d:'2026-10-09',t:'thought',ti:'练琴时的走神',          g:['吉他'],b:'手指在动，脑子在想论文，两个都没做好。'},
+  {d:'2026-10-11',t:'thought',ti:'重读了第三章的论证',    c:'博士学位论文',g:['论文阶段'],h:1,b:'去年写的过渡段其实没接上。补了半页，比新写一段还费劲。'},
+  {d:'2026-10-12',t:'event',  ti:'重看《奥本海默》',      c:'书影音',g:['视频'],b:'第二遍才注意到配乐一直在推着走。'},
+  {d:'2026-10-14',t:'thought',ti:'把时间轴画成了图',      c:'博士学位论文',g:['论文阶段'],h:1,b:'画到一半发现，真正难的不是排列顺序，是给每一段找边界。边界一定下来，之前觉得互相矛盾的两段其实不冲突。'},
+  {d:'2026-10-14',t:'event',  ti:'听完关于写作的播客',    g:['播客'],b:'通勤路上听的一期，讲「先写烂初稿」的那段很有共鸣。回来把播客名记在了本子边上。'},
+  {d:'2026-10-16',t:'event',  ti:'给速写本换了新纸',      c:'绘画',g:['视频'],h:1,b:'新纸克数高，铅笔的涩感回来了。同一支笔画出完全不同的线。'},
+  {d:'2026-10-18',t:'thought',ti:'跑步时想通的事',        g:['跑步'],b:'跑到第七公里突然想明白，纠结的不是选哪个方向，是怕选错。'},
+  {d:'2026-10-20',t:'event',  ti:'读完《人类简史》',      c:'书影音',g:[],h:1,b:'读了二十天，最后三十页特意放慢。读完在封底空白处写了日期。'},
+  {d:'2026-10-22',t:'thought',ti:'和导师讨论后的记录',    c:'博士学位论文',g:['论文阶段'],b:'原以为要补一整章，其实只要把第三节的论证换一个顺序。'},
+  {d:'2026-10-25',t:'event',  ti:'录了一小段',            g:['吉他'],b:'用手机直接录的，底噪明显。当作留个时间戳。'},
+  {d:'2026-10-27',t:'thought',ti:'关于构图的困惑',        c:'绘画',g:[],h:1,b:'想把两个主体压在同一侧，结果重心全塌了。决定先不画。'},
+  {d:'2026-10-30',t:'event',  ti:'看了一部老片',          c:'书影音',g:['视频'],b:'翻到一部八十年代的片子，节奏慢得很舒服。'}
+];
+const DAILIES = {
+  '2026-08-24':{ti:'半年复盘写完了',b:'本来只想写两行，结果写了整整一页。'},
+  '2026-08-30':{ti:'八月收尾',b:'这个月的记录比前几个月都多。'},
+  '2026-09-09':{ti:'二刷之后更喜欢',b:'第一遍看的是故事，第二遍看的是细节。'},
+  '2026-09-15':{ti:'重心挪了一下，全篇都顺了',b:'原来问题意识应该放在最前面。'},
+  '2026-09-18':{ti:'重新跑起来',b:'慢一点没关系，先跑起来。'},
+  '2026-09-23':{ti:'临摹的时候在想什么',b:'一开始想画得像，后来只想画得对。'},
+  '2026-09-27':{ti:'输入太多的时候',b:'今天没有读也没有听，只是把本子翻了一遍。'},
+  '2026-10-01':{ti:'开工第一天，把桌面清空',b:'只留本子、笔、水杯。晚上的电影是奖励。'},
+  '2026-10-02':{ti:'色彩笔记',b:'把最近喜欢的几张画的配色抄了下来，发现都是低饱和 + 一个跳色。'},
+  '2026-10-03':{ti:'跑完之后整个人是空的',b:'十公里，最后一公里完全靠惯性。回家躺了四十分钟才起来洗澡。'},
+  '2026-10-05':{ti:'时间轴这件事绕回来了',b:'三个月前放弃的方案，现在看反而最合适。当时只是不会画。'},
+  '2026-10-06':{ti:'播客里的那句话',b:'「睡眠是记忆的整理。」记在本子右上角了。'},
+  '2026-10-08':{ti:'画到第 12 张，手感回来了',b:'前十一张都是热身。第十二张的线终于不抖了。'},
+  '2026-10-11':{ti:'重读第三章，发现一个漏洞',b:'去年写的过渡段其实没接上。补了半页，比新写一段还费劲。'},
+  '2026-10-14':{ti:'把想法画成图，一下清楚了',b:'用三根横轴把「已定 / 待验 / 存疑」摆开，之前绕了半个月的问题一眼就看出卡在哪。图比句子诚实。'},
+  '2026-10-16':{ti:'换了纸，笔尖的阻力变了',b:'新纸克数高，铅笔的涩感回来了。同一支笔画出完全不同的线。'},
+  '2026-10-18':{ti:'跑步时想通的事',b:'跑到第七公里突然想明白，纠结的不是选哪个方向，是怕选错。继续跑。'},
+  '2026-10-20':{ti:'合上书的时候有点舍不得',b:'读了二十天，最后三十页特意放慢。读完在封底空白处写了日期。'},
+  '2026-10-22':{ti:'和导师聊完，方向收窄了',b:'原以为要补一整章，其实只要把第三节的论证换一个顺序。收窄之后反而松了。'},
+  '2026-10-25':{ti:'录了一小段，杂音很多',b:'用手机直接录的，底噪明显。当作留个时间戳吧，明年再听应该会觉得很有意思。'},
+  '2026-10-27':{ti:'构图还是不对，先放着',b:'想把两个主体压在同一侧，结果重心全塌了。决定先不画，去看两天画册再说。'},
+  '2026-10-30':{ti:'十月要结束了',b:'翻了一遍这个月的记录，重点集中在论文和绘画上，跑量比上个月少了一些。'}
+};
+const TODAY = '2026-10-14';
+
+const WD = ['周日','周一','周二','周三','周四','周五','周六'];
+const pad = n => String(n).padStart(2,'0');
+const iso = dt => dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
+const parse = s => { const p = s.split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); };
+const wdOf = s => WD[parse(s).getDay()];
+const monthKey = s => s.slice(0,7);
+const yearKey  = s => s.slice(0,4);
+const isHL = e => !!e.h;
+const collOf = e => e.c || '日常';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function daysInMonth(key){ const p = key.split('-').map(Number); return new Date(p[0], p[1], 0).getDate(); }
+function firstWeekday(key){ const p = key.split('-').map(Number); return (new Date(p[0], p[1]-1, 1).getDay() + 6) % 7; }
+function shiftMonth(key, delta){
+  const p = key.split('-').map(Number);
+  const d = new Date(p[0], p[1]-1+delta, 1);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1);
+}
+function shiftDay(s, delta){ const d = parse(s); d.setDate(d.getDate()+delta); return iso(d); }
+function dayOfYear(s){
+  const d = parse(s);
+  return Math.round((d - new Date(d.getFullYear(),0,1))/86400000) + 1;
+}
+// 同日条目保持文件顺序（写下的顺序），不做类型排序
+function byDate(s){ return ENTRIES.filter(e => e.d === s); }
+const entriesInMonth = k => ENTRIES.filter(e => monthKey(e.d) === k);
+
+/* =========================================================
+   统计聚合（全部由数据实时算出）
+   ========================================================= */
+function windowRange(w){
+  if(w === 'month') return {from:'2026-10-01', to:'2026-10-31', label:'2026 年 10 月', prev:{from:'2026-09-01', to:'2026-09-30'}};
+  if(w === 'year')  return {from:'2026-01-01', to:'2026-12-31', label:'2026 年',      prev:{from:'2025-01-01', to:'2025-12-31'}};
+  return {from:'0000-01-01', to:'9999-12-31', label:'全部', prev:null};
+}
+const inRange = (e,r) => e.d >= r.from && e.d <= r.to;
+function agg(list){
+  const o = {ev:0, th:0, hl:0, total:list.length, days:0};
+  const set = new Set();
+  list.forEach(e => { if(e.t === 'event') o.ev++; else o.th++; if(isHL(e)) o.hl++; set.add(e.d); });
+  o.days = set.size;
+  return o;
+}
+const dailiesInRange = r => Object.keys(DAILIES).filter(d => d >= r.from && d <= r.to).length;
+
+/* =========================================================
+   状态
+   ========================================================= */
+const state = {date:TODAY, month:'2026-10', filter:{type:'coll', key:'日常'}, win:'month'};
+
+/* =========================================================
+   首页：日页
+   ========================================================= */
+function renderDay(){
+  const d = state.date;
+  const list = byDate(d);
+  const daily = DAILIES[d];
+  const hl = list.filter(isHL).length;
+  const p = [];
+  p.push('<div class="dateline">');
+  p.push('<b>'+d+'</b><span>'+wdOf(d)+'</span><span>第 '+dayOfYear(d)+' 天</span>');
+  p.push('<span>'+list.length+' 条条目'+(daily?' · 1 条日总结':'')+(hl?' · '+hl+' 条重点':'')+'</span>');
+  p.push('</div>');
+
+  if(daily) p.push('<div class="pull"><div class="lbl">今日小结</div><h2>'+esc(daily.ti)+'</h2><p>'+esc(daily.b)+'</p></div>');
+
+  if(list.length){
+    p.push('<div class="sect-h"><h3>今天的条目 · '+pad(list.length)+'</h3></div>');
+    list.forEach((e,i) => {
+      const tg = [];
+      tg.push('<span class="tag type">'+(e.t === 'event' ? '事件' : '思考')+'</span>');
+      tg.push('<span class="tag coll">'+esc(collOf(e))+'</span>');
+      (e.g||[]).forEach(g => tg.push('<span class="tag"># '+esc(g)+'</span>'));
+      if(isHL(e)) tg.push('<span class="tag hl">重点</span>');
+      p.push('<div class="entry">'+
+        '<div class="top-row"><div class="idx">'+pad(i+1)+'</div><h4>'+esc(e.ti)+'</h4></div>'+
+        '<div class="tags">'+tg.join('')+'</div>'+
+        (e.b ? '<p class="body">'+esc(e.b)+'</p>' : '')+
+      '</div>');
+    });
+  } else {
+    p.push('<div class="empty"><b>这天没有条目</b>还没有记录。右侧小月历上带圆点的日期是有记录的日子，可以直接点进去。</div>');
+  }
+  document.getElementById('dayMain').innerHTML = p.join('');
+}
+
+/* =========================================================
+   侧栏
+   ========================================================= */
+function renderSide(){
+  const all = agg(ENTRIES);
+  const cur = agg(entriesInMonth(monthKey(TODAY)));
+
+  const p = [];
+  // ① 小月历置顶：最快进入某天
+  p.push('<div class="blk"><div class="blk-h"><h3>小月历</h3><span class="lnk" data-go="month">月视图 →</span></div><div id="miniHost"></div></div>');
+
+  // ② 统计入口
+  p.push('<div class="blk">');
+  p.push('<div class="blk-h"><h3>统计</h3><span class="lnk" data-go="stats">查看统计 →</span></div>');
+  p.push('<div class="stat-pair" data-go="stats" title="进入统计页">'+
+      '<div class="p"><div class="n ev">'+all.ev+'</div><div class="l">事件</div><div class="s">本月 '+cur.ev+'</div></div>'+
+      '<div class="p"><div class="n th">'+all.th+'</div><div class="l">思考</div><div class="s">本月 '+cur.th+'</div></div>'+
+    '</div>');
+  p.push('</div>');
+
+  document.getElementById('sidePane').innerHTML = p.join('');
+  renderMini();
+}
+
+function renderMini(){
+  const key = state.month;
+  const parts = key.split('-');
+  const marked = {};
+  ENTRIES.forEach(e => {
+    if(monthKey(e.d) !== key) return;
+    marked[e.d] = marked[e.d] || {n:0, hl:false};
+    marked[e.d].n++;
+    if(isHL(e)) marked[e.d].hl = true;
+  });
+
+  const p = [];
+  p.push('<div class="mini-head"><span class="m">'+parts[0]+' · '+parts[1]+'</span>'+
+    '<button data-mv="-1" title="上一月">‹</button><button data-mv="1" title="下一月">›</button></div>');
+  p.push('<div class="mini-dow"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>');
+  p.push('<div class="mini-grid">');
+  const off = firstWeekday(key);
+  for(let i=0;i<off;i++) p.push('<button class="void"></button>');
+  const n = daysInMonth(key);
+  for(let d=1; d<=n; d++){
+    const ds = key+'-'+pad(d);
+    const mk = marked[ds];
+    const cls = [mk ? 'has' : '', mk && mk.hl ? 'hl' : '', ds === state.date ? 'sel' : '', ds === TODAY ? 'today' : ''].filter(Boolean).join(' ');
+    p.push('<button class="'+cls+'" data-day="'+ds+'" title="'+ds+(mk ? ' · '+mk.n+' 条' : '')+'">'+
+      '<span>'+d+'</span><i class="ul"></i></button>');
+  }
+  for(let i = off+n; i % 7 !== 0; i++) p.push('<button class="void"></button>');
+  p.push('</div>');
+  p.push('<div class="mini-foot"><span><i></i>有记录</span><span><i class="red"></i>含重点</span><span><b></b>今天</span><span>进日页</span></div>');
+  document.getElementById('miniHost').innerHTML = p.join('');
+}
+
+/* =========================================================
+   月视图
+   ========================================================= */
+function renderMonth(){
+  const key = state.month;
+  const parts = key.split('-');
+  document.getElementById('monthTitle').textContent = parts[0]+' · '+parts[1];
+
+  const es = entriesInMonth(key);
+  const ds = Object.keys(DAILIES).filter(d => monthKey(d) === key).sort();
+  const a = agg(es);
+  document.getElementById('monthFacts').innerHTML =
+    '<span>条目 <b>'+es.length+'</b></span>'+
+    '<span>重点 <b>'+a.hl+'</b></span>'+
+    '<span>日总结 <b>'+ds.length+'</b></span>'+
+    '<span>有记录 <b>'+a.days+' / '+daysInMonth(key)+'</b></span>';
+
+  // 左：月历
+  const off = firstWeekday(key);
+  const n = daysInMonth(key);
+  const rows = Math.ceil((off+n)/7);
+  const matrix = document.getElementById('matrix');
+  matrix.style.setProperty('--rows', rows);
+  const mp = [];
+  for(let i=0;i<off;i++) mp.push('<div class="cell void"></div>');
+  for(let d=1; d<=n; d++){
+    const ds2 = key+'-'+pad(d);
+    const day = byDate(ds2);
+    const hls = day.filter(isHL);
+    const cls = ['cell', hls.length ? 'hl' : '', ds2 === TODAY ? 'today' : ''].filter(Boolean).join(' ');
+    const marks = [];
+    if(day.some(e => e.t === 'event')) marks.push('<i class="ev"></i>');
+    if(day.some(e => e.t === 'thought')) marks.push('<i class="th"></i>');
+    mp.push('<div class="'+cls+'" data-date="'+ds2+'">'+
+      '<div class="num">'+pad(d)+'</div>'+
+      '<div class="mt">'+marks.join('')+(day.length ? '<span class="n">'+day.length+'</span>' : '')+'</div>'+
+      (hls.length ? '<div class="cap">'+esc(hls[0].ti)+(hls.length > 1 ? ' +'+(hls.length-1) : '')+'</div>' : '')+
+    '</div>');
+  }
+  for(let i = off+n; i % 7 !== 0; i++) mp.push('<div class="cell void"></div>');
+  matrix.innerHTML = mp.join('');
+
+  // 右：月历列表（只含日总结）
+  const lp = [];
+  lp.push('<div class="list-head"><span>月历列表</span><b>'+ds.length+' 条</b></div>');
+  if(!ds.length){
+    lp.push('<div class="list-empty">这个月还没有日总结。<br>左侧格子里的数字是当天的条目数，有红色顶边的日子含重点条目。</div>');
+  } else {
+    ds.slice().reverse().forEach(dstr => {
+      const dl = DAILIES[dstr];
+      const hls = byDate(dstr).filter(isHL).length;
+      lp.push('<div class="dlrow" data-date="'+dstr+'">'+
+        '<div class="r1"><span class="d">'+dstr+'</span><span>'+wdOf(dstr)+'</span>'+
+          (hls ? '<span class="mk">★'+hls+'</span>' : '')+'</div>'+
+        '<h4>'+esc(dl.ti)+'</h4>'+
+        '<p>'+esc(dl.b)+'</p>'+
+      '</div>');
+    });
+  }
+  const pane = document.getElementById('listPane');
+  pane.innerHTML = lp.join('');
+  pane.scrollTop = 0;
+}
+
+/* =========================================================
+   集子 / 标签
+   ========================================================= */
+function renderIndex(){
+  const collCount = {}; COLLECTIONS.forEach(c => collCount[c.name] = 0);
+  ENTRIES.forEach(e => collCount[collOf(e)]++);
+  const tagCount = {}; TAGS.forEach(t => tagCount[t.name] = 0);
+  ENTRIES.forEach(e => (e.g||[]).forEach(g => { if(g in tagCount) tagCount[g]++; }));
+
+  const rail = [];
+  rail.push('<div class="blk"><div class="blk-h"><h3>集子</h3><span class="lnk">'+COLLECTIONS.length+'</span></div><div class="idx">');
+  COLLECTIONS.forEach(c => {
+    const on = state.filter.type === 'coll' && state.filter.key === c.name;
+    rail.push('<button data-filter="coll|'+c.name+'" class="'+(c.def ? 'def' : '')+'"'+(on ? ' style="color:var(--accent)"' : '')+'><span>'+esc(c.name)+'</span><span class="n">'+collCount[c.name]+'</span></button>');
+  });
+  rail.push('</div></div>');
+  rail.push('<div class="blk"><div class="blk-h"><h3>标签</h3><span class="lnk">'+TAGS.length+'</span></div><div class="idx">');
+  TAGS.forEach(t => {
+    const on = state.filter.type === 'tag' && state.filter.key === t.name;
+    rail.push('<button data-filter="tag|'+t.name+'"'+(on ? ' style="color:var(--accent)"' : '')+'><span># '+esc(t.name)+'</span><span class="n">'+tagCount[t.name]+'</span></button>');
+  });
+  rail.push('</div></div>');
+  document.getElementById('indexRail').innerHTML = rail.join('');
+
+  const f = state.filter;
+  const list = ENTRIES.filter(e => f.type === 'coll' ? collOf(e) === f.key : (e.g||[]).includes(f.key))
+                      .slice().sort((a,b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
+  const a = agg(list);
+  const out = [];
+  out.push('<div class="res-head"><h2>'+(f.type === 'coll' ? esc(f.key) : '# '+esc(f.key))+'</h2>'+
+    '<span class="cnt">'+list.length+' 条 · 事件 '+a.ev+' / 思考 '+a.th+'</span>'+
+    '<span class="hint">'+(f.type === 'coll' ? (f.key === '日常' ? '主集子 · /collection/all/' : '集子 · 一对一') : 'tag · 多对多')+' · 按日期倒序</span></div>');
+  if(!list.length){
+    out.push('<div class="empty"><b>这里还没有条目</b>登记了但未使用的集子 / tag 仍会生成页面，只是列表为空。</div>');
+  } else {
+    list.forEach(e => {
+      const tg = [];
+      if(isHL(e)) tg.push('<span class="tag hl">重点</span>');
+      (e.g||[]).forEach(g => tg.push('<span class="tag"># '+esc(g)+'</span>'));
+      out.push('<div class="resrow">'+
+        '<div class="d">'+e.d+'<br>'+wdOf(e.d)+'</div>'+
+        '<div class="t"><a href="#">'+esc(e.ti)+'</a><div class="sub">'+esc(e.b||'')+'</div></div>'+
+        '<div class="r"><span class="tag type">'+(e.t === 'event' ? '事件' : '思考')+'</span><span class="tag">'+esc(collOf(e))+'</span></div>'+
+      '</div>');
+    });
+  }
+  document.getElementById('indexList').innerHTML = out.join('');
+}
+
+/* =========================================================
+   统计
+   ========================================================= */
+function renderStats(){
+  const r = windowRange(state.win);
+  const cur = ENTRIES.filter(e => inRange(e,r));
+  const a = agg(cur);
+  const dCount = dailiesInRange(r);
+
+  let prevExists = false, pv = null;
+  if(r.prev){
+    const list = ENTRIES.filter(e => inRange(e,r.prev));
+    if(list.length){ pv = agg(list); prevExists = true; }
+  }
+  const delta = v => {
+    if(v === null) return '<div class="d">—</div>';
+    if(!prevExists) return '<div class="d up">新增</div>';
+    if(v === 0) return '<div class="d">与上期持平</div>';
+    return '<div class="d '+(v > 0 ? 'up' : 'dn')+'">'+(v > 0 ? '↑ +' : '↓ ')+v+' 条</div>';
+  };
+  document.getElementById('kpis').innerHTML =
+    '<div class="kpi"><div class="n ev">'+a.ev+'</div><div class="l">事件</div>'+delta(pv ? a.ev - pv.ev : null)+'</div>'+
+    '<div class="kpi"><div class="n">'+a.th+'</div><div class="l">思考</div>'+delta(pv ? a.th - pv.th : null)+'</div>'+
+    '<div class="kpi"><div class="n">'+dCount+'</div><div class="l">日总结</div><div class="d">'+r.label+'</div></div>'+
+    '<div class="kpi"><div class="n">'+a.days+'</div><div class="l">有记录的天数</div><div class="d">共 '+a.total+' 条条目</div></div>'+
+    '<div class="kpi"><div class="n acc">'+a.hl+'</div><div class="l">重点条目</div>'+delta(pv ? a.hl - pv.hl : null)+'</div>';
+
+  const collAgg = w => COLLECTIONS.map(c => Object.assign({name:c.name}, agg(ENTRIES.filter(e => inRange(e,w) && collOf(e) === c.name))));
+  const tagAgg  = w => TAGS.map(t => Object.assign({name:'# '+t.name}, agg(ENTRIES.filter(e => inRange(e,w) && (e.g||[]).includes(t.name)))));
+
+  document.getElementById('collSub').textContent = r.label + ' · 深色 = 事件，灰色 = 思考' + (r.prev ? ' · 右侧为环比上期' : '');
+  document.getElementById('collRank').innerHTML = rankRows(collAgg(r), r.prev ? collAgg(r.prev) : null);
+  document.getElementById('tagSub').textContent = r.label + ' · 只统计已登记的 tag，一条可带多个';
+  document.getElementById('tagRank').innerHTML = rankRows(tagAgg(r), r.prev ? tagAgg(r.prev) : null);
+
+  let pts, labels, sub;
+  if(state.win === 'month'){
+    const n = daysInMonth('2026-10');
+    pts = []; labels = [];
+    for(let d=1; d<=n; d++){
+      const day = byDate('2026-10-'+pad(d));
+      pts.push({ev:day.filter(e => e.t === 'event').length, th:day.filter(e => e.t === 'thought').length});
+      labels.push(d === 1 || d % 5 === 0 ? String(d) : '');
+    }
+    sub = '按日 · 2026 年 10 月 · 实线 = 事件，虚线 = 思考';
+  } else {
+    const months = state.win === 'year'
+      ? Array.from({length:12}, (_,i) => '2026-'+pad(i+1))
+      : Array.from(new Set(ENTRIES.map(e => monthKey(e.d)))).sort();
+    pts = months.map(k => {
+      const l = ENTRIES.filter(e => monthKey(e.d) === k);
+      return {ev:l.filter(e => e.t === 'event').length, th:l.filter(e => e.t === 'thought').length};
+    });
+    labels = months.map(k => Number(k.slice(5))+'月');
+    sub = '按月 · ' + (state.win === 'year' ? '2026 年' : '全部') + ' · 实线 = 事件，虚线 = 思考';
+  }
+  document.getElementById('trendSub').textContent = sub;
+  document.getElementById('trendChart').innerHTML = lineChart(pts, labels);
+}
+
+function rankRows(rows, prevRows){
+  const max = Math.max(1, rows.reduce((m,r) => Math.max(m, r.total), 0));
+  const pv = {};
+  if(prevRows) prevRows.forEach(r => pv[r.name] = r.total);
+  return rows.slice().sort((a,b) => b.total - a.total).map(r => {
+    const wEv = Math.round(r.ev / max * 100);
+    const wTh = Math.round(r.th / max * 100);
+    let tag = '';
+    if(prevRows){
+      const p = pv[r.name] || 0;
+      if(p === 0 && r.total > 0) tag = '<span class="nw">新增</span>';
+      else if(r.total === p) tag = '<span>=</span>';
+      else {
+        const pct = p ? Math.round((r.total - p) / p * 100) : 0;
+        tag = '<span class="'+(r.total > p ? 'up' : 'dn')+'">'+(r.total > p ? '↑' : '↓')+' '+Math.abs(pct)+'%</span>';
+      }
+    }
+    return '<div class="rank-row"><div class="nm">'+esc(r.name)+'</div>'+
+      '<div class="stack"><i class="ev" style="width:'+wEv+'%"></i><i class="th" style="width:'+wTh+'%"></i></div>'+
+      '<div class="v">'+r.total+' '+tag+'</div></div>';
+  }).join('');
+}
+
+function lineChart(pts, labels){
+  const W = 1000, H = 260, L = 56, R = 24, T = 30, B = 46;
+  const max = Math.max(2, pts.reduce((m,p) => Math.max(m, p.ev, p.th), 0));
+  const iw = W - L - R, ih = H - T - B;
+  const step = pts.length > 1 ? iw / (pts.length - 1) : 0;
+  const X = i => L + i * step;
+  const Y = v => T + ih * (1 - v / max);
+  const path = key => pts.map((p,i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(p[key]).toFixed(1)).join(' ');
+  const g = [];
+  for(let i=0;i<=3;i++){
+    const y = Y(max * i / 3);
+    g.push('<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" stroke="'+(i === 0 ? '#111111' : '#efeeec')+'" stroke-width="1"/>');
+    g.push('<text class="axis" x="14" y="'+(y+4).toFixed(1)+'">'+Math.round(max * i / 3)+'</text>');
+  }
+  const lab = labels.map((s,i) => s ? '<text class="axis" x="'+X(i).toFixed(1)+'" y="'+(H-16)+'" text-anchor="middle">'+s+'</text>' : '').join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block" role="img" aria-label="趋势折线图">'+
+    g.join('') +
+    '<path d="'+path('ev')+'" fill="none" stroke="#1b3a5c" stroke-width="2"/>'+
+    '<path d="'+path('th')+'" fill="none" stroke="#a3a39e" stroke-width="2" stroke-dasharray="6 5"/>'+
+    lab + '</svg>';
+}
+
+/* =========================================================
+   交互：四个屏幕可左右滑切换
+   ========================================================= */
+const ORDER = ['month','home','index','stats'];   // 顶部顺序：本月 | 今日 | 集子·标签 | 统计
+function go(screen, dir){
+  const cur = document.querySelector('.screen.on');
+  const next = document.getElementById('s-'+screen);
+  if(!next || next === cur) return;
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.s === screen));
+  if(location.hash.slice(1) !== screen) history.replaceState(null, '', '#'+screen);
+  if(dir === undefined){                                  // 点导航时按序号推断方向
+    dir = ORDER.indexOf(screen) > ORDER.indexOf(cur.id.slice(2)) ? 'fwd' : 'back';
+  }
+  next.classList.remove('anim-fwd','anim-back');
+  if(dir !== 'none'){
+    void next.offsetWidth;                                 // 强制重排，保证动画可重复触发
+    next.classList.add(dir === 'back' ? 'anim-back' : 'anim-fwd');
+  }
+  next.classList.add('on');
+  cur.classList.remove('on');
+  window.scrollTo({top:0});
+  clearTimeout(next._at);
+  next._at = setTimeout(() => next.classList.remove('anim-fwd','anim-back'), 340);
+}
+function goBy(step){                                       // 左右滑 / 方向键
+  const cur = document.querySelector('.nav button.on').dataset.s;
+  const i = (ORDER.indexOf(cur) + step + ORDER.length) % ORDER.length;
+  go(ORDER[i], step > 0 ? 'fwd' : 'back');
+}
+function setDate(d){ state.date = d; state.month = monthKey(d); renderDay(); renderMini(); }
+function setMonth(k){ state.month = k; renderMonth(); renderMini(); }
+function setFilter(type, key){ state.filter = {type:type, key:key}; renderIndex(); }
+
+document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.s)));
+
+/* 触摸滑动 */
+let tsx = 0, tsy = 0, tracking = false;
+document.addEventListener('touchstart', e => {
+  if(e.touches.length !== 1) return;
+  tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tracking = true;
+}, {passive:true});
+document.addEventListener('touchend', e => {
+  if(!tracking) return;
+  tracking = false;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - tsx, dy = t.clientY - tsy;
+  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+  goBy(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+/* 触控板横向滑动（macOS 双指横滑） */
+let wAcc = 0, wT = 0;
+document.addEventListener('wheel', e => {
+  if(Math.abs(e.deltaX) < 24 || Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+  const now = Date.now();
+  if(now - wT > 700) wAcc = 0;
+  wT = now;
+  wAcc += e.deltaX;
+  if(Math.abs(wAcc) > 110){ goBy(wAcc < 0 ? 1 : -1); wAcc = 0; }
+}, {passive:true});
+
+/* 键盘左右方向键 */
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight') goBy(1);
+  else if(e.key === 'ArrowLeft') goBy(-1);
+});
+
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('[data-day],[data-date],[data-go],[data-filter],[data-mv],#mPrev,#mNext,#mToday');
+  if(!t) return;
+
+  if(t.id === 'mPrev'){ setMonth(shiftMonth(state.month, -1)); return; }
+  if(t.id === 'mNext'){ setMonth(shiftMonth(state.month, 1)); return; }
+  if(t.id === 'mToday'){ setMonth(monthKey(TODAY)); return; }
+
+  if(t.dataset.mv){ setMonth(shiftMonth(state.month, Number(t.dataset.mv))); return; }
+  if(t.dataset.day){ setDate(t.dataset.day); go('home'); return; }
+  if(t.dataset.go){ go(t.dataset.go); return; }
+
+  if(t.dataset.filter){
+    const seg = t.dataset.filter.split('|');
+    setFilter(seg[0], seg[1]);
+    go('index');
+    return;
+  }
+
+  // 月历格子 → 只定位右侧列表，月历本身不动
+  if(t.dataset.date && t.classList.contains('cell')){
+    const pane = document.getElementById('listPane');
+    const row = pane.querySelector('.dlrow[data-date="'+t.dataset.date+'"]');
+    pane.querySelectorAll('.flash').forEach(x => x.classList.remove('flash'));
+    if(row){
+      const head = pane.querySelector('.list-head');
+      pane.scrollTo({top: Math.max(0, row.offsetTop - (head ? head.offsetHeight : 0)), behavior:'smooth'});
+      row.classList.add('flash');
+      setTimeout(() => row.classList.remove('flash'), 1500);
+    }
+    return;
+  }
+
+  // 列表行 → 日页
+  if(t.dataset.date && t.classList.contains('dlrow')){ setDate(t.dataset.date); go('home'); }
+});
+
+document.getElementById('winSeg').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-w]');
+  if(!b) return;
+  state.win = b.dataset.w;
+  document.querySelectorAll('#winSeg button').forEach(x => x.classList.toggle('on', x === b));
+  renderStats();
+});
+
+/* 初始化 */
+renderDay();
+renderSide();
+renderMonth();
+renderIndex();
+renderStats();
+
+/* 深链：#home / #month / #index / #stats */
+(function(){
+  const valid = ['home','month','index','stats'];
+  const h = location.hash.slice(1);
+  if(valid.includes(h)) go(h);
+  window.addEventListener('hashchange', () => {
+    const k = location.hash.slice(1);
+    if(valid.includes(k)) go(k);
+  });
+})();
+
+</script>
+</body>
+</html>
