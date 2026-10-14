@@ -335,7 +335,10 @@ footer.note b{color:var(--ink);font-weight:600}
 .resrow .t{font-family:var(--serif)}
 /* 原为斜体衬线的标签改无衬线时一并取消斜体（中文斜体是伪斜，发虚） */
 .kicker,.entry .idx,.head h1 em,.month-top h1 em{font-style:normal}
-.tabbar{left:0;right:0;bottom:0;transform:none;height:calc(var(--tab) - 8px);
+.tabbar::after{content:"";position:absolute;left:0;right:0;top:100%;pointer-events:none;
+  height:calc(24px + env(safe-area-inset-bottom,0px));background:var(--bg)}
+.tabbar{left:0;right:0;bottom:env(safe-area-inset-bottom,0px);transform:none;
+  height:calc(var(--tab) - 8px);
   padding:0 40px;justify-content:center;gap:0;
   background:var(--bg);border-top:1px solid var(--rule-2);
   border-radius:0;box-shadow:none;backdrop-filter:none}
@@ -354,7 +357,6 @@ footer.note b{color:var(--ink);font-weight:600}
   .cell .num{font-size:13px}
   .cell .mt{margin-top:4px}
   .cell .cap{margin-top:4px;font-size:10px;line-height:1.35;-webkit-line-clamp:1}
-  .tabbar{bottom:12px}
   .tabbar button{padding:6px 14px;font-size:12.5px}
   .brand{padding-top:10px}
   .head{padding:14px 0 11px}

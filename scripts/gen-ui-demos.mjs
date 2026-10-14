@@ -1099,7 +1099,11 @@ const sansSmallText = `
 /* 原为斜体衬线的标签改无衬线时一并取消斜体（中文斜体是伪斜，发虚） */
 .kicker,.entry .idx,.head h1 em,.month-top h1 em{font-style:normal}`;
 
-/* G 的矮视口规则：除格子压缩外，底部导航也要更薄 */
+/* G 的矮视口规则：除格子压缩外，底部导航也更薄。
+   注意这里**不写 .tabbar 的 bottom**：本块排在方向皮肤之后，同特异性后者胜出，
+   写死一个 bottom 会覆盖各皮肤自己的贴底声明。曾经这里写着给 G0 浮动胶囊用的
+   `.tabbar{bottom:12px}`，结果把通栏贴底的 G1 也抬离底边 12px，≤760px 高的视口下
+   滚动内容从那道缝里漏出来。各皮肤的贴底位置现在各自负责（G0 见 navSkins.deep）。 */
 const shortViewportG = () => `
 @media(max-height:760px){
   .month-top{padding:12px 0 9px}
@@ -1109,7 +1113,6 @@ const shortViewportG = () => `
   .cell .num{font-size:13px}
   .cell .mt{margin-top:4px}
   .cell .cap{margin-top:4px;font-size:10px;line-height:1.35;-webkit-line-clamp:1}
-  .tabbar{bottom:12px}
   .tabbar button{padding:6px 14px;font-size:12.5px}
   .brand{padding-top:10px}
   .head{padding:14px 0 11px}
@@ -1162,10 +1165,22 @@ const shortViewport = (cellPad, capLines) => `
  * ------------------------------------------------------------------ */
 const navSkins = {
 
+/* G0 · 深底胶囊（原版）：浮动在底边上方 18px，矮视口收到 12px。
+   这条 bottom 规则必须待在 G0 自己的皮肤里——放进共享的 shortViewportG()
+   会覆盖其它皮肤各自声明的贴底位置（G1 曾因此被抬离底边 12px 而漏出滚动内容）。 */
+deep: `
+@media(max-height:760px){.tabbar{bottom:12px}}
+`,
+
 /* G1 · 细线栏：去掉容器，只在底部留一条发丝线；当前屏 = 墨色 + 朱红下划线。
-   最贴近 B/D 顶栏「下划线标示当前」的做法，底栏因此只是界面的一条边界。 */
+   最贴近 B/D 顶栏「下划线标示当前」的做法，底栏因此只是界面的一条边界。
+   栏贴底（bottom:0），并用 ::after 把栏下方（含 iPhone 安全区）一律用纸色封住，
+   保证任何视口高度、任何滚动位置都不会有内容从栏下漏出。 */
 line: `
-.tabbar{left:0;right:0;bottom:0;transform:none;height:calc(var(--tab) - 8px);
+.tabbar::after{content:"";position:absolute;left:0;right:0;top:100%;pointer-events:none;
+  height:calc(24px + env(safe-area-inset-bottom,0px));background:var(--bg)}
+.tabbar{left:0;right:0;bottom:env(safe-area-inset-bottom,0px);transform:none;
+  height:calc(var(--tab) - 8px);
   padding:0 40px;justify-content:center;gap:0;
   background:var(--bg);border-top:1px solid var(--rule-2);
   border-radius:0;box-shadow:none;backdrop-filter:none}
@@ -1262,7 +1277,7 @@ const demos = [
   ['g-bottom.html', {
     title: '方向 G · 底栏编辑体 — ctz-bujo-share UI Demo',
     kicker: '方向 G · 底栏版编辑体（删顶部栏 + 底部居中导航）',
-    css: cssG + sansSmallText + shortViewportG(),
+    css: cssG + sansSmallText + navSkins.deep + shortViewportG(),
     dirbarActive: 'g',
     navPos: 'bottom',
     dirbar: dirbarG('g'),
