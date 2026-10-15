@@ -185,3 +185,39 @@ test("日期不同则不报错", () => {
     { date: "2026-10-14" }, { date: "2026-10-15" },
   ]));
 });
+
+// ---------- D5：报错信息升级（设计文档 §7 两处要求） ----------
+
+test("未登记引用报错含可复制登记片段（slug 留空，不代生成）", () => {
+  const err = (() => {
+    try { validateEntry({ ...base, tags: ["游泳"] }, "f", TAX, "f.md"); }
+    catch (e) { return e; }
+  })();
+  assert.match(err.message, /tags:\n\s+- name: 游泳\n\s+slug: /);
+  assert.match(err.message, /content\/taxonomy\.yml/);
+});
+
+test("未登记集子报错含可复制登记片段", () => {
+  const err = (() => {
+    try { validateEntry({ ...base, collection: "游泳" }, "f", TAX, "f.md"); }
+    catch (e) { return e; }
+  })();
+  assert.match(err.message, /collections:\n\s+- name: 游泳\n\s+slug: /);
+});
+
+test("仅差空白/大小写的引用：报错并提示最接近的已登记名称（可机械判定）", () => {
+  const err = (() => {
+    try { validateEntry({ ...base, tags: ["跑步 "] }, "f", TAX, "f.md"); }
+    catch (e) { return e; }
+  })();
+  assert.match(err.message, /跑步/);
+  assert.match(err.message, /最接近|等价|请改用/);
+});
+
+test("集子仅差空白：报错并提示最接近的已登记名称", () => {
+  const err = (() => {
+    try { validateEntry({ ...base, collection: "绘画 " }, "f", TAX, "f.md"); }
+    catch (e) { return e; }
+  })();
+  assert.match(err.message, /绘画/);
+});
