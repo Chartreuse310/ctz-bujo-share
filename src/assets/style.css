@@ -365,3 +365,10 @@ footer.note b{color:var(--ink);font-weight:600}
   .seg button{padding:7px 15px}
   .mini-grid button{height:23px}
 }
+
+/* 真实站点用 <a> 而非 demo 的 <button>，视觉与 G1 定稿一致 */
+.tabbar a{display:inline-block;padding:6px 16px;border-radius:0;background:none;position:relative;
+  font-size:12px;letter-spacing:.04em;color:var(--ink-3);text-decoration:none}
+.tabbar a:hover{color:var(--ink);background:none}
+.tabbar a.on{color:var(--ink);font-weight:600;background:none}
+.tabbar a.on::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:2px;background:var(--accent)}
