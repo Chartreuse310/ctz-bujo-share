@@ -47,6 +47,29 @@ test("首页不含未渲染的 front matter 定界符", () => {
   assert.doesNotMatch(html, /^---/m);
 });
 
+// 条目卡片摘要 = 三行排版截断（设计文档 §5.2，2026-10-15 拍板）：
+// 渲染整篇正文进 .excerpt（不做段落挑选），行数上限交给 CSS line-clamp，
+// 「全文 →」链接由 excerpt.js 在真被截断时插入（构建期不出现）。
+test("日页条目卡片渲染整篇正文（不只第一段）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  // 早餐条目两段正文都必须出现在日页卡片里（旧 firstPara 只会给第一段）
+  assert.match(html, /带了自己做的拿铁/);
+  assert.match(html, /血字的研究/);
+});
+
+test("条目卡片是 clamp 容器且不预置「全文」链接", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  assert.match(html, /class="excerpt" data-href="\/entry\/2026-10-15-breakfast-mcdonalds\/"/);
+  // 「全文 →」只在浏览器端确认被截断后才插入，构建产物里不得静态存在
+  assert.ok(!html.includes("全文 →"), "构建期不得出现「全文 →」链接");
+});
+
+test("excerpt.js 已随产物发布并被页面引用", () => {
+  assert.ok(existsSync(join(OUT, "assets/excerpt.js")), "缺少 excerpt.js");
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  assert.match(html, /assets\/excerpt\.js/);
+});
+
 // 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。
 // 依赖 load.js 支持 CTZ_CONTENT_ROOT 覆盖内容根目录（Task 1.6 已含）。
 // ⚠️ 不要断言 !existsSync(out)：实测失败时输出目录仍会被创建

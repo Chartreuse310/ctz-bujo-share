@@ -28,8 +28,9 @@
         <h4><a href="{{ e.url }}">{{ e.title }}</a></h4>
       </div>
       <p class="meta">{% if e.type == "event" %}事件{% else %}思考{% endif %}{% if e.collectionName %} · {{ e.collectionName }}{% endif %}{% for t in e.tags %} · #{{ t }}{% endfor %}{% if e.highlight %} · <b class="hl">重点</b>{% endif %}</p>
-      {% set firstP = e.body | firstPara %}
-      {% if firstP %}<p class="excerpt">{{ firstP }}</p>{% endif %}
+      {# 三行排版截断（§5.2，2026-10-15 拍板）：渲染整篇正文，CSS line-clamp:3 兜底；「全文 →」由 excerpt.js 在真被截断时插入 #}
+      {% set rendered = e.body | renderContent("md") %}
+      {% if rendered %}<div class="excerpt" data-href="{{ e.url }}">{{ rendered | safe }}</div>{% endif %}
     </article>
     {% endfor %}
     {% else %}

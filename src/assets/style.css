@@ -184,6 +184,13 @@ footer.note{margin-top:34px;padding-top:16px}
 .entry h4{margin:0;font-family:var(--serif);font-size:21px;font-weight:600;line-height:1.4}
 .entry h4 a:hover{color:var(--accent)}
 .entry .body{margin:12px 0 0 46px;color:var(--ink-2);font-size:14px;line-height:1.9;max-width:640px}
+/* 条目卡片摘要：整篇正文渲染进来，最多显示三行（§5.2，2026-10-15 拍板）。
+   段间距 0（拍板：不留空行），跨段截断可接受；「全文 →」仅真被截断时由 excerpt.js 插入。 */
+.entry .excerpt{margin:12px 0 0 46px;max-width:640px;color:var(--ink-2);font-size:14px;line-height:1.9}
+.entry .excerpt p{margin:0}
+.entry .excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.entry .more{display:inline-block;margin:6px 0 0 46px;font-family:var(--sans);font-size:12px;color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.entry .more:hover{color:var(--accent)}
 .tags{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0 0 46px}
 .tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:3px 10px;border:1px solid var(--rule);
   color:var(--ink-2);background:var(--surface);white-space:nowrap}
