@@ -1,0 +1,59 @@
+{% set win = site.windows[w] %}
+<div class="stats-page">
+  <div class="head">
+    <h1>统计<em>{{ win.range.label }}</em></h1>
+    <nav class="win-nav" aria-label="统计时间窗口">
+      <a href="/stats/" {% if w == "month" %}class="on" aria-current="page"{% endif %}>本月</a>
+      <a href="/stats/year/" {% if w == "year" %}class="on" aria-current="page"{% endif %}>本年</a>
+      <a href="/stats/all/" {% if w == "all" %}class="on" aria-current="page"{% endif %}>全部</a>
+    </nav>
+  </div>
+
+  {# 1. 总量卡片（5 张） #}
+  <div class="kpis">
+    <div class="kpi"><span class="n">{{ win.totals.events }}</span><span class="k">事件</span>{% if win.totals.deltas %}<span class="delta {{ win.totals.deltas.events.direction }}">{{ win.totals.deltas.events.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.thoughts }}</span><span class="k">思考</span>{% if win.totals.deltas %}<span class="delta {{ win.totals.deltas.thoughts.direction }}">{{ win.totals.deltas.thoughts.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.dailies }}</span><span class="k">日总结</span></div>
+    <div class="kpi"><span class="n">{{ win.totals.days }}</span><span class="k">有记录天数</span></div>
+    <div class="kpi"><span class="n">{{ win.totals.highlights }}</span><span class="k">重点条目</span>{% if win.totals.deltas %}<span class="delta {{ win.totals.deltas.highlights.direction }}">{{ win.totals.deltas.highlights.label }}</span>{% endif %}</div>
+  </div>
+
+  {# 2. 横向排行：按集子 + 按 tag #}
+  <div class="grid2">
+    <section class="card">
+      <h3 class="sub">按集子</h3>
+      {% set maxC = 1 %}
+      {% for r in win.byCollection %}{% if r.total > maxC %}{% set maxC = r.total %}{% endif %}{% endfor %}
+      {% for r in win.byCollection %}
+      <div class="rank-row">
+        <span class="name">{{ r.name }}</span>
+        <span class="stack"><i class="ev" style="width: {{ (r.events / maxC * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxC * 100) | round(1) }}%"></i></span>
+        <span class="v">{{ r.total }}</span>
+      </div>
+      {% endfor %}
+    </section>
+
+    <section class="card">
+      <h3 class="sub">按标签</h3>
+      {% set maxT = 1 %}
+      {% for r in win.byTag %}{% if r.total > maxT %}{% set maxT = r.total %}{% endif %}{% endfor %}
+      {% for r in win.byTag %}
+      <div class="rank-row">
+        <span class="name">{{ r.name }}</span>
+        <span class="stack"><i class="ev" style="width: {{ (r.events / maxT * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxT * 100) | round(1) }}%"></i></span>
+        <span class="v">{{ r.total }}</span>
+      </div>
+      {% endfor %}
+    </section>
+  </div>
+
+  {# 3. 纵向趋势：手写内联 SVG #}
+  <section class="card">
+    <h3 class="sub">趋势</h3>
+    {% include "trend-svg.njk" %}
+    <div class="legend">
+      <span><i class="line ev"></i>事件</span>
+      <span><i class="line th"></i>思考</span>
+    </div>
+  </section>
+</div>

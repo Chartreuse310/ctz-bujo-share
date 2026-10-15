@@ -1,0 +1,30 @@
+{# 趋势折线图：手写内联 SVG，参照 demo 的 lineChart()（g1-line.html:914-934）。
+   pts: [{label, events, thoughts}]。Nunjkucks 不支持三元，坐标计算全用宏。 #}
+{% set W = 1000 %}{% set H = 260 %}{% set L = 56 %}{% set R = 24 %}{% set T = 30 %}{% set B = 46 %}
+{% set maxV = 2 %}
+{% for p in pts %}{% if p.events > maxV %}{% set maxV = p.events %}{% endif %}{% if p.thoughts > maxV %}{% set maxV = p.thoughts %}{% endif %}{% endfor %}
+{% set iw = W - L - R %}{% set ih = H - T - B %}
+{% set n = pts | length %}
+{% macro xi(i) %}{{ L + (n > 1 and i * iw / (n - 1) or iw / 2) | round(1) }}{% endmacro %}
+{% macro yv(v) %}{{ (T + ih * (1 - v / maxV)) | round(1) }}{% endmacro %}
+<svg viewBox="0 0 {{ W }} {{ H }}" style="width:100%;display:block" role="img" aria-label="趋势折线图">
+  {% for i in range(0, 4) %}
+  {% set gy = T + ih * (1 - (maxV * i / 3) / maxV) %}
+  <line x1="{{ L }}" y1="{{ gy | round(1) }}" x2="{{ W - R }}" y2="{{ gy | round(1) }}" stroke="{% if i == 0 %}#111111{% else %}#efeeec{% endif %}" stroke-width="1"/>
+  {% endfor %}
+  {# 事件实线 #}
+  <path d="{% for p in pts %}{{ "M" if loop.first else " L" }}{{ xi(loop.index0) }} {{ yv(p.events) }}{% endfor %}" fill="none" stroke="#1b3a5c" stroke-width="2"/>
+  {# 思考虚线 #}
+  <path d="{% for p in pts %}{{ "M" if loop.first else " L" }}{{ xi(loop.index0) }} {{ yv(p.thoughts) }}{% endfor %}" fill="none" stroke="#a3a39e" stroke-width="2" stroke-dasharray="6 5"/>
+  {# 稀疏坐标标注：每隔 ceil(n/6) 个 #}
+  {% set step = (n / 6) | round(0, "ceil") | int %}
+  {% if step < 1 %}{% set step = 1 %}{% endif %}
+  {% for p in pts %}
+    {% if loop.first or loop.last or loop.index0 % step == 0 %}
+    <text class="axis" x="{{ xi(loop.index0) }}" y="{{ H - 16 }}" text-anchor="middle">{{ p.label | substr(5) }}</text>
+    {% endif %}
+  {% endfor %}
+  {% for i in range(0, 4) %}
+  <text class="axis" x="14" y="{{ (T + ih * (1 - (maxV * i / 3) / maxV) + 4) | round(1) }}">{{ (maxV * i / 3) | round }}</text>
+  {% endfor %}
+</svg>
