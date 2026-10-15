@@ -3,7 +3,7 @@
 {% set theEntries = site.entriesByDate[theDate] or [] %}
 {% set theMonth = theDate | substr(0, 7) %}
 {% set grid = buildMonthGrid(theMonth, site.entries, site.today) %}
-<div class="index-layout">
+<div class="home">
   <main class="day">
     <div class="dateline">
       <h1>{{ theDate | zhDate }}</h1>

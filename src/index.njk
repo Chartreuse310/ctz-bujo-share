@@ -7,7 +7,7 @@ permalink: /
 {% set todayDaily = site.dailyByDate[site.today] %}
 {% set todayEntries = site.entriesByDate[site.today] or [] %}
 {% set grid = buildMonthGrid(site.thisMonth, site.entries, site.today) %}
-<div class="index-layout">
+<div class="home">
   <main class="day">
     <div class="dateline">
       <h1>{{ site.today | zhDate }}</h1>
@@ -32,7 +32,7 @@ permalink: /
         <h4><a href="{{ e.url }}">{{ e.title }}</a></h4>
       </div>
       <p class="meta">{% if e.type == "event" %}事件{% else %}思考{% endif %}{% if e.collectionName %} · {{ e.collectionName }}{% endif %}{% for t in e.tags %} · #{{ t }}{% endfor %}{% if e.highlight %} · <b class="hl">重点</b>{% endif %}</p>
-      {% set firstP = e.body | trim | split("\n") | first %}
+      {% set firstP = e.body | firstPara %}
       {% if firstP %}<p class="excerpt">{{ firstP }}</p>{% endif %}
     </article>
     {% endfor %}
