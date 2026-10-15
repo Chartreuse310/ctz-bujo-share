@@ -1,0 +1,35 @@
+{% set tgEntries = site.entriesByTag[t.name] %}
+<div class="index-layout">
+  <main class="res-main">
+    <div class="dateline">
+      <h1>#{{ t.name }}</h1>
+      <em>tag · /tag/{{ t.slug }}/</em>
+      <span class="facts">{{ tgEntries | length }} 条条目</span>
+    </div>
+
+    {% if tgEntries | length %}
+    <div class="res-list">
+      {% for e in tgEntries %}
+      <a class="resrow" href="{{ e.url }}">
+        <span class="d">{{ e.date }}</span>
+        <h4>{{ e.title }}</h4>
+        <span class="type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="list-empty">登记了但还没有条目的 tag 仍会生成页面，只是列表为空（设计文档 §4.3）。</div>
+    {% endif %}
+  </main>
+
+  <aside class="rail">
+    <div class="rail-h">集子</div>
+    {% for c in site.collections %}
+    <a class="rail-row" href="{{ c.url }}">{{ c.name }}<span class="n">{{ site.entriesByCollection[c.name] | length }}</span></a>
+    {% endfor %}
+    <div class="rail-h">标签</div>
+    {% for tg in site.tags %}
+    <a class="rail-row {% if tg.name == t.name %}on{% endif %}" href="{{ tg.url }}">#{{ tg.name }}<span class="n">{{ site.entriesByTag[tg.name] | length }}</span></a>
+    {% endfor %}
+  </aside>
+</div>

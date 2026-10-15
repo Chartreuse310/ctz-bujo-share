@@ -73,6 +73,20 @@ export default function () {
     e.tagsResolved = e.tags.map((t) => resolveTag(taxonomy, t)).filter(Boolean);
   }
 
+  // 集子页 / tag 页的条目列表（按日期倒序，Nunjucks 里做这层过滤太绕，预计算）
+  const entriesByCollection = Object.fromEntries(
+    collections.map((c) => [
+      c.name,
+      entries.filter((e) => e.collectionName === c.name).sort((a, b) => (a.date < b.date ? 1 : -1)),
+    ])
+  );
+  const entriesByTag = Object.fromEntries(
+    tags.map((t) => [
+      t.name,
+      entries.filter((e) => e.tags.includes(t.name)).sort((a, b) => (a.date < b.date ? 1 : -1)),
+    ])
+  );
+
   // 统计页三个窗口（Task 3.6 用它做分页源）
   const windowKeys = ["month", "year", "all"];
 
@@ -81,5 +95,7 @@ export default function () {
     months, days, today, thisMonth, thisYear, windows, windowKeys,
     // 由 load.js 建好、供日页与首页直接取用的索引（Task 3.1 / 3.3 依赖它们）
     dailyByDate, entriesByDate,
+    // 集子页 / tag 页预取的条目列表（含空列表：登记未使用也生成页面）
+    entriesByCollection, entriesByTag,
   };
 }
