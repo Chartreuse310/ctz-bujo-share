@@ -133,3 +133,55 @@ test("正文允许为空", () => {
   const r = validateEntry({ ...base, body: "" }, "f", TAX, "f.md");
   assert.equal(r.body, "");
 });
+
+import { validateDaily, assertNoDuplicateDailies } from "../lib/schema.js";
+
+test("日总结从文件名取日期，不读 front matter 的 date", () => {
+  const r = validateDaily({ title: "小结", body: "正文" }, "content/daily/2026-10-14.md", "2026-10-14.md");
+  assert.equal(r.date, "2026-10-14");
+  assert.equal(r.url, "/day/2026-10-14/");
+});
+
+test("日总结 title 必填", () => {
+  assert.throws(() => validateDaily({ title: "" }, "f", "2026-10-14.md"), /title/);
+});
+
+test("文件名不是 YYYY-MM-DD.md 报错", () => {
+  for (const f of ["2026-10-14-note.md", "20261014.md", "2026-10-14.markdown"]) {
+    assert.throws(() => validateDaily({ title: "t" }, "content/daily/" + f, f), /文件名/);
+  }
+});
+
+test("文件名日期不存在（2026-02-30）报错", () => {
+  assert.throws(() => validateDaily({ title: "t" }, "content/daily/2026-02-30.md", "2026-02-30.md"), /日期/);
+});
+
+test("front matter 里重复写 date 报错（设计文档 §4.2）", () => {
+  // 这条守的是「日期只有一处真相」。守卫必须在 zod 解析前查原始对象——
+  // zod 默认 strip 未知键，解析后 d.date 恒为 undefined，守卫会静默失效。
+  assert.throws(
+    () => validateDaily({ title: "t", date: "2026-10-14" }, "content/daily/2026-10-14.md", "2026-10-14.md"),
+    (e) => e.name === "ContentError" && /date/.test(e.message) && /front matter/.test(e.message)
+  );
+});
+
+test("front matter 不写 date 时正常通过", () => {
+  const r = validateDaily({ title: "t" }, "content/daily/2026-10-14.md", "2026-10-14.md");
+  assert.equal(r.date, "2026-10-14");
+});
+
+test("一天两条日总结报错", () => {
+  assert.throws(
+    () => assertNoDuplicateDailies([
+      { date: "2026-10-14", file: "content/daily/2026-10-14.md" },
+      { date: "2026-10-14", file: "content/daily/2026-10-14-b.md" },
+    ]),
+    (e) => /2026-10-14/.test(e.message)
+  );
+});
+
+test("日期不同则不报错", () => {
+  assert.doesNotThrow(() => assertNoDuplicateDailies([
+    { date: "2026-10-14" }, { date: "2026-10-15" },
+  ]));
+});
