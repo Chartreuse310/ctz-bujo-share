@@ -23,6 +23,8 @@ export default function (eleventyConfig) {
     const paras = String(s ?? "").split("\n").map((x) => x.trim()).filter(Boolean);
     return paras[0] || "";
   });
+  // 字符串截取（Nunjucks 内建 slice 是数组分组切片，不是字符串截取——实测）
+  eleventyConfig.addFilter("substr", (s, start, len) => String(s ?? "").substr(start, len));
 
   // lib/calendar 的纯函数直接暴露给 Nunjucks 模板（小月历、月视图、日页都要用）。
   // lib/ 不 import Eleventy，这里是唯一的接线点。
