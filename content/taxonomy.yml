@@ -1,0 +1,22 @@
+# 默认集子的显示名（URL 固定为 /collection/all/，不在这里配 slug）
+default_collection_name: 日常
+
+collections:
+  - name: 绘画
+    slug: drawing
+  - name: 博士学位论文
+    slug: phd-thesis
+  - name: 书影音
+    slug: books-films-music
+
+tags:
+  - name: PhD V2.0 P1.1
+    slug: phd-v2-0-p1-1
+  - name: 跑步
+    slug: running
+  - name: 吉他
+    slug: guitar
+  - name: 播客
+    slug: podcast
+  - name: 视频
+    slug: video
