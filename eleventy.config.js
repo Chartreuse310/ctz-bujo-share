@@ -12,6 +12,17 @@ export default function (eleventyConfig) {
     const [y, m, d] = String(s).split("-");
     return `${y} 年 ${Number(m)} 月 ${Number(d)} 日`;
   });
+  // 月视图上一月 / 下一月导航（包装 lib/calendar 的 shiftMonth）
+  eleventyConfig.addFilter("prevMonth", (k) => calendar.shiftMonth(k, -1));
+  eleventyConfig.addFilter("nextMonth", (k) => calendar.shiftMonth(k, 1));
+  // Nunjucks 没有内建 split / trim（实测），补上：摘要取正文第一个非空段落用
+  eleventyConfig.addFilter("split", (s, sep) => String(s ?? "").split(sep));
+  eleventyConfig.addFilter("trim", (s) => String(s ?? "").trim());
+  // 正文摘要：第一个非空段落
+  eleventyConfig.addFilter("firstPara", (s) => {
+    const paras = String(s ?? "").split("\n").map((x) => x.trim()).filter(Boolean);
+    return paras[0] || "";
+  });
 
   // lib/calendar 的纯函数直接暴露给 Nunjucks 模板（小月历、月视图、日页都要用）。
   // lib/ 不 import Eleventy，这里是唯一的接线点。

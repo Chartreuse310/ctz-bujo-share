@@ -1,0 +1,49 @@
+{% set grid = buildMonthGrid(monthKey, site.entries, site.today) %}
+{% set list = buildMonthList(monthKey, site.dailies, site.entries) %}
+{% set facts = monthFacts(monthKey, site.entries, site.dailies) %}
+<div class="shell">
+  <div class="month-top">
+    <h1>{{ monthKey | replace("-", " · ") }}<em>{{ facts.daysWithRecords }} 天有记录</em></h1>
+    <div class="month-nav">
+      <a href="/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
+      <a href="/month/{{ site.thisMonth }}/" {% if monthKey == site.thisMonth %}aria-current="page"{% endif %}>回到本月</a>
+      <a href="/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
+    </div>
+  </div>
+
+  <div class="month-body">
+    <section class="cal-pane">
+      <div class="dow">{% for w in weekdaysOf() %}<span>{{ w }}</span>{% endfor %}</div>
+      <div class="matrix" style="--rows: {{ grid.rows }}">
+        {% for c in grid.cells %}
+          {% if c.blank %}<div class="cell void"></div>
+          {% else %}<a class="cell {% if c.hasHighlight %}hl{% endif %} {% if c.isToday %}today{% endif %}" href="/day/{{ c.date }}/">
+            <div class="num">{{ c.day }}</div>
+            <div class="mt">{% if c.entryCount %}{% if c.hasHighlight %}<i class="red"></i>{% else %}<i></i>{% endif %}{% endif %}{% if c.entryCount %}<span class="n">{{ c.entryCount }}</span>{% endif %}</div>
+            {% if c.captions | length %}<div class="cap">{{ c.captions[0] }}{% if c.captions | length > 1 %} +{{ c.captions | length - 1 }}{% endif %}</div>{% endif %}
+          </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="cal-foot">
+        <span class="k"><i class="dot red"></i>含重点</span>
+        <span class="k"><i class="dot"></i>有记录</span>
+        <span>点格子进日页 · 右侧数字 = 当日条目数</span>
+      </div>
+    </section>
+
+    <aside class="list-pane">
+      <div class="list-head">当月日总结<b>{{ list | length }}</b></div>
+      {% for d in list %}
+      <a class="dlrow" href="{{ d.url }}">
+        <div class="r1"><span class="d">{{ d.date }}</span><span>{{ d.weekday }}</span>{% if d.highlightCount > 0 %}<span class="mk"><i class="dot red"></i></span>{% endif %}</div>
+        <h4>{{ d.title }}</h4>
+        {% set firstP = d.body | firstPara %}
+        {% if firstP %}<p>{{ firstP }}</p>{% endif %}
+      </a>
+      {% else %}
+      <div class="list-empty">这个月还没有日总结。</div>
+      {% endfor %}
+    </aside>
+  </div>
+</div>
