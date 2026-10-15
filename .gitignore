@@ -4,10 +4,9 @@ dist/
 .DS_Store
 .workbuddy-ai/
 
-# DSH 运行时记忆（内容已提炼进 docs/，不入库）
-.agents/memory/MEMORY.md
-.agents/memory/CONTEXT.md
-.agents/memory/HANDOFF.md
+# DSH 运行时区：Agent 记忆、技能、Notes、看板全部不入库（有价值的内容提炼进 docs/）
+.agents/
+KANBAN.json
 
 # 端到端测试产物
 .e2e-site/
