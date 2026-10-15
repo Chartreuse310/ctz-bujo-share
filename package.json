@@ -1,0 +1,18 @@
+{
+  "name": "ctz-bujo-share",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "bujo 风格的公开日记与思考分享站",
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve",
+    "test": "node --test",
+    "check": "node scripts/check-site-constraints.mjs"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^3.1.6",
+    "zod": "^4.6.7",
+    "js-yaml": "^4.1.1"
+  }
+}

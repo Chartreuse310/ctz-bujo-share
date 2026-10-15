@@ -8,3 +8,6 @@ dist/
 .agents/memory/MEMORY.md
 .agents/memory/CONTEXT.md
 .agents/memory/HANDOFF.md
+
+# 端到端测试产物
+.e2e-site/
