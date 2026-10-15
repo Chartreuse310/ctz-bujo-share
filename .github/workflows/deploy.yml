@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+# 设计文档 §13（2026-10-15 拍板，D7 方案 A）：
+# - cron 0 21 * * *（UTC 21:00 = 北京 05:00）每日重建，保证「今日」页不冻结；
+# - push 主分支也触发同一工作流——写完内容推送即发布，不等 cron；
+# - npm test 前置于构建：内容校验失败（设计文档 §7）时部署中止，
+#   坏数据只会让当天部署红掉，绝不能被发布出去。
+on:
+  push:
+    branches: [main]
+  schedule:
+    # UTC 21:00 = 北京时间 05:00
+    - cron: "0 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
