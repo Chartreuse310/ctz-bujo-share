@@ -1,4 +1,5 @@
 import { RenderPlugin } from "@11ty/eleventy";
+import * as calendar from "./lib/calendar.js";
 
 export default function (eleventyConfig) {
   // 正文 Markdown 渲染：用 Eleventy 自带插件，避免直接依赖 markdown-it
@@ -11,6 +12,12 @@ export default function (eleventyConfig) {
     const [y, m, d] = String(s).split("-");
     return `${y} 年 ${Number(m)} 月 ${Number(d)} 日`;
   });
+
+  // lib/calendar 的纯函数直接暴露给 Nunjucks 模板（小月历、月视图、日页都要用）。
+  // lib/ 不 import Eleventy，这里是唯一的接线点。
+  for (const [name, fn] of Object.entries(calendar)) {
+    if (typeof fn === "function") eleventyConfig.addNunjucksGlobal(name, fn);
+  }
 
   eleventyConfig.setInputDirectory("src");
   eleventyConfig.setOutputDirectory("_site");
