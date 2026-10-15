@@ -67,6 +67,12 @@ export default function () {
     thisMonth,
   ])].sort();
 
+  // 条目页要用的解析后引用：集子 URL、tag 对象（显示名 → /tag/<slug>/）
+  for (const e of entries) {
+    e.collectionUrl = resolveCollection(taxonomy, e.collectionName)?.url ?? "/collection/all/";
+    e.tagsResolved = e.tags.map((t) => resolveTag(taxonomy, t)).filter(Boolean);
+  }
+
   // 统计页三个窗口（Task 3.6 用它做分页源）
   const windowKeys = ["month", "year", "all"];
 

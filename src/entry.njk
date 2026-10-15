@@ -1,0 +1,19 @@
+<article class="entry-page">
+  <div class="dateline">
+    <h1>{{ entry.title }}</h1>
+    <em>{{ entry.date | zhDate }} · {{ weekdayName(entry.date) }}</em>
+    <span class="facts">{% if entry.type == "event" %}事件{% else %}思考{% endif %} · <a href="{{ entry.collectionUrl }}">{{ entry.collectionName }}</a>{% if entry.highlight %} · <b class="hl">重点</b>{% endif %}</span>
+  </div>
+
+  <div class="tagline">
+    {% for t in entry.tagsResolved %}
+    <a class="tagchip" href="{{ t.url }}">#{{ t.name }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="entry-body">
+    {{ entry.body | renderContent("md") | safe }}
+  </div>
+
+  <p class="backlink"><a href="/day/{{ entry.date }}/">← 回到 {{ entry.date }} 的日页</a></p>
+</article>
