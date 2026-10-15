@@ -1,0 +1,60 @@
+{% set theDate = dayDate %}
+{% set theDaily = site.dailyByDate[theDate] %}
+{% set theEntries = site.entriesByDate[theDate] or [] %}
+{% set theMonth = theDate | substr(0, 7) %}
+{% set grid = buildMonthGrid(theMonth, site.entries, site.today) %}
+<div class="index-layout">
+  <main class="day">
+    <div class="dateline">
+      <h1>{{ theDate | zhDate }}</h1>
+      <em>{{ weekdayName(theDate) }} · 第 {{ dayOfYear(theDate) }} 天</em>
+      <span class="facts">{{ theEntries | length }} 条条目 · {% if theDaily %}1{% else %}0{% endif %} 条日总结 · {% set hl = theEntries | selectattr("highlight") | list | length %}{{ hl }} 条重点</span>
+    </div>
+
+    {% if theDaily %}
+    <aside class="pull">
+      <b>今日小结</b>
+      <p>{{ theDaily.title }}</p>
+      {{ theDaily.body | renderContent("md") | safe }}
+    </aside>
+    {% endif %}
+
+    {% if theEntries | length %}
+    <div class="sect-h">条目</div>
+    {% for e in theEntries %}
+    <article class="entry">
+      <div class="r1">
+        <span class="idx">{{ loop.index }}</span>
+        <h4><a href="{{ e.url }}">{{ e.title }}</a></h4>
+      </div>
+      <p class="meta">{% if e.type == "event" %}事件{% else %}思考{% endif %}{% if e.collectionName %} · {{ e.collectionName }}{% endif %}{% for t in e.tags %} · #{{ t }}{% endfor %}{% if e.highlight %} · <b class="hl">重点</b>{% endif %}</p>
+      {% set firstP = e.body | firstPara %}
+      {% if firstP %}<p class="excerpt">{{ firstP }}</p>{% endif %}
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="list-empty">这一天没有条目。</div>
+    {% endif %}
+  </main>
+
+  <aside class="side">
+    <div class="mini">
+      <div class="mini-head"><a class="m" href="/month/{{ theMonth }}/">{{ theMonth | replace("-", " · ") }}</a></div>
+      <div class="mini-dow">{% for w in weekdaysOf() %}<span>{{ w }}</span>{% endfor %}</div>
+      <div class="mini-grid">
+        {% for c in grid.cells %}
+          {% if c.blank %}<button class="void" disabled></button>
+          {% else %}<a class="mini-cell {% if c.hasHighlight %}hl{% endif %} {% if c.date == theDate %}sel{% endif %} {% if c.isToday %}today{% endif %}" href="/day/{{ c.date }}/" title="{{ c.date }}{% if c.entryCount %} · {{ c.entryCount }} 条{% endif %}"><span>{{ c.day }}</span><i class="ul"></i></a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    <div class="stat-entry">
+      <div class="stat-pair">
+        <div class="p"><span class="n">{{ site.entries | length }}</span><span>条目</span></div>
+        <div class="p"><span class="n">{{ site.dailies | length }}</span><span>日总结</span></div>
+      </div>
+      <a class="stat-link" href="/stats/">进入统计 →</a>
+    </div>
+  </aside>
+</div>
