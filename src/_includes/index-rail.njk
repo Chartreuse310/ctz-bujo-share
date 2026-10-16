@@ -1,0 +1,21 @@
+{# 集子·标签页共用的左侧导航栏（2026-10-16 夜·十拍板）：
+   demo g1 renderIndex 的 .blk/.blk-h/.idx 款，与今日页侧栏同一套语言。
+   真实站点用 <a> 而非 demo 的 <button>（CSS 选择器按 .idx a 写，防 button/a 失配复发）。
+   选中态 = .idx-row.on（CSS 落朱红——此前 rail-row.on 无样式，实测落到浏览器默认蓝）。
+   依赖 site.collections / site.tags / site.entriesByCollection / site.entriesByTag / 当前 col 或 t。 #}
+<div class="blk">
+  <div class="blk-h"><h3>集子</h3><span class="lnk">{{ site.collections | length }}</span></div>
+  <div class="idx">
+    {% for c in site.collections %}
+    <a class="idx-row {% if col and c.name == col.name %}on{% endif %}" href="{{ c.url }}"><span>{{ c.name }}</span><span class="n">{{ site.entriesByCollection[c.name] | length }}</span></a>
+    {% endfor %}
+  </div>
+</div>
+<div class="blk">
+  <div class="blk-h"><h3>标签</h3><span class="lnk">{{ site.tags | length }}</span></div>
+  <div class="idx">
+    {% for tg in site.tags %}
+    <a class="idx-row {% if t and tg.name == t.name %}on{% endif %}" href="{{ tg.url }}"><span># {{ tg.name }}</span><span class="n">{{ site.entriesByTag[tg.name] | length }}</span></a>
+    {% endfor %}
+  </div>
+</div>

@@ -1,37 +1,34 @@
-{% set colEntries = site.entriesByCollection[col.name] %}
+{% set entries = site.entriesByCollection[col.name] %}
+{# 集子·标签页 g1 基线对齐（2026-10-16 夜·十拍板）：侧栏左 236px / 列表右；
+   标题区 = .res-head（不加页面级大标题与 taxonomy 说明文）；
+   列表行 = resrow 三列（.d 日期+星期 | .t 标题+1 行摘要 | .r 胶囊）；
+   空态 = 单行提示性文案。侧栏复用 _includes/index-rail.njk（与今日页同款 .blk 语言）。 #}
 <div class="wrap">
 <div class="index-layout">
+  <aside class="rail">{% include "index-rail.njk" %}</aside>
+
   <main class="res-main">
-    <div class="dateline">
-      <h1>{{ col.name }}</h1>
-      <em>{% if col.isDefault %}主集子 · /collection/all/{% else %}集子 · /collection/{{ col.slug }}/{% endif %}</em>
-      <span class="facts">{{ colEntries | length }} 条条目</span>
+    <div class="res-head">
+      <h2>{{ col.name }}</h2>
+      {% set evCount = entries | selectattr("type", "equalto", "event") | list | length %}
+      {% set thCount = entries | length - evCount %}
+      <span class="cnt">{{ entries | length }} 条 · 事件 {{ evCount }} / 思考 {{ thCount }}</span>
+      <span class="hint">{% if col.isDefault %}主集子 · /collection/all/ · 按日期倒序{% else %}集子 · 一对一 · 按日期倒序{% endif %}</span>
     </div>
 
-    {% if colEntries | length %}
+    {% if entries | length %}
     <div class="res-list">
-      {% for e in colEntries %}
+      {% for e in entries %}
       <a class="resrow" href="{{ e.url }}">
-        <span class="d">{{ e.date }}</span>
-        <h4>{{ e.title }}</h4>
-        <span class="type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span>
+        <span class="d">{{ e.date }}<br>{{ weekdayName(e.date) }}</span>
+        <div class="t"><h4>{{ e.title }}</h4>{% set firstP = e.body | firstPara %}{% if firstP %}<div class="sub">{{ firstP }}</div>{% endif %}</div>
+        <div class="r"><span class="tag type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span><span class="tag">{{ e.collectionName }}</span></div>
       </a>
       {% endfor %}
     </div>
     {% else %}
-    <div class="list-empty">登记了但还没有条目的集子仍会生成页面，只是列表为空（设计文档 §4.3）。</div>
+    <div class="list-empty">{{ col.name }}还没有条目。登记了的集子/tag 都会生成页面，只是列表为空。</div>
     {% endif %}
   </main>
-
-  <aside class="rail">
-    <div class="rail-h">集子</div>
-    {% for c in site.collections %}
-    <a class="rail-row {% if c.name == col.name %}on{% endif %}" href="{{ c.url }}">{{ c.name }}<span class="n">{{ site.entriesByCollection[c.name] | length }}</span></a>
-    {% endfor %}
-    <div class="rail-h">标签</div>
-    {% for tg in site.tags %}
-    <a class="rail-row" href="{{ tg.url }}">#{{ tg.name }}<span class="n">{{ site.entriesByTag[tg.name] | length }}</span></a>
-    {% endfor %}
-  </aside>
 </div>
 </div>

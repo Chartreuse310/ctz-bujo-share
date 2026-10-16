@@ -214,6 +214,14 @@ footer.note{margin-top:34px;padding-top:16px}
 .idx button:last-child{border-bottom:0}
 .idx button:hover{color:var(--accent)}
 .idx button .n{color:var(--ink-3)}
+/* 集子·标签页侧栏（2026-10-16 夜·十拍板）：复用 demo idx 款但真实站点用 <a class="idx-row">；
+   选中态必须落 CSS——此前 rail-row.on 无任何样式，实测渲染成浏览器默认蓝 rgb(0,0,238) */
+.idx .idx-row{display:flex;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid var(--rule-2);color:var(--ink-2);font-size:12.5px;text-decoration:none}
+.idx .idx-row:last-child{border-bottom:0}
+.idx .idx-row:hover{color:var(--accent)}
+.idx .idx-row .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.idx .idx-row.on{color:var(--accent)}
+.idx .idx-row.on .n{color:var(--accent)}
 .tagwrap button{border:1px solid var(--rule);background:var(--surface);color:var(--ink-2)}
 .tagwrap button:hover{border-color:var(--accent);color:var(--accent)}
 .tagwrap button .n{color:var(--ink-3)}

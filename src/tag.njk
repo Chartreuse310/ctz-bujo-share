@@ -1,37 +1,32 @@
-{% set tgEntries = site.entriesByTag[t.name] %}
+{% set entries = site.entriesByTag[t.name] %}
+{# tag 页：与集子页同构（夜·十拍板），侧栏复用 _includes/index-rail.njk；
+   res-head h2 = 「# 显示名」，hint = tag · 多对多 · 按日期倒序。 #}
 <div class="wrap">
 <div class="index-layout">
+  <aside class="rail">{% include "index-rail.njk" %}</aside>
+
   <main class="res-main">
-    <div class="dateline">
-      <h1>#{{ t.name }}</h1>
-      <em>tag · /tag/{{ t.slug }}/</em>
-      <span class="facts">{{ tgEntries | length }} 条条目</span>
+    <div class="res-head">
+      <h2># {{ t.name }}</h2>
+      {% set evCount = entries | selectattr("type", "equalto", "event") | list | length %}
+      {% set thCount = entries | length - evCount %}
+      <span class="cnt">{{ entries | length }} 条 · 事件 {{ evCount }} / 思考 {{ thCount }}</span>
+      <span class="hint">tag · 多对多 · 按日期倒序</span>
     </div>
 
-    {% if tgEntries | length %}
+    {% if entries | length %}
     <div class="res-list">
-      {% for e in tgEntries %}
+      {% for e in entries %}
       <a class="resrow" href="{{ e.url }}">
-        <span class="d">{{ e.date }}</span>
-        <h4>{{ e.title }}</h4>
-        <span class="type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span>
+        <span class="d">{{ e.date }}<br>{{ weekdayName(e.date) }}</span>
+        <div class="t"><h4>{{ e.title }}</h4>{% set firstP = e.body | firstPara %}{% if firstP %}<div class="sub">{{ firstP }}</div>{% endif %}</div>
+        <div class="r"><span class="tag type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span><span class="tag">{{ e.collectionName }}</span></div>
       </a>
       {% endfor %}
     </div>
     {% else %}
-    <div class="list-empty">登记了但还没有条目的 tag 仍会生成页面，只是列表为空（设计文档 §4.3）。</div>
+    <div class="list-empty">{{ t.name }}还没有条目。登记了的集子/tag 都会生成页面，只是列表为空。</div>
     {% endif %}
   </main>
-
-  <aside class="rail">
-    <div class="rail-h">集子</div>
-    {% for c in site.collections %}
-    <a class="rail-row" href="{{ c.url }}">{{ c.name }}<span class="n">{{ site.entriesByCollection[c.name] | length }}</span></a>
-    {% endfor %}
-    <div class="rail-h">标签</div>
-    {% for tg in site.tags %}
-    <a class="rail-row {% if tg.name == t.name %}on{% endif %}" href="{{ tg.url }}">#{{ tg.name }}<span class="n">{{ site.entriesByTag[tg.name] | length }}</span></a>
-    {% endfor %}
-  </aside>
 </div>
 </div>

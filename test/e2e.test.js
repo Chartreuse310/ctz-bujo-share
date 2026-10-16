@@ -33,6 +33,71 @@ test("集子页与 tag 页按登记表生成", () => {
   }
 });
 
+// ===== 集子·标签页 g1 基线对齐（2026-10-16 夜·十拍板）=====
+// 拍板：①布局 = demo 款侧栏左 236px / 列表右；②resrow 三列网格（.d | .t(+.sub) | .r 胶囊）；
+// ③侧栏复用 .blk/.blk-h/.idx（与今日页同一套侧栏语言，rail-h/rail-row 野生款废除）；
+// ④标题区 = .res-head（h2 集子名衬线 + .cnt「N 条 · 事件 X / 思考 Y」+ .hint），不用今日页 .dateline，
+//   不加页面级大标题「集子 · 标签」与 taxonomy 说明文（公开站直接进内容）；
+// ⑤空态 = 单行提示性文案（不是 demo 两段式，也不是今日页「这里是空的。」）；
+// ⑥tag 前缀 = 「# 」带空格（与今日页胶囊一致）。
+
+test("集子·标签页布局：侧栏在左 236px 列、主栏在右（g1 index-layout 方向，夜·十①）", () => {
+  const html = readFileSync(join(OUT, "collection/phd-thesis/index.html"), "utf8");
+  const railPos = html.indexOf('<aside class="rail">');
+  const mainPos = html.indexOf('<main class="res-main">');
+  assert.ok(railPos !== -1 && mainPos !== -1, "侧栏与主栏都应存在");
+  assert.ok(railPos < mainPos, `侧栏 .rail 必须在 DOM 里先于主栏 .res-main（demo 款左栏），实际 rail=${railPos} main=${mainPos}`);
+});
+
+test("集子·标签页列表行：resrow 三列结构 .d | .t(h4+.sub) | .r 胶囊（夜·十②⑥）", () => {
+  const html = readFileSync(join(OUT, "collection/phd-thesis/index.html"), "utf8");
+  // 行结构：.d 日期列（日期<br>星期）、.t 包 h4+1 行摘要 .sub、.r 放类型胶囊 + 集子胶囊
+  assert.match(html, /<a class="resrow"[^>]*>\s*<span class="d">2026-10-15<br>[^<]+<\/span>\s*<div class="t"><h4>/s, "行首应是 .d（日期+星期）后接 .t>h4");
+  assert.match(html, /<div class="sub">/, ".t 里应有 1 行摘要 .sub");
+  assert.match(html, /<div class="r"><span class="tag type">/, ".r 里应是 tag.type 胶囊（不是裸 .type）");
+  // tag 行「# 」带空格
+  assert.match(html, /# PhD V2\.0 P1\.1/, ".r 胶囊应写「# 名称」带空格");
+  assert.ok(!html.includes(">#PhD"), "不得出现紧贴的 #名称 写法");
+});
+
+test("集子·标签页侧栏：复用 .blk/.blk-h/.idx，计数右挂 .n，选中朱红（夜·十③）", () => {
+  const html = readFileSync(join(OUT, "collection/phd-thesis/index.html"), "utf8");
+  assert.ok(!html.includes("rail-h") && !html.includes("rail-row"), "野生款 rail-h/rail-row 不得残留");
+  assert.match(html, /<div class="blk">\s*<div class="blk-h"><h3>集子<\/h3>/s, "侧栏第一块 = .blk>.blk-h>h3 集子");
+  assert.match(html, /<div class="blk">\s*<div class="blk-h"><h3>标签<\/h3>/s, "侧栏第二块 = 标签");
+  assert.match(html, /<div class="blk-h"><h3>[^<]+<\/h3><span class="lnk">\d+<\/span>/, ".blk-h 应带 .lnk 计数");
+  // idx 行内是 <a>（真实站点用链接而非 demo 的 button），计数右挂 .n
+  assert.match(html, /<div class="idx">\s*<a[^>]*class="idx-row/s, ".idx 内应是 idx-row <a> 行");
+  assert.match(html, /class="idx-row on"/, "当前集子行应有 on 选中态");
+  // # 带空格
+  assert.match(html, /<span># PhD V2\.0 P1\.1<\/span><span class="n">/, "标签 idx 行应写「# 名称」（span 包裹 + 计数右挂）");
+});
+
+test("集子·标签页标题区：res-head（h2 衬线集子名 + .cnt 事件思考分计 + .hint），无 dateline/页面级大标题（夜·十④）", () => {
+  const html = readFileSync(join(OUT, "collection/phd-thesis/index.html"), "utf8");
+  assert.ok(!html.includes('class="dateline"'), "本页不用今日页 .dateline 款");
+  assert.match(html, /<div class="res-head">\s*<h2>博士学位论文<\/h2>/s, "res-head h2 = 集子显示名");
+  assert.match(html, /<span class="cnt">2 条 · 事件 \d+ \/ 思考 \d+<\/span>/, ".cnt = N 条 · 事件 X / 思考 Y");
+  assert.match(html, /<span class="hint">集子 · 一对一 · 按日期倒序<\/span>/, ".hint 提示归属与排序");
+  assert.ok(!html.includes("Index</em>"), "不加页面级大标题与 em Index");
+  assert.ok(!html.includes("taxonomy.yml"), "不保留 taxonomy 登记说明文");
+  // tag 页同构
+  const tagHtml = readFileSync(join(OUT, "tag/phd-v2-0-p1-1/index.html"), "utf8");
+  assert.match(tagHtml, /<div class="res-head">\s*<h2># PhD V2\.0 P1\.1<\/h2>/s, "tag 页 res-head h2 = # 显示名");
+  assert.match(tagHtml, /<span class="hint">tag · 多对多 · 按日期倒序<\/span>/, "tag 页 hint");
+  // CSS：h2 走衬线（g1 字体分工），idx 选中态有样式（防浏览器默认蓝回归）
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  assert.match(css, /\.res-head h2\{[^}]*font-family:var\(--serif\)/);
+  assert.match(css, /\.idx-row\.on\{[^}]*color:var\(--accent\)/, "idx 选中态必须落 CSS（曾因无样式落到浏览器默认蓝）");
+});
+
+test("集子·标签页空态：单行提示性文案（夜·十⑤，非 demo 两段式）", () => {
+  const html = readFileSync(join(OUT, "collection/drawing/index.html"), "utf8");
+  assert.match(html, /<div class="list-empty">绘画还没有条目。登记了的集子\/tag 都会生成页面，只是列表为空。<\/div>/);
+  assert.ok(!html.includes("这里还没有条目"), "demo 两段式首句不得回归");
+});
+
+
 test("条目页 URL 含日期前缀（设计文档 §5.1）", () => {
   assert.ok(existsSync(join(OUT, "entry/2026-10-14-example/index.html")));
 });
