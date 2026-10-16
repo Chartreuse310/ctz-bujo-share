@@ -138,6 +138,21 @@ test("每类页面的底栏都有且只有一个选中 tab（navActive 全覆盖
   assert.deepEqual(onInEntry, [], "entry 页不亮任何 tab");
 });
 
+// 月历格子文案 .cap = 当日日总结标题，截断规则按定稿 §5.2「1~2 行，超出 …」。
+// 2026-10-16 五轮修正：@media(max-height:760px) 矮视口档曾写 -webkit-line-clamp:1
+// （demo shortViewportG() 的内部行为，移植时带进实现），把用户 ≈750px 高的视口
+// 罩住、文案只剩一行——与定稿的 1~2 行矛盾。守卫：任何视口档下 cap 都不得单行截断。
+test("月历格子文案所有视口档都是两行截断（§5.2，矮视口档不得压回 1 行）", () => {
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  const clamps = [...css.matchAll(/\.cell \.cap\{[^}]*\}/g)].map((m) => m[0]);
+  assert.ok(clamps.length >= 2, `style.css 里应有多档 .cap 规则，实际 ${clamps.length} 条`);
+  for (const rule of clamps) {
+    const m = rule.match(/-webkit-line-clamp:(\d+)/);
+    assert.ok(m, `.cap 规则缺 -webkit-line-clamp：${rule}`);
+    assert.equal(m[1], "2", `所有视口档的 cap 都应 line-clamp:2，实际：${rule}`);
+  }
+});
+
 // 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。
 // 依赖 load.js 支持 CTZ_CONTENT_ROOT 覆盖内容根目录（Task 1.6 已含）。
 // ⚠️ 不要断言 !existsSync(out)：实测失败时输出目录仍会被创建
