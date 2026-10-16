@@ -9,6 +9,8 @@
 
 - 2026-10-16（夜·六）：六轮验收两项——① **标题区重排**：统计行「条目 N · 重点 N · 日总结 N」右移到原翻月位置（`margin-left:auto` + `padding-right:264px`，右缘仍 = 月历格右缘）；翻月链接「← 上一月 / 下一月 →」贴标题行**最右端**（`padding-right` 收口取消，month-nav 不再 `margin-left:auto` 由 facts 承担）。② **格子文案符号断行**：日总结标题在符号处断成两行——「，」留第一行行尾、「&」提第二行行首（数据层 `splitCaption` 完成，`captions` 改分段数组，模板段间 `<br>`；无符号不分段，CSS 两行截断兜底；只取第一个断点）——取代四轮的「整段 + line-clamp 自然折行」。§5.2 已同步。
 
+- 2026-10-16（夜·七）：七轮微调——**统计行文字右缘精确贴月历最右格线**。六轮用 `padding-right:264px` 推的是元素盒，文字右缘实际停在 ≈876px，未达 matrix 右缘 996px；且翻月组在 flex 流里会成为 facts 的 `margin-right` 收口参照（实测移除 nav 后 facts 盒右缘即达 996）。修法：翻月组 `position:absolute; right:0; bottom:0` 脱离 flex 流（month-head 加 `position:relative`），facts 改 `margin-right:264px`——文字右缘 = 1260 − 264 = 996 = matrix 右缘（CDP 逐字符实测「2」右缘 = 996）。§5.2 口径更新：统计行对齐量测口径从「元素盒右缘」收紧为「**文字右缘**（Range 实测）」。
+
 - 2026-10-16（夜·五）：五轮验收——**月历格子文案矮视口下被压成单行**。用户视口（约 750px 高）落进移植自 demo `shortViewportG()` 的 `@media(max-height:760px)` 档，该档把 `.cap` 压成 `line-clamp:1`——但 §5.2 定稿是「1~2 行，超出 …」，demo 的矮视口压缩是其内部行为、不属于定稿。修复：实现里所有视口档统一 `line-clamp:2`（矮视口档保留 margin/字号压缩、只回收行数覆盖）；新增 e2e 守卫遍历产物 CSS 全部 `.cap` 规则断言两行。§5.2 条款已同步。
 
 - 2026-10-16（夜·四）：四轮验收修正三项——① **月视图标题区恢复 demo 结构**：`month-head` 收回 `.month-top` 包裹层（三轮重构时误删了包裹层，`.month-top .facts/.month-nav` 选择器整组失效，统计行无间距、翻月不居右），统计行顺序改 demo 款「条目 N · 重点 N · 日总结 N」，样式与 demo 一致（mono 11px、gap 18px、b 加粗墨色）。② **翻月控件**居右贴月历格右缘（month-head 跨全宽后 padding-right = 右栏 236px + 栏间距 28px = 264px）、灰色 mono 10.5px。③ **格子文案 = 当日日总结标题**（`buildMonthGrid` 新增第 4 参 `dailies`，`captions` 来源从重点条目标题改为日总结标题；无条目的日子只要有日总结也显示；`highlightCount` 语义同步修正为「当日含重点」0/1）——§5.2 条款已同步。修复中发现并修正：月历格右缘的正确量测口径是 matrix 右缘（含周日列空格的边线），不是最后非空格子的右缘（月末可能不满行）。
