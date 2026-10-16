@@ -93,6 +93,22 @@ test("buildMonthGrid：标记 today", () => {
   assert.equal(g.cells.find((c) => c.date === "2026-10-13").isToday, false);
 });
 
+test("buildMonthGrid：每格 dots 数组 = 当日每条条目一枚圆点（重点红/普通黑，2026-10-16 拍板）", () => {
+  const entries = [
+    { date: "2026-10-03", type: "event",   highlight: true,  title: "重点一" },
+    { date: "2026-10-03", type: "thought", highlight: false, title: "普通一" },
+    { date: "2026-10-03", type: "event",   highlight: true,  title: "重点二" },
+    { date: "2026-10-08", type: "thought", highlight: false, title: "普通二" },
+  ];
+  const g = buildMonthGrid("2026-10", entries);
+  const c3 = g.cells.find((c) => c.date === "2026-10-03");
+  assert.deepEqual(c3.dots, ["red", "black", "red"]);   // 与当日条目同序，重点=红
+  const c8 = g.cells.find((c) => c.date === "2026-10-08");
+  assert.deepEqual(c8.dots, ["black"]);
+  // 无条目日 dots 为空数组（不是 undefined）
+  assert.deepEqual(g.cells.find((c) => c.date === "2026-10-01").dots, []);
+});
+
 test("buildMonthList：只含日总结，按日期倒序（设计文档 §5.2）", () => {
   const dailies = [
     { date: "2026-10-01", title: "一号" },

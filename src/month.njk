@@ -2,33 +2,32 @@
 {% set list = buildMonthList(monthKey, site.dailies, site.entries) %}
 {% set facts = monthFacts(monthKey, site.entries, site.dailies) %}
 <div class="shell">
-  <div class="month-top">
-    <h1>{{ monthKey | replace("-", " · ") }}</h1>
-    <div class="facts"><span>日总结 <b>{{ facts.dailies }}</b></span><span>重点 <b>{{ facts.highlights }}</b></span><span>条目 <b>{{ facts.entries }}</b></span></div>
-    <div class="month-nav">
-      <a href="{{ base }}/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
-      {% if monthKey != site.thisMonth %}<a href="{{ base }}/month/{{ site.thisMonth }}/">回到本月</a>{% endif %}
-      <a href="{{ base }}/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
-    </div>
-  </div>
-
   <div class="month-body">
     <section class="cal-pane">
+      <div class="month-head">
+        <h1>{{ monthKey | replace("-", " · ") }}</h1>
+        <div class="facts"><span>日总结 <b>{{ facts.dailies }}</b></span><span>重点 <b>{{ facts.highlights }}</b></span><span>条目 <b>{{ facts.entries }}</b></span></div>
+        <div class="month-nav">
+          <a href="{{ base }}/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
+          {% if monthKey != site.thisMonth %}<a href="{{ base }}/month/{{ site.thisMonth }}/">回到本月</a>{% endif %}
+          <a href="{{ base }}/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
+        </div>
+      </div>
       <div class="dow">{% for w in weekdaysOf() %}<span>{{ w }}</span>{% endfor %}</div>
       <div class="matrix" style="--rows: {{ grid.rows }}">
         {% for c in grid.cells %}
           {% if c.blank %}<div class="cell void"></div>
           {% else %}<a class="cell {% if c.hasHighlight %}hl{% endif %} {% if c.isToday %}today{% endif %}" href="{{ base }}/day/{{ c.date }}/">
             <div class="num">{{ c.day }}</div>
-            <div class="mt">{% if c.entryCount %}{% if c.hasHighlight %}<i class="red"></i>{% else %}<i></i>{% endif %}{% endif %}{% if c.entryCount %}<span class="n">{{ c.entryCount }}</span>{% endif %}</div>
+            <div class="mt">{% for dot in c.dots %}<i class="{{ dot }}"></i>{% endfor %}{% if c.entryCount %}<span class="n">{{ c.entryCount }}</span>{% endif %}</div>
             {% if c.captions | length %}<div class="cap">{{ c.captions[0] }}{% if c.captions | length > 1 %} +{{ c.captions | length - 1 }}{% endif %}</div>{% endif %}
           </a>
           {% endif %}
         {% endfor %}
       </div>
       <div class="cal-foot">
-        <span class="k"><i class="dot red"></i>重点</span>
-        <span class="k"><i class="dot"></i>条目</span>
+        <span class="k"><u></u>重点</span>
+        <span class="k"><b></b>条目</span>
         <span>点格子进日页 · 右侧数字 = 当日条目数</span>
       </div>
     </section>
