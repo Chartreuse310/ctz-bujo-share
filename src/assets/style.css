@@ -177,7 +177,8 @@ footer.note{margin-top:34px;padding-top:16px}
 .pull{background:var(--surface);border:1px solid var(--rule);border-radius:2px}
 .pull .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
 .pull h2{margin:0 0 8px;font-family:var(--serif);line-height:1.4;font-weight:600;letter-spacing:-.01em}
-.pull p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.85;max-width:640px}
+/* 段间距 > 行间距（2026-10-16 用户拍板，偏离 demo 原款 margin:0）：段间 +10px ≈0.7 行 */
+.pull p{margin:10px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.85;max-width:640px}
 .sect-h{display:flex;align-items:center;gap:14px;margin:0 0 6px}
 .sect-h h3{margin:0;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);font-weight:400}
 .sect-h::after{content:"";flex:1;height:1px;background:var(--rule)}

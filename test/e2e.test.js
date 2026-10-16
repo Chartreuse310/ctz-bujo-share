@@ -228,6 +228,18 @@ test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () =>
   assert.ok(!html.includes("还没有记录"));
 });
 
+// 「今日小结」正文段间距 > 行间距（2026-10-16 用户拍板，取代 demo 原款 margin:0）：
+// 段间 +10px（≈0.7 行），比条目卡片（.entry .excerpt，拍板为段距 0）松，段落分隔感更清楚。
+test("今日小结正文段间距大于行间距（.pull p margin-top:10px，§5.3 补拍板）", () => {
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  const m = css.match(/\.pull p\{[^}]*\}/);
+  assert.ok(m, "style.css 应有 .pull p 规则");
+  assert.match(m[0], /margin:10px 0 0/, `.pull p 应有 10px 顶边距（段距>行距拍板）：${m[0]}`);
+  // 条目卡片摘要保持段距 0（2026-10-15 拍板），两者口径不同是有意的
+  const ex = css.match(/\.entry \.excerpt p\{[^}]*\}/);
+  assert.ok(ex && /margin:0/.test(ex[0]), `.entry .excerpt p 应保持 margin:0：${ex && ex[0]}`);
+});
+
 // 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。// 依赖 load.js 支持 CTZ_CONTENT_ROOT 覆盖内容根目录（Task 1.6 已含）。
 // ⚠️ 不要断言 !existsSync(out)：实测失败时输出目录仍会被创建
 // （passthrough copy 在校验之前就跑完了，里面只剩 assets/）。
