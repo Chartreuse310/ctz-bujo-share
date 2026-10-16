@@ -241,15 +241,16 @@ footer.note{margin-top:34px;padding-top:16px}
 .mini-foot i{display:inline-block;width:14px;height:2px;background:var(--ink-3);margin-right:5px;vertical-align:middle}
 .mini-foot i.red{background:var(--accent)}
 .mini-foot b{display:inline-block;width:11px;height:11px;background:var(--rule-2);border:1px solid var(--rule);margin-right:5px;vertical-align:-1px}
-/* month-head 跨全宽；padding-right = 右栏 236px + 栏间距 28px，使翻月组右缘 = 月历格右缘（二轮验收 #2 口径） */
-.month-top .month-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-right:264px}
-.month-top .month-head > :last-child{margin-left:auto}
+/* month-head 跨全宽（六轮拍板）：翻月组贴标题行最右；统计行 margin-left:auto 推到
+   右缘 = 月历格右缘（量测口径 = matrix 右缘，padding-right 264px 仍兜住收口）。 */
+.month-top .month-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-right:0}
+.month-top .facts{margin-left:auto;padding-right:264px}
 .month-top h1{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:-.015em;line-height:1;display:flex;align-items:baseline;gap:16px}
 .month-top h1 em{font-style:italic;font-family:var(--serif);font-weight:400;color:var(--ink-3);letter-spacing:.08em}
 .month-top .facts{display:flex;gap:18px;font-family:var(--mono);font-size:11px;color:var(--ink-2);flex-wrap:wrap}
 .month-top .facts b{font-weight:600;color:var(--ink)}
-/* 翻月控件（2026-10-16 拍板）：无边框无背景、灰色 mono 小字，居右 */
-.month-top .month-nav{display:flex;gap:14px;font-family:var(--mono);font-size:10.5px;margin-left:auto}
+/* 翻月控件（2026-10-16 拍板）：无边框无背景、灰色 mono 小字；六轮起贴标题行最右端 */
+.month-top .month-nav{display:flex;gap:14px;font-family:var(--mono);font-size:10.5px}
 .month-top .month-nav a{color:var(--ink-3);text-decoration:none}
 .month-top .month-nav a:hover{color:var(--ink)}
 /* 标题区底边墨线（demo g1 .month-top 同款）：线只在标题区下，格线区不再重复 */

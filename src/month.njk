@@ -23,7 +23,7 @@
           {% else %}<a class="cell {% if c.hasHighlight %}hl{% endif %} {% if c.isToday %}today{% endif %}" href="{{ base }}/day/{{ c.date }}/">
             <div class="num">{{ c.day }}</div>
             <div class="mt">{% for dot in c.dots %}<i class="{{ dot }}"></i>{% endfor %}{% if c.entryCount %}<span class="n">{{ c.entryCount }}</span>{% endif %}</div>
-            {% if c.captions | length %}<div class="cap">{{ c.captions[0] }}{% if c.captions | length > 1 %} +{{ c.captions | length - 1 }}{% endif %}</div>{% endif %}
+            {% if c.captions | length %}<div class="cap">{% for seg in c.captions %}{% if not loop.first %}<br>{% endif %}{{ seg }}{% endfor %}{% if c.captions | length > 2 %}…{% endif %}</div>{% endif %}
           </a>
           {% endif %}
         {% endfor %}

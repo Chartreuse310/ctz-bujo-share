@@ -93,6 +93,26 @@ test("buildMonthGrid：当日无日总结时 captions 为空（格子不显示�
   assert.deepEqual(c6.captions, ["别的日子"]);   // 无条目的日子只要有日总结也显示
 });
 
+// 六轮拍板（2026-10-16）：格子文案在符号处手工断行——
+// 「，」留在第一行行尾；「&」放到第二行行首；无这些符号则单段不分（交给 CSS 两行截断）。
+test("buildMonthGrid：格子文案按符号断行，「，」留行尾、「&」起第二行", () => {
+  const g = buildMonthGrid("2026-10", [], null, [
+    { date: "2026-10-01", title: "把想法画成图，一下清楚了" },
+    { date: "2026-10-02", title: "读综述论文 & 去吃小龙虾" },
+    { date: "2026-10-03", title: "没有任何符号的标题" },
+    { date: "2026-10-04", title: "先问，再决定 & 落笔" },
+  ]);
+  const cap = (d) => g.cells.find((c) => c.date === d).captions;
+  // 「，」：逗号留在第一行行尾
+  assert.deepEqual(cap("2026-10-01"), ["把想法画成图，", "一下清楚了"]);
+  // 「&」：符号提到第二行开头，前段行尾不带空格
+  assert.deepEqual(cap("2026-10-02"), ["读综述论文", "& 去吃小龙虾"]);
+  // 无符号：不分段（数组单元素，渲染不插 <br>）
+  assert.deepEqual(cap("2026-10-03"), ["没有任何符号的标题"]);
+  // 混合：第一个「，」处断，「&」跟在第二行开头
+  assert.deepEqual(cap("2026-10-04"), ["先问，", "再决定 & 落笔"]);
+});
+
 test("buildMonthGrid：无重点的日子黑点（hasHighlight=false）但保留 entryCount", () => {
   const g = buildMonthGrid("2026-10", [
     { date: "2026-10-05", type: "event", highlight: false, title: "x" },
