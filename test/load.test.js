@@ -92,3 +92,68 @@ test("条目按日期升序返回，同日保持文件顺序", () => {
   assert.deepEqual(entries.map((e) => e.title), ["C", "A", "B"]);
   rmSync(root, { recursive: true, force: true });
 });
+
+// —— 同日条目手动排序（设计文档 §4.4，2026-10-16 拍板）——
+
+test("同日内有 order 的条目升序排最前，无 order 的按文件名序跟后（§4.4）", () => {
+  const root = fixture({
+    "content/taxonomy.yml": TAX,
+    "content/entries/2026-10-14-a.md": "---\ntype: event\ntitle: 无order甲\ndate: 2026-10-14\n---\n",
+    "content/entries/2026-10-14-b.md": "---\ntype: event\ntitle: order2\ndate: 2026-10-14\norder: 2\n---\n",
+    "content/entries/2026-10-14-c.md": "---\ntype: event\ntitle: order1\ndate: 2026-10-14\norder: 1\n---\n",
+    "content/entries/2026-10-14-d.md": "---\ntype: event\ntitle: 无order乙\ndate: 2026-10-14\n---\n",
+  });
+  const { entriesByDate } = loadContent(root);
+  const sameDay = entriesByDate["2026-10-14"].map((e) => e.title);
+  // 同日内：order1、order2 在前（升序）；无 order 的 a、d 按文件名序跟后
+  assert.deepEqual(sameDay, ["order1", "order2", "无order甲", "无order乙"]);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("order 只影响同日，不改跨日排序（§4.4）", () => {
+  const root = fixture({
+    "content/taxonomy.yml": TAX,
+    "content/entries/2026-10-15-a.md": "---\ntype: event\ntitle: 后天order1\ndate: 2026-10-15\norder: 1\n---\n",
+    "content/entries/2026-10-14-b.md": "---\ntype: event\ntitle: 前天无order\ndate: 2026-10-14\n---\n",
+  });
+  const { entries } = loadContent(root);
+  assert.deepEqual(entries.map((e) => e.title), ["前天无order", "后天order1"]);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("order 相同按文件名序兜底（§4.4）", () => {
+  const root = fixture({
+    "content/taxonomy.yml": TAX,
+    "content/entries/2026-10-14-b.md": "---\ntype: event\ntitle: 同order乙\ndate: 2026-10-14\norder: 1\n---\n",
+    "content/entries/2026-10-14-a.md": "---\ntype: event\ntitle: 同order甲\ndate: 2026-10-14\norder: 1\n---\n",
+  });
+  const { entries } = loadContent(root);
+  assert.deepEqual(entries.map((e) => e.title), ["同order甲", "同order乙"]);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("order 非整数中断构建并指出字段（§4.4 + §7）", () => {
+  for (const bad of ["\"2\"", "2.5", "true", "零"]) {
+    const root = fixture({
+      "content/taxonomy.yml": TAX,
+      "content/entries/2026-10-14-a.md": `---\ntype: event\ntitle: X\ndate: 2026-10-14\norder: ${bad}\n---\n`,
+    });
+    assert.throws(
+      () => loadContent(root),
+      (e) => e.name === "ContentError" && /order/.test(e.message),
+      `order: ${bad} 应报错`
+    );
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("order 是已知字段，不触发未知字段警告（§4.4）", () => {
+  const warnings = [];
+  const root = fixture({
+    "content/taxonomy.yml": TAX,
+    "content/entries/2026-10-14-a.md": "---\ntype: event\ntitle: X\ndate: 2026-10-14\norder: 1\n---\n",
+  });
+  loadContent(root, { warn: (m) => warnings.push(m) });
+  assert.deepEqual(warnings, []);
+  rmSync(root, { recursive: true, force: true });
+});
