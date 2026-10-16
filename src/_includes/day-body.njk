@@ -2,7 +2,7 @@
 {% set theDaily = site.dailyByDate[theDate] %}
 {% set theEntries = site.entriesByDate[theDate] or [] %}
 {% set theMonth = theDate | substr(0, 7) %}
-{% set grid = buildMonthGrid(theMonth, site.entries, site.today) %}
+{% set grid = buildMonthGrid(theMonth, site.entries, site.today, site.dailies) %}
 <div class="wrap">
 <div class="home">
   <main class="day">

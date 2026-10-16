@@ -1,18 +1,21 @@
-{% set grid = buildMonthGrid(monthKey, site.entries, site.today) %}
+{% set grid = buildMonthGrid(monthKey, site.entries, site.today, site.dailies) %}
 {% set list = buildMonthList(monthKey, site.dailies, site.entries) %}
 {% set facts = monthFacts(monthKey, site.entries, site.dailies) %}
 <div class="shell">
+  <div class="month-top">
+    <div class="month-head">
+      <h1>{{ monthKey | replace("-", " · ") }}</h1>
+      <div class="facts"><span>条目 <b>{{ facts.entries }}</b></span><span>重点 <b>{{ facts.highlights }}</b></span><span>日总结 <b>{{ facts.dailies }}</b></span></div>
+      <div class="month-nav">
+        <a href="{{ base }}/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
+        {% if monthKey != site.thisMonth %}<a href="{{ base }}/month/{{ site.thisMonth }}/">回到本月</a>{% endif %}
+        <a href="{{ base }}/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
+      </div>
+    </div>
+  </div>
+
   <div class="month-body">
     <section class="cal-pane">
-      <div class="month-head">
-        <h1>{{ monthKey | replace("-", " · ") }}</h1>
-        <div class="facts"><span>日总结 <b>{{ facts.dailies }}</b></span><span>重点 <b>{{ facts.highlights }}</b></span><span>条目 <b>{{ facts.entries }}</b></span></div>
-        <div class="month-nav">
-          <a href="{{ base }}/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
-          {% if monthKey != site.thisMonth %}<a href="{{ base }}/month/{{ site.thisMonth }}/">回到本月</a>{% endif %}
-          <a href="{{ base }}/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
-        </div>
-      </div>
       <div class="dow">{% for w in weekdaysOf() %}<span>{{ w }}</span>{% endfor %}</div>
       <div class="matrix" style="--rows: {{ grid.rows }}">
         {% for c in grid.cells %}

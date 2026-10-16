@@ -241,18 +241,19 @@ footer.note{margin-top:34px;padding-top:16px}
 .mini-foot i{display:inline-block;width:14px;height:2px;background:var(--ink-3);margin-right:5px;vertical-align:middle}
 .mini-foot i.red{background:var(--accent)}
 .mini-foot b{display:inline-block;width:11px;height:11px;background:var(--rule-2);border:1px solid var(--rule);margin-right:5px;vertical-align:-1px}
-.month-top .month-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--ink);padding-bottom:12px;margin-bottom:2px}
+/* month-head 跨全宽；padding-right = 右栏 236px + 栏间距 28px，使翻月组右缘 = 月历格右缘（二轮验收 #2 口径） */
+.month-top .month-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-right:264px}
 .month-top .month-head > :last-child{margin-left:auto}
 .month-top h1{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:-.015em;line-height:1;display:flex;align-items:baseline;gap:16px}
 .month-top h1 em{font-style:italic;font-family:var(--serif);font-weight:400;color:var(--ink-3);letter-spacing:.08em}
-.month-top .facts{margin-left:auto;display:flex;gap:18px;font-family:var(--mono);font-size:11px;color:var(--ink-2);flex-wrap:wrap}
+.month-top .facts{display:flex;gap:18px;font-family:var(--mono);font-size:11px;color:var(--ink-2);flex-wrap:wrap}
 .month-top .facts b{font-weight:600;color:var(--ink)}
 /* 翻月控件（2026-10-16 拍板）：无边框无背景、灰色 mono 小字，居右 */
-.month-top .month-nav{margin-left:auto;display:flex;gap:14px;font-family:var(--mono);font-size:10.5px}
+.month-top .month-nav{display:flex;gap:14px;font-family:var(--mono);font-size:10.5px;margin-left:auto}
 .month-top .month-nav a{color:var(--ink-3);text-decoration:none}
 .month-top .month-nav a:hover{color:var(--ink)}
-/* 统计行居左邻标题，翻月组始终贴月历右缘（2026-10-16 验收 #2） */
-.month-top .facts{margin-left:0}
+/* 标题区底边墨线（demo g1 .month-top 同款）：线只在标题区下，格线区不再重复 */
+.month-top{border-bottom:1px solid var(--ink)}
 .dow{display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 9px}
 .dow span{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);padding-left:11px}
 .cell{background:var(--surface);padding:10px 11px 9px}

@@ -6,7 +6,7 @@ permalink: /
 ---
 {% set todayDaily = site.dailyByDate[site.today] %}
 {% set todayEntries = site.entriesByDate[site.today] or [] %}
-{% set grid = buildMonthGrid(site.thisMonth, site.entries, site.today) %}
+{% set grid = buildMonthGrid(site.thisMonth, site.entries, site.today, site.dailies) %}
 <div class="wrap">
 <div class="home">
   <main class="day">
