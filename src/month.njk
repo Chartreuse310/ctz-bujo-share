@@ -3,10 +3,11 @@
 {% set facts = monthFacts(monthKey, site.entries, site.dailies) %}
 <div class="shell">
   <div class="month-top">
-    <h1>{{ monthKey | replace("-", " · ") }}<em>{{ facts.daysWithRecords }} 天有记录</em></h1>
+    <h1>{{ monthKey | replace("-", " · ") }}</h1>
+    <div class="facts"><span>日总结 <b>{{ facts.dailies }}</b></span><span>重点 <b>{{ facts.highlights }}</b></span><span>条目 <b>{{ facts.entries }}</b></span></div>
     <div class="month-nav">
       <a href="{{ base }}/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
-      <a href="{{ base }}/month/{{ site.thisMonth }}/" {% if monthKey == site.thisMonth %}aria-current="page"{% endif %}>回到本月</a>
+      {% if monthKey != site.thisMonth %}<a href="{{ base }}/month/{{ site.thisMonth }}/">回到本月</a>{% endif %}
       <a href="{{ base }}/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
     </div>
   </div>
@@ -26,14 +27,14 @@
         {% endfor %}
       </div>
       <div class="cal-foot">
-        <span class="k"><i class="dot red"></i>含重点</span>
-        <span class="k"><i class="dot"></i>有记录</span>
+        <span class="k"><i class="dot red"></i>重点</span>
+        <span class="k"><i class="dot"></i>条目</span>
         <span>点格子进日页 · 右侧数字 = 当日条目数</span>
       </div>
     </section>
 
     <aside class="list-pane">
-      <div class="list-head">当月日总结<b>{{ list | length }}</b></div>
+      <div class="list-head">日总结<b>{{ list | length }}</b></div>
       {% for d in list %}
       <a class="dlrow" href="{{ d.url }}">
         <div class="r1"><span class="d">{{ d.date }}</span><span>{{ d.weekday }}</span>{% if d.highlightCount > 0 %}<span class="mk"><i class="dot red"></i></span>{% endif %}</div>

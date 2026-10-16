@@ -7,6 +7,7 @@ permalink: /
 {% set todayDaily = site.dailyByDate[site.today] %}
 {% set todayEntries = site.entriesByDate[site.today] or [] %}
 {% set grid = buildMonthGrid(site.thisMonth, site.entries, site.today) %}
+<div class="wrap">
 <div class="home">
   <main class="day">
     <div class="dateline">
@@ -62,4 +63,5 @@ permalink: /
       <a class="stat-link" href="{{ base }}/stats/">进入统计 →</a>
     </div>
   </aside>
+</div>
 </div>

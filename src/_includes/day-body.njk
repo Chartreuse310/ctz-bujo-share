@@ -3,6 +3,7 @@
 {% set theEntries = site.entriesByDate[theDate] or [] %}
 {% set theMonth = theDate | substr(0, 7) %}
 {% set grid = buildMonthGrid(theMonth, site.entries, site.today) %}
+<div class="wrap">
 <div class="home">
   <main class="day">
     <div class="dateline">
@@ -58,4 +59,5 @@
       <a class="stat-link" href="{{ base }}/stats/">进入统计 →</a>
     </div>
   </aside>
+</div>
 </div>

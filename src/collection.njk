@@ -1,4 +1,5 @@
 {% set colEntries = site.entriesByCollection[col.name] %}
+<div class="wrap">
 <div class="index-layout">
   <main class="res-main">
     <div class="dateline">
@@ -32,4 +33,5 @@
     <a class="rail-row" href="{{ tg.url }}">#{{ tg.name }}<span class="n">{{ site.entriesByTag[tg.name] | length }}</span></a>
     {% endfor %}
   </aside>
+</div>
 </div>
