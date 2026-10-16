@@ -2320,12 +2320,13 @@ git commit -m "feat: 基础布局与 G1 通栏细线底栏"
 
 **文件**：`src/index.njk`（改写）
 
-**要点**（设计文档 §5 路径表 + demo 的 `renderDay`/`renderSide`）
+**要点**（设计文档 §5 路径表 + §5.3（2026-10-16 夜·八拍板）+ demo 的 `renderDay`/`renderSide`）
 
-- `.dateline`：日期大字 + 星期 + 「第 N 天」+ 「N 条条目 · 1 条日总结 · N 条重点」
-- 有日总结时渲染 `.pull`（今日小结）
-- `.sect-h` + 条目列表：每条 `.entry`，含 `.idx` 序号、`h4` 标题、标签行（类型 / 集子 / `# tag` / 重点）、正文摘要第一个段落
-- 侧栏 `.side`：小月历（复用 `buildMonthGrid`）+ 统计入口（`.stat-pair`）
+- `.dateline`：日期衬线大字（`.dateline b`）+ 星期/第 N 天（em 不用斜体）+ facts「N 条条目 · N 条日总结 · N 条重点」
+- 有日总结时渲染 `.pull`（今日小结）：mono 朱红 `.lbl` 标签 + 标题进衬线 `h2`
+- `.sect-h h3`（mono 10px + 延伸线）+ 条目列表：每条 `.entry`，条目头用 `.top-row`（**不得复用右栏 `.dlrow .r1` 类名**）、`.idx` 序号、`h4` 标题、**tag 胶囊行**（`.tags` 46px 缩进：`.tag.type` 描边 / `.tag.coll` 黑底反白 / `.tag` 灰描边 / `.tag.hl` 朱红）、摘要 `.excerpt` 46px 缩进
+- 空状态：单行 `.empty`「这里是空的。」（2026-10-16 拍板文案）
+- 侧栏 `.side`（demo `.blk` 块结构）：块一 `.blk > .blk-h(h3 小月历 + 「月视图 →」链接) + .mini(.mini-head + .mini-dow + .mini-grid)`，格子为 `<a class="mini-cell">`（**CSS 选择器用 `.mini-grid a`，不是 button**）；`mini-foot` **只保留「今天」灰方块一枚图例**；块二 `.blk > .blk-h(h3 统计 + 「查看统计 →」) + .stat-pair`（衬线 30px 大数字**墨色不分色** + `.l` 标签 + `.s`「本月 N」副行，口径 = 条目/日总结）
 - 侧栏小月历点进 `/day/<date>/`
 
 关键取数：`site.dailyByDate[site.today]`、`site.entriesByDate[site.today]`、`buildMonthGrid(site.thisMonth, site.entries, site.today)`。

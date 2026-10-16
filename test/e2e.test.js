@@ -153,8 +153,82 @@ test("月历格子文案所有视口档都是两行截断（§5.2，矮视口档
   }
 });
 
-// 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。
-// 依赖 load.js 支持 CTZ_CONTENT_ROOT 覆盖内容根目录（Task 1.6 已含）。
+// —— 今日页 g1 基线对齐（设计文档 §5.3，2026-10-16 夜·八拍板）——
+// 与 demo g1-line.html 的 #s-home 屏逐组件机械核对后定稿：tag 胶囊、.blk 块结构、
+// mini-cell 格子、统计块「本月 N」副行、今日小结 .lbl/.h2、.top-row 条目头、空状态文案。
+test("今日页 tag 呈现为胶囊（.tag.type/.coll/.hl），meta 文本行作废（§5.3）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  // PhD 条目：类型描边 + 集子黑底反白 + tag 灰描边（tag 胶囊带「# 」前缀文案）
+  assert.match(html, /class="tag type"/);
+  assert.match(html, /class="tag coll">博士学位论文</);
+  assert.match(html, /class="tag"># PhD V2\.0 P1\.1</);
+  // 文本行 meta（旧约）不得再出现——meta 行已由胶囊行取代
+  assert.ok(!html.includes('class="meta"'), "日页不得再出现文本行 meta");
+});
+
+test("今日页条目头用 .top-row 且摘要/tags 挂 46px 缩进（§5.3）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  assert.match(html, /class="top-row"/);
+  assert.ok(!html.includes('<div class="r1">'), "条目头不得复用右栏 .dlrow .r1 类名");
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  assert.match(css, /\.entry \.tags\{[^}]*margin:13px 0 0 46px/);
+  assert.match(css, /\.entry \.excerpt\{[^}]*margin:12px 0 0 46px/);
+});
+
+test("今日页「今日小结」用 .lbl 朱红标签 + 衬线 h2（§5.3）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  // 模板带缩进换行，断言行内顺序而非跨行拼接
+  assert.match(html, /<aside class="pull">\s*<b class="lbl">今日小结<\/b>\s*<h2>/);
+  assert.match(html, /<h2>读综述论文/);
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  assert.match(css, /\.pull \.lbl\{[^}]*color:var\(--accent\)/);
+});
+
+test("今日页侧栏是 .blk 块结构 + mini-foot 只留「今天」图例（§5.3）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  assert.match(html, /<div class="blk">/);
+  assert.match(html, /<h3>小月历<\/h3>/);
+  assert.match(html, /<h3>统计<\/h3>/);
+  assert.match(html, /月视图 →/);
+  assert.match(html, /查看统计 →/);
+  // 图例只保留「今天」一枚灰方块样本
+  assert.match(html, /<div class="mini-foot"><b><\/b>今天<\/div>/);
+  assert.ok(!html.includes("有记录</span>"), "demo 的「有记录」图例不恢复");
+  assert.ok(!html.includes("含重点</span>"), "demo 的「含重点」图例不恢复");
+});
+
+test("小月历格子样式选择器是 .mini-grid a（button/a 失配防复发，§5.3）", () => {
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  // 旧缺陷：模板用 <a class="mini-cell">，CSS 全写 .mini-grid button → 0 条规则生效
+  assert.match(css, /\.mini-grid a\{[^}]*height:26px/);
+  assert.match(css, /\.mini-grid a\.hl \.ul\{[^}]*var\(--accent\)/);
+  assert.match(css, /\.mini-grid a\.sel\{[^}]*border-color:var\(--ink\)/);
+  assert.match(css, /\.mini-grid a\.today\{[^}]*background:var\(--rule-2\)/);
+  assert.ok(!css.match(/\.mini-grid button\{/), "button 选择器不得残留（模板无 button）");
+});
+
+test("统计块参照 demo .stat-pair：衬线大数字墨色 + 「本月 N」副行（§5.3）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  // 大数字墨色不分色：不得出现 demo 的 .n.ev/.n.th 分色类
+  assert.ok(!html.includes('class="n ev"') && !html.includes('class="n th"'));
+  assert.match(html, /<span class="n">\d+<\/span><span class="l">条目<\/span><span class="s">本月 \d+<\/span>/);
+  assert.match(html, /<span class="n">\d+<\/span><span class="l">日总结<\/span><span class="s">本月 \d+<\/span>/);
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  // 分色规则不采用（大数字一律墨色）
+  assert.ok(!css.match(/\.stat-pair \.p \.n\.(ev|th)/), "stat-pair 大数字分色规则不得存在");
+  assert.match(css, /\.stat-pair \.p \.n\{[^}]*color:var\(--ink\)/);
+});
+
+test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () => {
+  // 空状态落在首页（今日 = 2026-10-16 无条目）与未来日期不生成日页——用首页验证
+  const html = readFileSync(join(OUT, "index.html"), "utf8");
+  assert.match(html, /<div class="empty">这里是空的。<\/div>/);
+  // demo 两段引导不恢复
+  assert.ok(!html.includes("这天没有条目"));
+  assert.ok(!html.includes("还没有记录"));
+});
+
+// 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。// 依赖 load.js 支持 CTZ_CONTENT_ROOT 覆盖内容根目录（Task 1.6 已含）。
 // ⚠️ 不要断言 !existsSync(out)：实测失败时输出目录仍会被创建
 // （passthrough copy 在校验之前就跑完了，里面只剩 assets/）。
 // 正确口径：退出码非 0 + 没有任何 HTML 页面产出 + stderr 含出错字段名。
