@@ -100,6 +100,44 @@ test("无前缀场景（CTZ_BASE_URL=空）构建出根路径引用", () => {
   rmSync(out2, { recursive: true, force: true });
 });
 
+// —— 底栏选中态（2026-10-16 三轮验收实证缺陷修复）——
+// navActive 之前只在 index.njk 定义，month/collection/tag/stats/day 六类页面
+// 的底栏四个 tab 全灰（CDP 实测 on 状态数=0），用户无法分辨当前屏。
+// 归属按设计文档 §5 页面清单：month→本月、collection/tag→集子·标签、
+// stats→统计、day→今日（与首页同版式）；entry 是跨屏详情页，不亮任何 tab。
+test("每类页面的底栏都有且只有一个选中 tab（navActive 全覆盖）", () => {
+  // 统计页的「本月/本年/全部」窗口切换器也用 aria-current（页内导航，合法），
+  // 所以断言范围收紧到底栏四个链接本身。
+  const TABS = [
+    "month/2026-10/", "",
+    "collection/all/",
+    "stats/",
+  ].map((p) => `/ctz-bujo-share/${p}`);
+  const CASES = [
+    ["index.html", "/ctz-bujo-share/"],
+    ["month/2026-10/index.html", "/ctz-bujo-share/month/2026-10/"],
+    ["collection/all/index.html", "/ctz-bujo-share/collection/all/"],
+    ["tag/running/index.html", "/ctz-bujo-share/collection/all/"],
+    ["stats/index.html", "/ctz-bujo-share/stats/"],
+    ["day/2026-10-15/index.html", "/ctz-bujo-share/"],
+  ];
+  for (const [file, onHref] of CASES) {
+    const html = readFileSync(join(OUT, file), "utf8");
+    const onInTabbar = TABS.filter((href) =>
+      html.includes(`href="${href}" class="on"`)
+    );
+    assert.deepEqual(
+      onInTabbar,
+      [onHref],
+      `${file} 底栏应只亮 ${onHref}，实际 ${JSON.stringify(onInTabbar)}`
+    );
+  }
+  // 条目详情页是跨屏入口，四个 tab 都不亮
+  const entryHtml = readFileSync(join(OUT, "entry/2026-10-14-example/index.html"), "utf8");
+  const onInEntry = TABS.filter((href) => entryHtml.includes(`href="${href}" class="on"`));
+  assert.deepEqual(onInEntry, [], "entry 页不亮任何 tab");
+});
+
 // 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。
 // 依赖 load.js 支持 CTZ_CONTENT_ROOT 覆盖内容根目录（Task 1.6 已含）。
 // ⚠️ 不要断言 !existsSync(out)：实测失败时输出目录仍会被创建
