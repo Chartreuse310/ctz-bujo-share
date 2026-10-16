@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% if title %}{{ title }} · {% endif %}ctz/bujo</title>
-  <link rel="stylesheet" href="/assets/style.css" />
+  <link rel="stylesheet" href="{{ base }}/assets/style.css" />
 </head>
 <body>
   <div class="brand">ctz<span>/</span>bujo</div>
@@ -14,13 +14,13 @@
   </main>
 
   <nav class="nav tabbar" aria-label="四屏导航">
-    <a href="/month/{{ site.thisMonth }}/"{% if navActive == 'month' %} class="on" aria-current="page"{% endif %}>本月</a>
-    <a href="/"{% if navActive == 'home' %} class="on" aria-current="page"{% endif %}>今日</a>
-    <a href="/collection/all/"{% if navActive == 'index' %} class="on" aria-current="page"{% endif %}>集子 · 标签</a>
-    <a href="/stats/"{% if navActive == 'stats' %} class="on" aria-current="page"{% endif %}>统计</a>
+    <a href="{{ base }}/month/{{ site.thisMonth }}/"{% if navActive == 'month' %} class="on" aria-current="page"{% endif %}>本月</a>
+    <a href="{{ base }}/"{% if navActive == 'home' %} class="on" aria-current="page"{% endif %}>今日</a>
+    <a href="{{ base }}/collection/all/"{% if navActive == 'index' %} class="on" aria-current="page"{% endif %}>集子 · 标签</a>
+    <a href="{{ base }}/stats/"{% if navActive == 'stats' %} class="on" aria-current="page"{% endif %}>统计</a>
   </nav>
 
-  <script src="/assets/nav.js" defer></script>
-  <script src="/assets/excerpt.js" defer></script>
+  <script src="{{ base }}/assets/nav.js" defer></script>
+  <script src="{{ base }}/assets/excerpt.js" defer></script>
 </body>
 </html>

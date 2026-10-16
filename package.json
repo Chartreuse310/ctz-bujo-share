@@ -6,7 +6,7 @@
   "description": "bujo 风格的公开日记与思考分享站",
   "scripts": {
     "build": "eleventy",
-    "serve": "eleventy --serve",
+    "serve": "CTZ_BASE_URL= eleventy --serve",
     "test": "node --test",
     "check": "node scripts/check-site-constraints.mjs"
   },

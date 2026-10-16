@@ -5,9 +5,9 @@
   <div class="month-top">
     <h1>{{ monthKey | replace("-", " · ") }}<em>{{ facts.daysWithRecords }} 天有记录</em></h1>
     <div class="month-nav">
-      <a href="/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
-      <a href="/month/{{ site.thisMonth }}/" {% if monthKey == site.thisMonth %}aria-current="page"{% endif %}>回到本月</a>
-      <a href="/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
+      <a href="{{ base }}/month/{{ monthKey | prevMonth }}/">&larr; 上一月</a>
+      <a href="{{ base }}/month/{{ site.thisMonth }}/" {% if monthKey == site.thisMonth %}aria-current="page"{% endif %}>回到本月</a>
+      <a href="{{ base }}/month/{{ monthKey | nextMonth }}/">下一月 &rarr;</a>
     </div>
   </div>
 
@@ -17,7 +17,7 @@
       <div class="matrix" style="--rows: {{ grid.rows }}">
         {% for c in grid.cells %}
           {% if c.blank %}<div class="cell void"></div>
-          {% else %}<a class="cell {% if c.hasHighlight %}hl{% endif %} {% if c.isToday %}today{% endif %}" href="/day/{{ c.date }}/">
+          {% else %}<a class="cell {% if c.hasHighlight %}hl{% endif %} {% if c.isToday %}today{% endif %}" href="{{ base }}/day/{{ c.date }}/">
             <div class="num">{{ c.day }}</div>
             <div class="mt">{% if c.entryCount %}{% if c.hasHighlight %}<i class="red"></i>{% else %}<i></i>{% endif %}{% endif %}{% if c.entryCount %}<span class="n">{{ c.entryCount }}</span>{% endif %}</div>
             {% if c.captions | length %}<div class="cap">{{ c.captions[0] }}{% if c.captions | length > 1 %} +{{ c.captions | length - 1 }}{% endif %}</div>{% endif %}

@@ -13,6 +13,12 @@ import { monthKey } from "../../lib/calendar.js";
 export default function () {
   const { taxonomy, entries, dailies, dailyByDate, entriesByDate } = loadContent(process.cwd());
 
+  // 子路径部署前缀（2026-10-16 线上实证缺陷修复）：GitHub Pages 项目站在 /ctz-bujo-share/ 下。
+  // lib/（schema.js / taxonomy.js）生成的 url 一律是根绝对路径 "/" 开头的纯数据，
+  // 前缀只在 data 层（这里）统一包一次——模板与 permalink 消费到的都已是带前缀的完整路径。
+  const base = (process.env.CTZ_BASE_URL ?? "/ctz-bujo-share").replace(/\/$/, "");
+  const withBase = (u) => base + u;
+
   // ⚠️ 用**本地**日期算「今天」，不要用 toISOString()：后者是 UTC，
   // 在 UTC+8 凌晨（本地 00:00–08:00）会解析成昨天，「今日」页会显示前一天。
   const now = new Date();
@@ -22,10 +28,10 @@ export default function () {
 
   // 四个可浏览的入口（集子含主集子、tag），登记但未使用的也要生成空态页
   const collections = [
-    { name: taxonomy.default_collection_name, slug: "all", url: "/collection/all/", isDefault: true },
-    ...taxonomy.collections.map((c) => ({ ...c, url: `/collection/${c.slug}/` })),
+    { name: taxonomy.default_collection_name, slug: "all", url: withBase("/collection/all/"), isDefault: true },
+    ...taxonomy.collections.map((c) => ({ ...c, url: withBase(`/collection/${c.slug}/`) })),
   ];
-  const tags = taxonomy.tags.map((t) => ({ ...t, url: `/tag/${t.slug}/` }));
+  const tags = taxonomy.tags.map((t) => ({ ...t, url: withBase(`/tag/${t.slug}/`) }));
 
   // 日页要覆盖的日期 = 有日总结的 ∪ 有条目的（Task 3.3 的分页源）。
   // 只列日总结会漏掉「有条目但当天没写日总结」的日子。
@@ -67,11 +73,15 @@ export default function () {
     thisMonth,
   ])].sort();
 
-  // 条目页要用的解析后引用：集子 URL、tag 对象（显示名 → /tag/<slug>/）
+  // 条目页要用的解析后引用：集子 URL、tag 对象（显示名 → /tag/<slug>/，url 在这里包前缀）
   for (const e of entries) {
-    e.collectionUrl = resolveCollection(taxonomy, e.collectionName)?.url ?? "/collection/all/";
-    e.tagsResolved = e.tags.map((t) => resolveTag(taxonomy, t)).filter(Boolean);
+    e.collectionUrl = withBase(resolveCollection(taxonomy, e.collectionName)?.url ?? "/collection/all/");
+    e.tagsResolved = e.tags.map((t) => resolveTag(taxonomy, t)).filter(Boolean)
+      .map((t) => ({ ...t, url: withBase(t.url) }));
   }
+  // 条目/日总结的详情页 url（lib/schema.js 生成的根路径）统一在此包前缀
+  for (const e of entries) e.url = withBase(e.url);
+  for (const d of dailies) d.url = withBase(d.url);
 
   // 集子页 / tag 页的条目列表（按日期倒序，Nunjucks 里做这层过滤太绕，预计算）
   const entriesByCollection = Object.fromEntries(

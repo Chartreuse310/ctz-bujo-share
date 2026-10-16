@@ -2,6 +2,12 @@ import { RenderPlugin } from "@11ty/eleventy";
 import * as calendar from "./lib/calendar.js";
 
 export default function (eleventyConfig) {
+  // 子路径部署前缀（2026-10-16 线上实证缺陷修复）：GitHub Pages 项目站部署在
+  // /ctz-bujo-share/ 下，资源与内部链接若写根绝对路径 /assets/... 会 404（页面裸文字）。
+  // 全站内部 URL 统一 {{ base }} 开头；默认 = 生产值，CTZ_BASE_URL="" 可切回根路径（本地根部署）。
+  const base = (process.env.CTZ_BASE_URL ?? "/ctz-bujo-share").replace(/\/$/, "");
+  eleventyConfig.addNunjucksGlobal("base", base);
+
   // 正文 Markdown 渲染：用 Eleventy 自带插件，避免直接依赖 markdown-it
   eleventyConfig.addPlugin(RenderPlugin);
 

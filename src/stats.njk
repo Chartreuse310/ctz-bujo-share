@@ -3,9 +3,9 @@
   <div class="head">
     <h1>统计<em>{{ win.range.label }}</em></h1>
     <nav class="win-nav" aria-label="统计时间窗口">
-      <a href="/stats/" {% if w == "month" %}class="on" aria-current="page"{% endif %}>本月</a>
-      <a href="/stats/year/" {% if w == "year" %}class="on" aria-current="page"{% endif %}>本年</a>
-      <a href="/stats/all/" {% if w == "all" %}class="on" aria-current="page"{% endif %}>全部</a>
+      <a href="{{ base }}/stats/" {% if w == "month" %}class="on" aria-current="page"{% endif %}>本月</a>
+      <a href="{{ base }}/stats/year/" {% if w == "year" %}class="on" aria-current="page"{% endif %}>本年</a>
+      <a href="{{ base }}/stats/all/" {% if w == "all" %}class="on" aria-current="page"{% endif %}>全部</a>
     </nav>
   </div>
 

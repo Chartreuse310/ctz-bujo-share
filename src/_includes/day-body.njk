@@ -40,12 +40,12 @@
 
   <aside class="side">
     <div class="mini">
-      <div class="mini-head"><a class="m" href="/month/{{ theMonth }}/">{{ theMonth | replace("-", " · ") }}</a></div>
+      <div class="mini-head"><a class="m" href="{{ base }}/month/{{ theMonth }}/">{{ theMonth | replace("-", " · ") }}</a></div>
       <div class="mini-dow">{% for w in weekdaysOf() %}<span>{{ w }}</span>{% endfor %}</div>
       <div class="mini-grid">
         {% for c in grid.cells %}
           {% if c.blank %}<button class="void" disabled></button>
-          {% else %}<a class="mini-cell {% if c.hasHighlight %}hl{% endif %} {% if c.date == theDate %}sel{% endif %} {% if c.isToday %}today{% endif %}" href="/day/{{ c.date }}/" title="{{ c.date }}{% if c.entryCount %} · {{ c.entryCount }} 条{% endif %}"><span>{{ c.day }}</span><i class="ul"></i></a>
+          {% else %}<a class="mini-cell {% if c.hasHighlight %}hl{% endif %} {% if c.date == theDate %}sel{% endif %} {% if c.isToday %}today{% endif %}" href="{{ base }}/day/{{ c.date }}/" title="{{ c.date }}{% if c.entryCount %} · {{ c.entryCount }} 条{% endif %}"><span>{{ c.day }}</span><i class="ul"></i></a>
           {% endif %}
         {% endfor %}
       </div>
@@ -55,7 +55,7 @@
         <div class="p"><span class="n">{{ site.entries | length }}</span><span>条目</span></div>
         <div class="p"><span class="n">{{ site.dailies | length }}</span><span>日总结</span></div>
       </div>
-      <a class="stat-link" href="/stats/">进入统计 →</a>
+      <a class="stat-link" href="{{ base }}/stats/">进入统计 →</a>
     </div>
   </aside>
 </div>

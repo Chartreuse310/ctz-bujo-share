@@ -15,5 +15,5 @@
     {{ entry.body | renderContent("md") | safe }}
   </div>
 
-  <p class="backlink"><a href="/day/{{ entry.date }}/">← 回到 {{ entry.date }} 的日页</a></p>
+  <p class="backlink"><a href="{{ base }}/day/{{ entry.date }}/">← 回到 {{ entry.date }} 的日页</a></p>
 </article>

@@ -59,7 +59,7 @@ test("日页条目卡片渲染整篇正文（不只第一段）", () => {
 
 test("条目卡片是 clamp 容器且不预置「全文」链接", () => {
   const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
-  assert.match(html, /class="excerpt" data-href="\/entry\/2026-10-15-breakfast-mcdonalds\/"/);
+  assert.match(html, /class="excerpt" data-href="\/ctz-bujo-share\/entry\/2026-10-15-breakfast-mcdonalds\/"/);
   // 「全文 →」只在浏览器端确认被截断后才插入，构建产物里不得静态存在
   assert.ok(!html.includes("全文 →"), "构建期不得出现「全文 →」链接");
 });
@@ -68,6 +68,36 @@ test("excerpt.js 已随产物发布并被页面引用", () => {
   assert.ok(existsSync(join(OUT, "assets/excerpt.js")), "缺少 excerpt.js");
   const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   assert.match(html, /assets\/excerpt\.js/);
+});
+
+// —— 子路径部署（2026-10-16 线上实证缺陷修复）——
+// GitHub Pages 项目站部署在 /ctz-bujo-share/ 子路径下；资源与内部链接若写绝对路径 /assets/...
+// 会 404（用户浏览器实测：style.css/nav.js/excerpt.js 全 404 → 页面裸文字）。
+// 构建必须给全部内部 URL 加 CTZ_BASE_URL（默认 /ctz-bujo-share）前缀。
+test("资源与内部链接带子路径前缀（GitHub Pages 项目站）", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  // 资源引用
+  assert.match(html, /href="\/ctz-bujo-share\/assets\/style\.css"/);
+  assert.match(html, /src="\/ctz-bujo-share\/assets\/nav\.js"/);
+  // 内部导航与卡片链接
+  assert.match(html, /href="\/ctz-bujo-share\/stats\/"/);
+  assert.match(html, /data-href="\/ctz-bujo-share\/entry\/2026-10-15-breakfast-mcdonalds\/"/);
+  // 月历格链接
+  assert.match(html, /href="\/ctz-bujo-share\/day\/2026-10-15\/"/);
+  // 不得残留未加前缀的根绝对引用（排除 // 协议相对与 /ctz-bujo-share 前缀本身）
+  assert.doesNotMatch(html, /(href|src)="\/(?!\/|ctz-bujo-share)/, "存在未加前缀的根绝对路径引用");
+});
+
+test("无前缀场景（CTZ_BASE_URL=空）构建出根路径引用", () => {
+  // 本地 serve 也可以选根路径部署；机制上必须支持空前缀
+  const out2 = ".e2e-site-root";
+  execFileSync("npx", ["@11ty/eleventy", "--output", out2], {
+    stdio: "pipe",
+    env: { ...process.env, CTZ_BASE_URL: "" },
+  });
+  const html = readFileSync(join(out2, "day/2026-10-15/index.html"), "utf8");
+  assert.match(html, /href="\/assets\/style\.css"/);
+  rmSync(out2, { recursive: true, force: true });
 });
 
 // 「坏内容必须中断构建」（设计文档 §7 + 成功标准 4）。
