@@ -3,6 +3,7 @@ type: event
 title: 📖 阅读&整理综述论文
 date: 2026-10-15
 collection: 博士学位论文
+order: 2
 tags: ["PhD V2.0 P1.1"]
 ---
 
