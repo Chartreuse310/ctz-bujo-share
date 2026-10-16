@@ -4,10 +4,14 @@
    选中态 = .idx-row.on（CSS 落朱红——此前 rail-row.on 无样式，实测落到浏览器默认蓝）。
    依赖 site.collections / site.tags / site.entriesByCollection / site.entriesByTag / 当前 col 或 t。 #}
 <div class="blk">
-  <div class="blk-h"><h3>集子</h3><span class="lnk">{{ site.collections | length }}</span></div>
+  <div class="blk-h"><h3>集子</h3><span class="lnk">{{ site.collections | length - 1 }}</span></div>
   <div class="idx">
+    {# 主集子「日常」不列（2026-10-16 用户拍板）：它是未填写时的兜底归属，不是浏览入口；
+       /collection/all/ 页面本身保留，行内 .r 胶囊仍显示集子名。 #}
     {% for c in site.collections %}
+    {% if not c.isDefault %}
     <a class="idx-row {% if col and c.name == col.name %}on{% endif %}" href="{{ c.url }}"><span>{{ c.name }}</span><span class="n">{{ site.entriesByCollection[c.name] | length }}</span></a>
+    {% endif %}
     {% endfor %}
   </div>
 </div>

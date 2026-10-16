@@ -69,6 +69,9 @@ test("集子·标签页侧栏：复用 .blk/.blk-h/.idx，计数右挂 .n，选�
   // idx 行内是 <a>（真实站点用链接而非 demo 的 button），计数右挂 .n
   assert.match(html, /<div class="idx">\s*<a[^>]*class="idx-row/s, ".idx 内应是 idx-row <a> 行");
   assert.match(html, /class="idx-row on"/, "当前集子行应有 on 选中态");
+  // 侧栏集子块不列主集子「日常」（2026-10-16 用户拍板）：它是兜底归属，不是浏览入口；
+  // /collection/all/ 页面本身保留（tag 页与集子页的 .r 胶囊仍显示集子名）
+  assert.ok(!/>日常<\/span><span class="n">/.test(html), "侧栏集子块不得列出「日常」");
   // # 带空格
   assert.match(html, /<span># PhD V2\.0 P1\.1<\/span><span class="n">/, "标签 idx 行应写「# 名称」（span 包裹 + 计数右挂）");
 });

@@ -11,6 +11,8 @@
 
 - 2026-10-16（夜·七）：七轮微调——**统计行文字右缘精确贴月历最右格线**。六轮用 `padding-right:264px` 推的是元素盒，文字右缘实际停在 ≈876px，未达 matrix 右缘 996px；且翻月组在 flex 流里会成为 facts 的 `margin-right` 收口参照（实测移除 nav 后 facts 盒右缘即达 996）。修法：翻月组 `position:absolute; right:0; bottom:0` 脱离 flex 流（month-head 加 `position:relative`），facts 改 `margin-right:264px`——文字右缘 = 1260 − 264 = 996 = matrix 右缘（CDP 逐字符实测「2」右缘 = 996）。§5.2 口径更新：统计行对齐量测口径从「元素盒右缘」收紧为「**文字右缘**（Range 实测）」。
 
+- 2026-10-16（夜·十补）：用户验收夜·十后补一条——**侧栏集子块不列主集子「日常」**（它是未填写时的兜底归属，不是浏览入口）；`/collection/all/` 页面本身与行内胶囊归属保留。`.lnk` 计数同步不含主集子。§5.4 侧栏条款已同步，e2e 增加守卫断言。
+
 - 2026-10-16（夜·十）：**集子·标签页 g1 基线对齐**——用户要求机械对比 demo `#s-index` 屏与线上，CDP 实测 7 处差异后拍板「先按 Agent 建议改」：①布局方向修正（rail 左 236px / res-main 右，此前 DOM 顺序写反导致标题逐字竖排）；②resrow 三列网格（.d 日期+星期 | .t 衬线标题+1 行摘要 | .r 类型+集子双胶囊，此前中列被压到 4px）；③侧栏废除野生款 rail-h/rail-row（0 条 CSS 定义、选中态渲染成浏览器默认蓝），改复用与今日页同款的 .blk/.blk-h/.idx（新 include `_includes/index-rail.njk` 共用）；④标题区改 .res-head 款（h2 衬线显示名 + .cnt 事件思考分计 + .hint），**不设**页面级大标题与 taxonomy 说明文；⑤空态改单行提示性文案；⑥tag 前缀统一「# 」带空格。**顺带揪出隐藏缺陷**：tag 页模板变量 t 一直是 undefined（alias 叫 tg），Nunjucks 静默渲染成空态页——线上 tag 页自上线起 h1="#"、恒 0 条，用 eleventyComputed 显式接线修复。新增 §5.4 条款；e2e 新增 5 条守卫（125/125）。
 
 - 2026-10-16（夜·九）：**「今日小结」正文段间距 > 行间距**——用户实测反馈段距偏大引发复核：CDP 实测线上与本地段间 visualGap 均为 0（`.pull p{margin:0}` 为 demo 原款，段间距 = 行间距），用户在知情下拍板改为段距 > 行距：`.pull p` 加 `margin-top:10px`（≈0.7 行）。条目卡片摘要保持段距 0 不变。§5.3 条款已同步。e2e 守卫：`.pull p` 含 `margin:10px 0 0` 且 `.entry .excerpt p` 保持 `margin:0`。
@@ -408,7 +410,7 @@ content/entries/2026-10-14-read-a-book.md
 - **布局**：`.index-layout` = 侧栏 `.rail` 在左 236px、主栏 `.res-main` 在右（demo 款方向，**不得**把 main 写在 rail 前面）。
 - **标题区 = `.res-head`**（不是今日页的 `.dateline`）：h2 衬线 23px 集子/tag 显示名（tag 带 `# ` 前缀）+ `.cnt` mono「N 条 · 事件 X / 思考 Y」+ `.hint` mono 靠右「集子 · 一对一 · 按日期倒序」（主集子为「主集子 · /collection/all/ · 按日期倒序」，tag 页为「tag · 多对多 · 按日期倒序」）。**不设**页面级大标题「集子 · 标签」与 taxonomy 登记说明文（拍板：公开站直接进内容）。
 - **列表行 = `.resrow` 三列网格**（`104px | 1fr | 96px`）：`.d` mono 11px 日期+`<br>`+星期；`.t` 内 h4 衬线 15.5px 标题 + `.sub` 1 行摘要（正文首段，line-clamp:1）；`.r` 靠右放胶囊（`.tag.type` 事件/思考 + `.tag` 所属集子名）。整行是链接（`<a class="resrow">`），行底 1px 横线。
-- **侧栏 = `.blk` 块结构**（与今日页同一套语言，`_includes/index-rail.njk` 共用）：`.blk-h`(h3「集子」/「标签」+ `.lnk` 计数) + `.idx` 行列表；行 = `<a class="idx-row">`（显示名 + `.n` mono 计数右挂，tag 行 `# ` 带空格），行底 `--rule-2` 细线，hover 朱红，**选中态 `.idx-row.on` = 朱红**（必须落 CSS——野生款时代曾渲染成浏览器默认蓝 rgb(0,0,238)）。
+- **侧栏 = `.blk` 块结构**（与今日页同一套语言，`_includes/index-rail.njk` 共用）：`.blk-h`(h3「集子」/「标签」+ `.lnk` 计数) + `.idx` 行列表；行 = `<a class="idx-row">`（显示名 + `.n` mono 计数右挂，tag 行 `# ` 带空格），行底 `--rule-2` 细线，hover 朱红，**选中态 `.idx-row.on` = 朱红**（必须落 CSS——野生款时代曾渲染成浏览器默认蓝 rgb(0,0,238)）。**集子块不列主集子「日常」（2026-10-16 用户拍板）**：它是未填写时的兜底归属，不是浏览入口——`.lnk` 计数与列表都不含它；`/collection/all/` 页面本身保留（行内 `.r` 胶囊仍显示「日常」归属）。
 - **空态 = 单行 `.list-empty`**：「<显示名>还没有条目。登记了的集子/tag 都会生成页面，只是列表为空。」——提示性单行（夜·十拍板），不用 demo 两段式，也不同今日页「这里是空的。」（此处访客需要知道「登记未使用是正常态」）。
 - **变量坑（防复发）**：tag 页模板变量统一叫 `t`，由 `tag.11tydata.js` 的 `eleventyComputed.t` 显式接到分页项 `tg`——历史上 alias 一直叫 `tg` 而模板用 `t`，`t` 恒为 undefined，Nunjucks 静默渲染成空态页（线上 tag 页 h1="#"、恒 0 条，夜·十实测才揪出）。集子页同理用 `col`。
 
