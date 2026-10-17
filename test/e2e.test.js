@@ -495,3 +495,8 @@ test('首页摘要不会破坏 template 与事件结构',()=>{
  assert.match(html,/<template>\s*<article class="landing-thought">[\s\S]*?<\/article>\s*<\/template>/);
  assert.doesNotMatch(html,/<p class="landing-event-excerpt">\s*<article/);
 });
+
+test('首页主标题使用用户指定文案',()=>{
+ const html=readFileSync(join(OUT,'index.html'),'utf8');
+ assert.match(html,/<h1>沙楚子的存在证明——记一记研究型设计师的成长之路！<\/h1>/);
+});
