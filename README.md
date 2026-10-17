@@ -161,6 +161,14 @@ SITE_URL=http://127.0.0.1:8081 node scripts/check-share-constraints.mjs
 
 `SITE_URL` 的端口按本地服务实际输出填写。浏览器检查会机械测量裁切、溢出、遮挡和交互，不靠看截图判断。
 
+## 许可
+
+**代码与文档**用 [MIT](LICENSE)：可以拿去改、拿去用，保留版权声明即可。
+
+**日记本身**不是代码，用 [CC BY-NC-ND 4.0](LICENSE-CONTENT.md) 授权，范围只有 `content/entries/` 与 `content/daily/` 里的文章：可以带署名转发原文，也可以引用；但不能商用，也不能改编、翻译或续写后发布。`content/taxonomy.yml`、README、AGENTS.md 和 `docs/` 都随 MIT 走——复用时本来就得改它们。
+
+拿这些记录当灵感写你自己的日记完全没问题，想法本身不受版权保护。
+
 ## 还有我的博客
 
 [blog-ctz-v3](https://chartreuse310.github.io/blog-ctz-v3/) 还是会保持不定期更新的。这里放日常记录，长一点的东西慢慢写进博客。

@@ -2,6 +2,7 @@
   "name": "ctz-bujo-share",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "bujo 风格的公开日记与思考分享站",
   "scripts": {

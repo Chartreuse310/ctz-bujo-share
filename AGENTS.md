@@ -202,9 +202,10 @@ npm run check           # node scripts/check-site-constraints.mjs
 - 不要引第三方客户端图表库（静态站，构建时算数 + 内联 SVG）。
 - 不要擅自 push 或改部署工作流（`.github/workflows/deploy.yml`）：push 即发布（设计文档 §13），push 前必须本地 `npm test` + `npm run build` 全绿；工作流改动属于设计层，先讨论。
 - 不要为了图省事手改生成产物。
+- 不要擅自更改许可范围：`LICENSE`（代码与文档，MIT）与 `LICENSE-CONTENT.md`（`content/entries/`、`content/daily/` 的日记正文，CC BY-NC-ND 4.0）的分界按目录写死，理由见设计文档 §14；改许可属于设计层，先讨论。`test/license.test.js` 会守住这三条边界。
 
 ## 9. 环境事实
 
 - 工作目录：`/Users/z/Programs/dev/ctz-bujo-share`
 - Node：v24.17.0 / npm：11.19.0；部署 = GitHub Pages + Actions（设计文档 §13），远端建立后 `git remote -v` 可查。`git tag` 已有 `ui-demo-baseline` 回滚点。
-- 设计文档篇幅较长；定位具体条款用 `§` 号：`§4.3` taxonomy、`§5.1` 条目 URL、`§5.2` 月视图、`§6` 统计、`§7` 校验、`§10` 决策状态、`§11` 协作约定、`§12` 设计偏好与硬约束（`§12.3` 验证方法、`§12.5` demo 集、`§12.6` G 底栏重量变体）、`§13` 部署与每日重建。
+- 设计文档篇幅较长；定位具体条款用 `§` 号：`§4.3` taxonomy、`§5.1` 条目 URL、`§5.2` 月视图、`§6` 统计、`§7` 校验、`§10` 决策状态、`§11` 协作约定、`§12` 设计偏好与硬约束（`§12.3` 验证方法、`§12.5` demo 集、`§12.6` G 底栏重量变体）、`§13` 部署与每日重建、`§14` 许可与复用边界。
