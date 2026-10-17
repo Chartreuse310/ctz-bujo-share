@@ -4,6 +4,7 @@
   const links = [...document.querySelectorAll(".tabbar a")];
   if (!links.length) return;
   const i = links.findIndex((a) => a.classList.contains("on"));
+  if (i < 0) return; // 独立首页与详情页不参与四屏手势
 
   const go = (step) => {
     const next = links[(i + step + links.length) % links.length];

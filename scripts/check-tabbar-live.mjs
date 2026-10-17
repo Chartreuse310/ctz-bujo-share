@@ -3,7 +3,7 @@
 const PORT = 9333;
 const SITE = "https://chartreuse310.github.io/ctz-bujo-share";
 const PAGES = [
-  ["home", "/"],
+  ["home", "/today/"],
   ["month", "/month/2026-10/"],
   ["index", "/collection/all/"],
   ["stats", "/stats/"],

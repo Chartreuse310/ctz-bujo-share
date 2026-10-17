@@ -155,6 +155,7 @@ Demo 与设计阶段（当前可用）：
 ```bash
 node scripts/gen-ui-demos.mjs         # 从 b-swiss.html 生成 D/E/F/G 各方向 demo
 node scripts/check-ui-constraints.mjs # CDP 硬约束验证（先起 9333 端口的 headless Chrome）
+node scripts/check-home-constraints.mjs # 独立首页 CDP 回归（本地服务 + 9333，SITE_URL 可覆盖）
 node scripts/check-stats-constraints.mjs # 统计页 CDP 回归（SITE_URL 指向本地站点）
 node scripts/check-agents-md.mjs      # 改完本文件必跑：标题序号 / 引用路径 / § 条款号
 node scripts/verify-plan.mjs          # 改完实现计划必跑：抽出计划里的 lib/ 代码与测试，真跑 node --test

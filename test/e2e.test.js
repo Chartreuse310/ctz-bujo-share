@@ -180,17 +180,17 @@ test("每类页面的底栏都有且只有一个选中 tab（navActive 全覆盖
   // 统计页的「本月/本年/全部」窗口切换器也用 aria-current（页内导航，合法），
   // 所以断言范围收紧到底栏四个链接本身。
   const TABS = [
-    "month/2026-10/", "",
+    "month/2026-10/", "today/",
     "collection/all/",
     "stats/",
   ].map((p) => `/ctz-bujo-share/${p}`);
   const CASES = [
-    ["index.html", "/ctz-bujo-share/"],
+    ["today/index.html", "/ctz-bujo-share/today/"],
     ["month/2026-10/index.html", "/ctz-bujo-share/month/2026-10/"],
     ["collection/all/index.html", "/ctz-bujo-share/collection/all/"],
     ["tag/running/index.html", "/ctz-bujo-share/collection/all/"],
     ["stats/index.html", "/ctz-bujo-share/stats/"],
-    ["day/2026-10-15/index.html", "/ctz-bujo-share/"],
+    ["day/2026-10-15/index.html", "/ctz-bujo-share/today/"],
   ];
   for (const [file, onHref] of CASES) {
     const html = readFileSync(join(OUT, file), "utf8");
@@ -292,7 +292,7 @@ test("统计块参照 demo .stat-pair：口径=事件/思考 + 分色（事件�
 
 test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () => {
   // 空状态落在首页（今日 = 2026-10-16 无条目）与未来日期不生成日页——用首页验证
-  const html = readFileSync(join(OUT, "index.html"), "utf8");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
   assert.match(html, /<div class="empty">这里是空的。<\/div>/);
   // demo 两段引导不恢复
   assert.ok(!html.includes("这天没有条目"));
@@ -473,4 +473,25 @@ test("条目详情使用明信片，日期在标题上方且分类置于正文�
   assert.ok(html.indexOf('class="entry-body"') < html.indexOf('class="postcard-foot"'));
   assert.match(html, /破防了，ctz-bujo-share/);
   assert.match(html, /暂时不考虑放在Z8.0里。/);
+});
+
+
+test('独立首页与今日分离，品牌返回首页，首页不选中四屏',()=>{
+  const html=readFileSync(join(OUT,'index.html'),'utf8');
+  const today=readFileSync(join(OUT,'today/index.html'),'utf8');
+  for(const heading of ['随手翻翻','最近在做','关注的内容']) assert.ok(html.includes(heading));
+  assert.match(html, /href="\/ctz-bujo-share\/today\/"/);
+  assert.match(today, /<a class="brand" href="\/ctz-bujo-share\/"/);
+  assert.match(today, /class="dateline"/);
+  const nav=html.match(/<nav class="nav tabbar"[\s\S]*?<\/nav>/)[0];
+  assert.equal((nav.match(/<a /g)||[]).length,4);
+  assert.doesNotMatch(nav,/class="on"/);
+  assert.match(html,/type="module" src="\/ctz-bujo-share\/assets\/home.js"/);
+  assert.doesNotMatch(html,/(href|src)="\/(?!\/|ctz-bujo-share)/);
+});
+
+test('首页摘要不会破坏 template 与事件结构',()=>{
+ const html=readFileSync(join(OUT,'index.html'),'utf8');
+ assert.match(html,/<template>\s*<article class="landing-thought">[\s\S]*?<\/article>\s*<\/template>/);
+ assert.doesNotMatch(html,/<p class="landing-event-excerpt">\s*<article/);
 });

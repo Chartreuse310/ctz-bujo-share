@@ -1,3 +1,4 @@
+import { buildHome } from "../../lib/home.js";
 import { loadContent } from "../../lib/load.js";
 import { totals, rankBy, withDelta, trendByDay, trendByMonth, windowRange, inRange } from "../../lib/stats.js";
 import { resolveCollection, resolveTag } from "../../lib/taxonomy.js";
@@ -102,6 +103,7 @@ export default function () {
 
   return {
     taxonomy, entries, dailies, collections, tags,
+    home: buildHome(entries, dailies),
     months, days, today, thisMonth, thisYear, windows, windowKeys,
     // 由 load.js 建好、供日页与首页直接取用的索引（Task 3.1 / 3.3 依赖它们）
     dailyByDate, entriesByDate,

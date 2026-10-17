@@ -1,3 +1,4 @@
+import { homeText } from "./lib/home.js";
 import { RenderPlugin } from "@11ty/eleventy";
 import { withDelta } from "./lib/stats.js";
 import * as calendar from "./lib/calendar.js";
@@ -10,6 +11,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addNunjucksGlobal("base", base);
 
   eleventyConfig.addNunjucksGlobal("withDelta", withDelta);
+  eleventyConfig.addFilter("homeText", homeText);
 
   // 正文 Markdown 渲染：用 Eleventy 自带插件，避免直接依赖 markdown-it
   eleventyConfig.addPlugin(RenderPlugin);

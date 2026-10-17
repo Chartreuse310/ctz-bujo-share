@@ -1,11 +1,40 @@
 ---
 layout: base.njk
-title: 今日
-navActive: home
+title: 首页
 permalink: /
 ---
-{# 首页 = 今日日页，与 /day/<date>/ 复用同一段模板体（实现计划 Task 3.3「与首页同版式」）。
-   day-body.njk 以 dayDate 取日期；首页无分页变量，用 site.today 兜底 —— 两边结构从此不再漂移
-   （此前 index.njk 手抄一份旧结构，今日页 g1 基线对齐时漏改，正是漂移的实证）。 #}
-{% set dayDate = site.today %}
-{% include "day-body.njk" %}
+<div class="wrap landing">
+  <header class="landing-intro">
+    <p class="landing-kicker">日子与思考</p>
+    <h1>在这里，记录生活，<br>也留下一些想法。</h1>
+    <p class="landing-description">一些发生的事，一些慢慢想明白的事。</p>
+    {% if site.home.start %}
+    <p class="landing-meta">始于 <time>{{ site.home.start }}</time><span>最近更新于 <time>{{ site.home.latest }}</time></span></p>
+    {% endif %}
+    <div class="landing-links"><a href="{{ base }}/today/">看看今日 →</a><a href="{{ base }}/month/{{ site.thisMonth }}/">按月翻阅 →</a></div>
+  </header>
+
+  <section aria-labelledby="thought-heading" class="landing-section">
+    <div class="landing-section-head"><h2 id="thought-heading">随手翻翻</h2><button id="shuffle-thoughts" type="button" hidden>换几条 ↻</button></div>
+    <div id="thought-list" class="landing-thoughts" aria-live="polite" aria-atomic="true">
+      {% for e in site.home.thoughts %}{% if loop.index <= 3 %}{% include "home-thought.njk" %}{% endif %}{% else %}<p class="empty">这里是空的。</p>{% endfor %}
+    </div>
+    <div id="thought-pool" hidden>{% for e in site.home.thoughts %}<template>{% include "home-thought.njk" %}</template>{% endfor %}</div>
+  </section>
+
+  <div class="landing-bottom">
+    <section aria-labelledby="recent-heading" class="landing-section">
+      <div class="landing-section-head"><h2 id="recent-heading">最近在做</h2><a href="{{ base }}/month/{{ site.thisMonth }}/">月视图 →</a></div>
+      {% for e in site.home.recent %}
+      <article class="landing-event"><p class="landing-meta">{{ e.date }} · <a href="{{ e.collectionUrl }}">{{ e.collectionName }}</a></p><h3><a href="{{ e.url }}">{{ e.title }}</a></h3><p class="landing-event-excerpt">{{ e.body | homeText | truncate(100) }}</p></article>
+      {% else %}<p class="empty">这里是空的。</p>{% endfor %}
+    </section>
+    <aside class="landing-section" aria-labelledby="interests-heading">
+      <div class="landing-section-head"><h2 id="interests-heading">关注的内容</h2></div>
+      <div class="landing-collections">{% for c in site.collections %}{% if not c.isDefault %}<a href="{{ c.url }}">{{ c.name }} <span>→</span></a>{% endif %}{% endfor %}</div>
+      <div class="landing-tags">{% for t in site.tags %}<a class="tag" href="{{ t.url }}"># {{ t.name }}</a>{% endfor %}</div>
+      <a class="landing-read" href="{{ base }}/stats/">看看记录的积累 →</a>
+    </aside>
+  </div>
+</div>
+<script type="module" src="{{ base }}/assets/home.js"></script>

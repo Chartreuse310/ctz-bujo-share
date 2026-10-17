@@ -90,12 +90,12 @@ for (const [w, h] of [[1440, 900], [1280, 800]]) {
 
 /* ---------- D. 统一栅格：次级栏 236px、栏间距 56px ---------- */
 console.log("=== D. 统一栅格（236px / 56px）===");
-for (const url of [[HOME_URL, "首页"], [MONTH_URL, "月视图"]]) {
+for (const url of [[HOME_URL, "首页"], [`${SITE}/today/`, "今日"], [MONTH_URL, "月视图"]]) {
   await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await send("Page.navigate", { url: url[0] });
   await sleep(900);
   const g = await ev(`(() => {
-    const side = document.querySelector('.side, .list-pane');
+    const side = document.querySelector('.side, .list-pane, .landing-bottom > aside');
     const main = side ? side.nextElementSibling || document.querySelector('.day, .cal-pane') : null;
     if (!side) return { err: "无次级栏" };
     const sb = Math.round(side.getBoundingClientRect().width);
@@ -115,7 +115,7 @@ for (const url of [[HOME_URL, "首页"], [MONTH_URL, "月视图"]]) {
 console.log("=== F/G. 底栏贴底 + 导航带采样点零内容穿透 ===");
 for (const [w, h] of [[1440, 900], [1280, 800], [1440, 700], [1920, 1080], [760, 900], [761, 900]]) {
   await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 1, mobile: false });
-  for (const [url, name] of [[MONTH_URL, "月视图"], [HOME_URL, "首页"]]) {
+  for (const [url, name] of [[MONTH_URL, "月视图"], [HOME_URL, "首页"], [`${SITE}/today/`, "今日"]]) {
     await send("Page.navigate", { url });
     await sleep(900);
     const r = await ev(`(() => {
