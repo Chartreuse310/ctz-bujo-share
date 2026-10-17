@@ -420,3 +420,7 @@ footer.note b{color:var(--ink);font-weight:600}
 
 /* em 在“统计”之后，间距必须放在它的上方。 */
 .stats-page .head h1 em{margin:16px 0 0}
+
+/* 图形与文字行居中，避免字体实心三角的基线位置偏差。 */
+.delta-value{display:inline-flex;align-items:center;gap:.4em;white-space:nowrap;vertical-align:middle}
+.delta-value svg{display:block;flex:none;width:.7em;height:.56em;fill:currentColor}

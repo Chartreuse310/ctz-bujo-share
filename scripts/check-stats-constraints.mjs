@@ -33,7 +33,11 @@ try {
         const points=[...svg.querySelectorAll('path')].flatMap(p=>[...p.getAttribute('d').matchAll(/[ML]([\\d.-]+) ([\\d.-]+)/g)].map(m=>[+m[1],+m[2]]));
         const ink=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
         const blue=getComputedStyle(document.documentElement).getPropertyValue('--blue').trim();
-        return { titleGap, layers:rect(n).bottom<=rect(l).top && (!d || rect(l).bottom<=rect(d).top),
+        const deltaCenters=[...document.querySelectorAll('.delta-value')].map(el=>{
+          const icon=rect(el.querySelector('svg')), text=rect(el.querySelector('span'));
+          return Math.abs((icon.top+icon.bottom-text.top-text.bottom)/2);
+        });
+        return { deltaCenters, titleGap, layers:rect(n).bottom<=rect(l).top && (!d || rect(l).bottom<=rect(d).top),
           kpiHeight:rect($('.kpi')).height,
           order:rect($('.kpis')).bottom<=rect($('.seg')).top && rect($('.seg')).bottom<=rect($('.grid2')).top,
           grid:$('.card.full').parentElement.className,
@@ -44,6 +48,7 @@ try {
       assert.ok(r.layers && r.order && !r.overflow, JSON.stringify(r));
       // 字体行框可能比字形盒稍高，Range 实测至少留出 8px 可见间距。
       assert.ok(r.titleGap>=8, JSON.stringify(r));
+      assert.ok(r.deltaCenters.every(d=>d<=0.5), '三角与文字行中心误差超过 0.5px：'+JSON.stringify(r.deltaCenters));
       assert.equal(r.grid,'grid2'); assert.equal(r.border,'1px');
       // 全部窗口不显示环比，窄屏首排卡片自然少一行；其余窗口与 demo 同为 128px。
       const expectedHeight = window==='all/' && width<1000 ? 102.625 : 128;

@@ -1,0 +1,2 @@
+{# 不使用字体三角的基线度量；SVG 实心三角与文字行独立居中。 #}
+{% macro deltaLabel(delta) %}{% if delta.direction == "up" or delta.direction == "down" %}<span class="delta-value" aria-label="{{ delta.label }}"><svg viewBox="0 0 10 8" aria-hidden="true" focusable="false"><path d="{{ 'M0 8L5 0L10 8Z' if delta.direction == 'up' else 'M0 0L10 0L5 8Z' }}"/></svg><span aria-hidden="true">{{ delta.label | substr(2) }}</span></span>{% else %}{{ delta.label }}{% endif %}{% endmacro %}

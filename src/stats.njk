@@ -1,3 +1,4 @@
+{% from "delta-label.njk" import deltaLabel %}
 {% set win = site.windows[w] %}
 {# 统计页（夜·十一拍板）：类名对齐 demo g1 原名——KPI 标签 .l、环比 .d、排行名 .nm、窗口切换 .seg；
    卡片标题裸 h3（衬线 17px）与说明 .sub（mono 10px）拆开；页脚 note 不恢复（⑤）。 #}
@@ -9,11 +10,11 @@
 
   {# 1. 总量卡片（5 张）；③KPI 副行：日总结=窗口标签、有记录天数=共 N 条条目 #}
   <div class="kpis">
-    <div class="kpi"><span class="n">{{ win.totals.events }}</span><span class="l">事件</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.events.direction }}">{{ win.totals.deltas.events.label }}</span>{% endif %}</div>
-    <div class="kpi"><span class="n">{{ win.totals.thoughts }}</span><span class="l">思考</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.thoughts.direction }}">{{ win.totals.deltas.thoughts.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.events }}</span><span class="l">事件</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.events.direction }}">{{ deltaLabel(win.totals.deltas.events) }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.thoughts }}</span><span class="l">思考</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.thoughts.direction }}">{{ deltaLabel(win.totals.deltas.thoughts) }}</span>{% endif %}</div>
     <div class="kpi"><span class="n">{{ win.totals.dailies }}</span><span class="l">日总结</span><span class="d">{{ win.range.label }}</span></div>
     <div class="kpi"><span class="n">{{ win.totals.days }}</span><span class="l">有记录天数</span><span class="d">共 {{ win.totals.events + win.totals.thoughts }} 条条目</span></div>
-    <div class="kpi"><span class="n acc">{{ win.totals.highlights }}</span><span class="l">重点条目</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.highlights.direction }}">{{ win.totals.deltas.highlights.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n acc">{{ win.totals.highlights }}</span><span class="l">重点条目</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.highlights.direction }}">{{ deltaLabel(win.totals.deltas.highlights) }}</span>{% endif %}</div>
   </div>
 
     <div class="seg" role="navigation" aria-label="统计时间窗口">
@@ -38,7 +39,7 @@
       <div class="rank-row">
         <span class="nm">{{ r.name }}</span>
         <span class="stack"><i class="ev" style="width: {{ (r.events / maxV * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxV * 100) | round(1) }}%"></i></span>
-        <span class="v">{{ r.total }} {% if rs.prev %}{% set pr = 0 %}{% for p in rs.prev %}{% if p.name == r.name %}{% set pr = p.total %}{% endif %}{% endfor %}{% set delta = withDelta(r.total, pr) %}<span class="{{ delta.direction }}">{{ delta.label }}</span>{% endif %}</span>
+        <span class="v">{{ r.total }} {% if rs.prev %}{% set pr = 0 %}{% for p in rs.prev %}{% if p.name == r.name %}{% set pr = p.total %}{% endif %}{% endfor %}{% set delta = withDelta(r.total, pr) %}<span class="{{ delta.direction }}">{{ deltaLabel(delta) }}</span>{% endif %}</span>
       </div>
       {% endfor %}
     </section>

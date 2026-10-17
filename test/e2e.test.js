@@ -309,7 +309,7 @@ test("统计页类名对齐 demo 原名：.l/.d/.nm/.seg，野生类 .k/.delta/.
   // KPI 标签用 .l（CSS 既有规则 .kpi .l），环比用 .d（.kpi .d.up 朱红）
   assert.match(html, /<span class="l">事件<\/span>/, "KPI 标签应是 .l");
   assert.match(html, /<span class="d up">/, "KPI 差值应是 .d.up（增加）");
-  assert.ok(!html.includes('class="k"') && !html.includes('class="delta'), "野生类 .k/.delta 不得残留");
+  assert.ok(!html.includes('class="k"') && !html.includes('class="delta"'), "野生类 .k/.delta 不得残留");
   // 排行行名字用 .nm
   assert.match(html, /<span class="nm">/, "排行行名字应是 .nm");
   assert.ok(!html.includes('class="name"'), "野生类 .name 不得残留");
@@ -364,7 +364,7 @@ test("页头大标题与窗口标签间距拉大（夜·十一④）", () => {
 
 test("趋势图真实渲染：数据点 + 月窗口轴标签改日号（10-01 → 1，夜·十一⑥）", () => {
   const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
-  const svg = html.match(/<svg[\s\S]*?<\/svg>/);
+  const svg = html.match(/<svg[^>]*aria-label="趋势折线图"[\s\S]*?<\/svg>/);
   assert.ok(svg, "应有趋势 SVG");
   const texts = svg[0].match(/<text[^>]*>[^<]*<\/text>/g) || [];
   // 旧缺陷：stats.njk include 时从未传 pts，趋势图只画空 path + 4 个 y 轴刻度（线上恒空壳）
@@ -377,7 +377,7 @@ test("趋势图真实渲染：数据点 + 月窗口轴标签改日号（10-01 �
 test("排行行环比徽标使用有符号条数差值", () => {
   const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
   // 本月有值、上月为空，也显示具体增加条数。
-  assert.match(html, /<span class="v">[^<]*<span class="up">▲ \+\d+ 条<\/span>/, "排行行 v 内应有条数差值");
+  assert.match(html, /<span class="v">[^<]*<span class="up"><span class="delta-value" aria-label="▲ \+\d+ 条">/, "排行行 v 内应有条数差值");
   // 顺带核对本轮拍板⑧：今日页 stat-pair 的「本月 N」副行保留
   const dayHtml = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   assert.match(dayHtml, /<span class="s">本月 \d+<\/span>/, "今日页 stat-pair 副行应保留");
@@ -448,3 +448,10 @@ test('统计页窗口标签在标题下方留出 16px', () => {
  const css=readFileSync(join(OUT,'assets/style.css'),'utf8');
  assert.match(css, /\.stats-page \.head h1 em\{margin:16px 0 0\}/);
  });
+
+test('统计三角与文字分别排版并按行中心对齐', () => {
+  const html=readFileSync(join(OUT,'stats/index.html'),'utf8');
+  assert.match(html, /class="delta-value" aria-label="▲ \+\d+ 条"><svg[^>]*aria-hidden="true"/);
+  const css=readFileSync(join(OUT,'assets/style.css'),'utf8');
+  assert.match(css, /\.delta-value\{[^}]*display:inline-flex;[^}]*align-items:center/);
+});
