@@ -107,7 +107,7 @@ button{font:inherit;color:inherit}
   --rule-2:#ebe7dd;
   --accent:#a8321f;
   --accent-soft:#f6e6e1;
-  --blue:#1b3a5c;                  /* 夜·十一②：思考色（蓝灰族），事件=墨黑；朱红仍只给重点/选中态 */
+  --blue:#6f8fa6;                  /* 夜·十一②：思考色（浅蓝灰，与墨黑明度对比至少 3:1），事件=墨黑；朱红仍只给重点/选中态 */
   --top:0px;                       /* 顶部栏已删除：所有 calc(var(--top)+..) 归零 */
   --tab:52px;                      /* 底部导航条高度 */
   --serif:'Songti SC','Noto Serif SC','Times New Roman',serif;
@@ -337,9 +337,9 @@ footer.note{margin-top:34px;padding-top:16px}
 .kpi .d.up{color:var(--accent)}
 .kpi .d.dn{color:var(--ink-2)}
 .seg{display:flex;border:1px solid var(--rule);width:max-content;background:var(--surface)}
-.seg button{border:0;background:none;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:9px 19px;cursor:pointer;color:var(--ink-3);border-right:1px solid var(--rule)}
-.seg button:last-child{border-right:0}
-.seg button.on{background:var(--ink);color:var(--surface)}
+.seg a{border:0;background:none;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:9px 19px;cursor:pointer;color:var(--ink-3);border-right:1px solid var(--rule)}
+.seg a:last-child{border-right:0}
+.seg a.on{background:var(--ink);color:var(--surface)}
 .card{background:var(--surface)}
 .card h3{margin:0 0 3px;font-family:var(--serif);font-size:17px;font-weight:600}
 .card .sub{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
@@ -404,7 +404,7 @@ footer.note b{color:var(--ink);font-weight:600}
   .card{padding:15px 16px 18px}
   .grid2{margin-top:16px}
   .seg{margin:16px 0 0}
-  .seg button{padding:7px 15px}
+  .seg a{padding:7px 15px}
   .mini-grid a{height:23px}
 }
 
@@ -414,3 +414,6 @@ footer.note b{color:var(--ink);font-weight:600}
 .tabbar a:hover{color:var(--ink);background:none}
 .tabbar a.on{color:var(--ink);font-weight:600;background:none}
 .tabbar a.on::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:2px;background:var(--accent)}
+
+/* KPI 保留 span 语义，恢复 demo div 的三层块布局。 */
+.kpi > span{display:block}

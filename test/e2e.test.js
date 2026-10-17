@@ -313,16 +313,16 @@ test("统计页类名对齐 demo 原名：.l/.d/.nm/.seg，野生类 .k/.delta/.
   // 排行行名字用 .nm
   assert.match(html, /<span class="nm">/, "排行行名字应是 .nm");
   assert.ok(!html.includes('class="name"'), "野生类 .name 不得残留");
-  // 窗口切换器 = demo .seg 分段控件（button 语义 + .on 黑底）
+  // 窗口切换器 = demo .seg 分段控件（链接语义 + .on 黑底）
   assert.match(html, /<div class="seg"[\s>]/, "窗口切换器应是 .seg 容器");
-  assert.match(html, /<button[^>]*class="on"[^>]*>本月<\/button>/, "本月按钮应有 .on 选中态");
+  assert.match(html, /<a[^>]*class="on"[^>]*>本月<\/a>/, "本月按钮应有 .on 选中态");
   assert.ok(!html.includes("win-nav"), "野生类 .win-nav 不得残留");
   // 卡片标题 h3 与说明 .sub 拆开（此前 h3 class="sub" 把标题塞进说明类）
   assert.match(html, /<h3>按集子<\/h3>/, "卡片标题应是裸 h3（衬线 17px）");
   assert.match(html, /<div class="sub">[^<]{6,}<\/div>/, "每卡应有 .sub 说明行");
-  // CSS 端核对：.seg button.on 黑底反白规则存在
+  // CSS 端核对：.seg a.on 黑底反白规则存在
   const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
-  assert.match(css, /\.seg button\.on\{[^}]*background:var\(--ink\)/, ".seg 选中态应黑底反白");
+  assert.match(css, /\.seg a\.on\{[^}]*background:var\(--ink\)/, ".seg 选中态应黑底反白");
 });
 
 test("统计页与今日页新配色：事件=墨黑、思考=蓝灰（夜·十一②）", () => {
@@ -428,4 +428,18 @@ test("校验失败时构建中断且不产出（设计文档 §7 + 成功标准 
   assert.ok(!existsSync(join(out, "stats/index.html")), "失败时不得产出页面");
   assert.match(stderr, /type/, "错误信息要指出出问题的字段");
   rmSync(root, { recursive: true, force: true });
+});
+
+test('统计页恢复 demo 结构：KPI 后切窗口，趋势在同一网格内', () => {
+  const html = readFileSync(join(OUT, 'stats/index.html'), 'utf8');
+  assert.ok(html.indexOf('class="kpis"') < html.indexOf('class="seg"'));
+  assert.match(html, /<\/section>\s*<section class="card full">/);
+  assert.match(html, /<a[^>]*href="[^"]*\/stats\/year\/"[^>]*>本年<\/a>/);
+});
+test('KPI 三层文字独立成行，蓝灰与墨黑明度差异足够', () => {
+  const css = readFileSync(join(OUT, 'assets/style.css'), 'utf8');
+  assert.match(css, /\.kpi > span\{display:block\}/);
+  const color = key => css.match(new RegExp('--'+key+':\\s*#([0-9a-f]{6})'))[1];
+  const lum = hex => hex.match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((a,x,i)=>a+x*[.2126,.7152,.0722][i],0);
+  assert.ok((lum(color('blue'))+.05)/(lum(color('ink'))+.05) >= 3, '两系列明度对比至少 3:1');
 });

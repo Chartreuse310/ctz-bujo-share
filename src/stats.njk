@@ -5,11 +5,6 @@
 <div class="stats-page">
   <div class="head">
     <h1>统计<em>{{ win.range.label }}</em></h1>
-    <div class="seg" role="navigation" aria-label="统计时间窗口">
-      <button {% if w == "month" %}class="on" aria-current="page"{% endif %} data-href="{{ base }}/stats/">本月</button>
-      <button {% if w == "year" %}class="on" aria-current="page"{% endif %} data-href="{{ base }}/stats/year/">本年</button>
-      <button {% if w == "all" %}class="on" aria-current="page"{% endif %} data-href="{{ base }}/stats/all/">全部</button>
-    </div>
   </div>
 
   {# 1. 总量卡片（5 张）；③KPI 副行：日总结=窗口标签、有记录天数=共 N 条条目 #}
@@ -20,6 +15,12 @@
     <div class="kpi"><span class="n">{{ win.totals.days }}</span><span class="l">有记录天数</span><span class="d">共 {{ win.totals.events + win.totals.thoughts }} 条条目</span></div>
     <div class="kpi"><span class="n acc">{{ win.totals.highlights }}</span><span class="l">重点条目</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.highlights.direction }}">{{ win.totals.deltas.highlights.label }}</span>{% endif %}</div>
   </div>
+
+    <div class="seg" role="navigation" aria-label="统计时间窗口">
+      <a {% if w == "month" %}class="on" aria-current="page"{% endif %} href="{{ base }}/stats/">本月</a>
+      <a {% if w == "year" %}class="on" aria-current="page"{% endif %} href="{{ base }}/stats/year/">本年</a>
+      <a {% if w == "all" %}class="on" aria-current="page"{% endif %} href="{{ base }}/stats/all/">全部</a>
+    </div>
 
   {# 2. 横向排行：按集子 + 按 tag；②新配色 ev=墨黑 / th=蓝灰；⑦环比徽标（withDelta 同款逻辑在模板内联） #}
   <div class="grid2">
@@ -42,7 +43,6 @@
       {% endfor %}
     </section>
     {% endfor %}
-  </div>
 
   {# 3. 纵向趋势：手写内联 SVG（旧缺陷：include 从未传 pts，线上恒空壳——修） #}
   <section class="card full">
@@ -55,5 +55,6 @@
       <span><i class="line th"></i>思考</span>
     </div>
   </section>
+  </div>
 </div>
 </div>
