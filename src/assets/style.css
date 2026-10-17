@@ -428,3 +428,21 @@ footer.note b{color:var(--ink);font-weight:600}
 /* 总数与差值共用一条居中行，避免外层基线和内层 middle 混用。 */
 .rank-row .v{display:flex;align-items:center;justify-content:flex-end;gap:.45em;white-space:nowrap}
 .rank-row .v > span{display:flex;align-items:center}
+
+/* 条目详情：居中明信片，2026-10-17 拍板 */
+.entry-wrap{padding-top:40px}
+.postcard{max-width:720px;margin:0 auto;padding:48px;background:#faf8f2;border:1px solid var(--rule);box-shadow:0 3px 16px rgba(30,25,18,.04);overflow-wrap:anywhere}
+.postcard-date{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.postcard-head h1{font-family:var(--serif);font-size:30px;line-height:1.45;margin:18px 0 28px}
+.postcard .entry-body{font-size:16px;line-height:1.95}
+.postcard .entry-body p{margin:0 0 1.25em}
+.postcard .entry-body img{max-width:100%;height:auto}
+.postcard .entry-body pre{max-width:100%;overflow-x:auto}
+.postcard-foot{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule)}
+.postcard-tags{display:flex;flex-wrap:wrap;gap:8px}
+.postcard .backlink{margin:24px 0 0;font-size:12px;color:var(--ink-3)}
+@media(max-width:760px){
+  .wrap.entry-wrap{padding:24px 16px calc(var(--tab) + 28px)}
+  .postcard{padding:28px 24px}
+  .postcard-head h1{font-size:26px}
+}

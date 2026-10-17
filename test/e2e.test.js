@@ -465,3 +465,12 @@ test('排行总数与差值作为同一居中行排列', () => {
   const css=readFileSync(join(OUT,'assets/style.css'),'utf8');
   assert.match(css, /\.rank-row \.v\{display:flex;align-items:center;justify-content:flex-end;gap:/);
 });
+
+test("条目详情使用明信片，日期在标题上方且分类置于正文后", () => {
+  const html = readFileSync(join(OUT, "entry/2026-10-16-codex-pro/index.html"), "utf8");
+  assert.match(html, /class="entry-page postcard"/);
+  assert.ok(html.indexOf('class="postcard-date"') < html.indexOf('<h1>'));
+  assert.ok(html.indexOf('class="entry-body"') < html.indexOf('class="postcard-foot"'));
+  assert.match(html, /破防了，ctz-bujo-share/);
+  assert.match(html, /暂时不考虑放在Z8.0里。/);
+});
