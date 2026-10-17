@@ -538,3 +538,11 @@ test('14 日示例条目和日总结已删除，首页起始为真实记录日�
   const day=readFileSync(join(OUT,'day/2026-10-14/index.html'),'utf8');
   assert.match(day,/这里是空的。/);assert.doesNotMatch(day,/把时间轴画成了图|把想法画成图，一下清楚了/);
 });
+
+test('早餐条目仅保留通用店名，去除可定位的分店信息且链接不变',()=>{
+  const html=readFileSync(join(OUT,'entry/2026-10-15-breakfast-mcdonalds/index.html'),'utf8');
+  assert.match(html,/<h1>🥪 早餐：麦当劳<\/h1>/);
+  assert.match(html,/带了自己做的拿铁/);
+  const day=readFileSync(join(OUT,'day/2026-10-15/index.html'),'utf8');
+  assert.match(day,/>🥪 早餐：麦当劳<\/a>/);
+});

@@ -1,6 +1,6 @@
 ---
 type: event
-title: 🥪 早餐：麦当劳（火器营）
+title: 🥪 早餐：麦当劳
 date: 2026-10-15
 order: 1
 ---
