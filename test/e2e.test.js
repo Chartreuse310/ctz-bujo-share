@@ -291,7 +291,7 @@ test("统计块参照 demo .stat-pair：口径=事件/思考 + 分色（事件�
 });
 
 test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () => {
-  // 空状态落在首页（今日 = 2026-10-16 无条目）与未来日期不生成日页——用首页验证
+  // 无记录的今日页与日页统一使用既有单行空态。
   const html = readFileSync(join(OUT, "today/index.html"), "utf8");
   assert.match(html, /<div class="empty">这里是空的。<\/div>/);
   // demo 两段引导不恢复
@@ -501,4 +501,16 @@ test('首页主标题使用用户指定文案',()=>{
  assert.match(html,/<h1>沙楚子的存在证明<\/h1>/);
  assert.match(html,/<p class="landing-description">——记一记研究型设计师的成长之路！<\/p>/);
  assert.ok(!html.includes("一些发生的事，一些慢慢想明白的事。"));
+});
+
+test('月历与小月历的所有日期链接都有日页，空日不返回 404', () => {
+  for (const page of ['month/2026-10/index.html', 'today/index.html']) {
+    const html = readFileSync(join(OUT, page), 'utf8');
+    const dates = [...html.matchAll(/href="\/ctz-bujo-share\/day\/(\d{4}-\d{2}-\d{2})\//g)].map(m => m[1]);
+    assert.ok(dates.length >= 28);
+    for (const date of dates) assert.ok(existsSync(join(OUT, `day/${date}/index.html`)), `${page} 的 ${date} 链接没有生成日页`);
+  }
+  const empty = readFileSync(join(OUT, 'day/2026-10-17/index.html'), 'utf8');
+  assert.match(empty, /这里是空的。/);
+  assert.match(empty, /2026 年 10 月 17 日/);
 });

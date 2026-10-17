@@ -1997,7 +1997,7 @@ git commit -m "feat: Eleventy 配置（src 作输入、RenderPlugin 渲染正文
 import { loadContent } from "../../lib/load.js";
 import { totals, rankBy, withDelta, trendByDay, trendByMonth, windowRange, inRange } from "../../lib/stats.js";
 import { resolveCollection, resolveTag } from "../../lib/taxonomy.js";
-import { monthKey } from "../../lib/calendar.js";
+import { monthKey, daysInMonth } from "../../lib/calendar.js";
 
 /**
  * 全局数据：内容校验 + 统计预计算（设计文档 §3：统计不放在模板里算）。
@@ -2023,10 +2023,6 @@ export default function () {
     ...taxonomy.collections.map((c) => ({ ...c, url: `/collection/${c.slug}/` })),
   ];
   const tags = taxonomy.tags.map((t) => ({ ...t, url: `/tag/${t.slug}/` }));
-
-  // 日页要覆盖的日期 = 有日总结的 ∪ 有条目的（Task 3.3 的分页源）。
-  // 只列日总结会漏掉「有条目但当天没写日总结」的日子。
-  const days = [...new Set([...dailies.map((d) => d.date), ...entries.map((e) => e.date)])].sort();
 
   // 统计页默认窗口 = 本月（设计文档 §10）
   const windows = {};
@@ -2063,6 +2059,10 @@ export default function () {
     ...dailies.map((d) => monthKey(d.date)),
     thisMonth,
   ])].sort();
+
+  // 已展示月份的每一天都有日页，空日也必须承接月历/小月历的链接。
+  const days = months.flatMap(key => Array.from({ length: daysInMonth(key) },
+    (_, i) => `${key}-${String(i + 1).padStart(2, "0")}`));
 
   // 统计页三个窗口（Task 3.6 用它做分页源）
   const windowKeys = ["month", "year", "all"];
@@ -2804,3 +2804,8 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 | `node scripts/check-agents-md.mjs` | 通过 |
 | `node scripts/verify-plan.mjs` | 83 tests / 83 pass / 0 fail |
 | `git diff --check` | 无输出，退出码 0 |
+
+
+## 修复记录：空日链接 404（2026-10-17）
+
+月历与小月历链接到已展示月份的每一天；分页源改为这些月份的全部合法日期，不能只列有记录的日期。沿用既有日页空态，不更改内容统计或记录起止。`test/e2e.test.js` 新增月历/小月历全部日链接产物存在与空日内容断言；先复现缺失日页失败，再修复。全量测试 157/157；构建与本地生产子路径 HTTP 验证通过。

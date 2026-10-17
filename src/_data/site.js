@@ -2,7 +2,7 @@ import { buildHome } from "../../lib/home.js";
 import { loadContent } from "../../lib/load.js";
 import { totals, rankBy, withDelta, trendByDay, trendByMonth, windowRange, inRange } from "../../lib/stats.js";
 import { resolveCollection, resolveTag } from "../../lib/taxonomy.js";
-import { monthKey } from "../../lib/calendar.js";
+import { monthKey, daysInMonth } from "../../lib/calendar.js";
 
 /**
  * 全局数据：内容校验 + 统计预计算（设计文档 §3：统计不放在模板里算）。
@@ -33,10 +33,6 @@ export default function () {
     ...taxonomy.collections.map((c) => ({ ...c, url: withBase(`/collection/${c.slug}/`) })),
   ];
   const tags = taxonomy.tags.map((t) => ({ ...t, url: withBase(`/tag/${t.slug}/`) }));
-
-  // 日页要覆盖的日期 = 有日总结的 ∪ 有条目的（Task 3.3 的分页源）。
-  // 只列日总结会漏掉「有条目但当天没写日总结」的日子。
-  const days = [...new Set([...dailies.map((d) => d.date), ...entries.map((e) => e.date)])].sort();
 
   // 统计页默认窗口 = 本月（设计文档 §10）
   const windows = {};
@@ -73,6 +69,11 @@ export default function () {
     ...dailies.map((d) => monthKey(d.date)),
     thisMonth,
   ])].sort();
+
+  // 月历和小月历的每个非空格都是日页链接，空记录日也必须生成页面。
+  // 只生成已展示月份，避免跨月份间隔或未来记录导致无限铺开。
+  const days = months.flatMap(key => Array.from({ length: daysInMonth(key) },
+    (_, i) => `${key}-${String(i + 1).padStart(2, "0")}`));
 
   // 条目页要用的解析后引用：集子 URL、tag 对象（显示名 → /tag/<slug>/，url 在这里包前缀）
   for (const e of entries) {
