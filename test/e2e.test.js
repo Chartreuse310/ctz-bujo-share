@@ -80,7 +80,10 @@ test("集子·标签页标题区：res-head（h2 衬线集子名 + .cnt 事件�
   const html = readFileSync(join(OUT, "collection/phd-thesis/index.html"), "utf8");
   assert.ok(!html.includes('class="dateline"'), "本页不用今日页 .dateline 款");
   assert.match(html, /<div class="res-head">\s*<h2>博士学位论文<\/h2>/s, "res-head h2 = 集子显示名");
-  assert.match(html, /<span class="cnt">2 条 · 事件 \d+ \/ 思考 \d+<\/span>/, ".cnt = N 条 · 事件 X / 思考 Y");
+  const counts = html.match(/<span class="cnt">(\d+) 条 · 事件 (\d+) \/ 思考 (\d+)<\/span>/);
+  assert.ok(counts, ".cnt = N 条 · 事件 X / 思考 Y");
+  assert.equal(Number(counts[1]), Number(counts[2]) + Number(counts[3]), "事件与思考合计应等于总数");
+  assert.equal(Number(counts[1]), (html.match(/class="resrow"/g) || []).length, "总数应等于实际条目行数");
   assert.match(html, /<span class="hint">集子 · 一对一 · 按日期倒序<\/span>/, ".hint 提示归属与排序");
   assert.ok(!html.includes("Index</em>"), "不加页面级大标题与 em Index");
   assert.ok(!html.includes("taxonomy.yml"), "不保留 taxonomy 登记说明文");
