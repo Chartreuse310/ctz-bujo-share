@@ -5,9 +5,10 @@ import { existsSync, readFileSync, writeFileSync, cpSync, rmSync, mkdtempSync } 
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-const OUT = ".e2e-site";
+const OUT = ".e2e-site/main";
 
 before(() => {
+  rmSync(OUT, { recursive: true, force: true });
   execFileSync("npx", ["@11ty/eleventy", "--output", OUT], { stdio: "pipe" });
 });
 
@@ -105,11 +106,11 @@ test("集子·标签页空态：单行提示性文案（夜·十⑤，非 demo �
 
 
 test("条目页 URL 含日期前缀（设计文档 §5.1）", () => {
-  assert.ok(existsSync(join(OUT, "entry/2026-10-14-example/index.html")));
+  assert.ok(existsSync(join(OUT, "entry/2026-10-16-codex-pro/index.html")));
 });
 
 test("条目页渲染出了 Markdown（<p> 等）", () => {
-  const html = readFileSync(join(OUT, "entry/2026-10-14-example/index.html"), "utf8");
+  const html = readFileSync(join(OUT, "entry/2026-10-16-codex-pro/index.html"), "utf8");
   assert.match(html, /<p>/);
 });
 
@@ -204,7 +205,7 @@ test("每类页面的底栏都有且只有一个选中 tab（navActive 全覆盖
     );
   }
   // 条目详情页是跨屏入口，四个 tab 都不亮
-  const entryHtml = readFileSync(join(OUT, "entry/2026-10-14-example/index.html"), "utf8");
+  const entryHtml = readFileSync(join(OUT, "entry/2026-10-16-codex-pro/index.html"), "utf8");
   const onInEntry = TABS.filter((href) => entryHtml.includes(`href="${href}" class="on"`));
   assert.deepEqual(onInEntry, [], "entry 页不亮任何 tab");
 });
@@ -492,7 +493,8 @@ test('独立首页与今日分离，品牌返回首页，首页不选中四屏',
 
 test('首页摘要不会破坏 template 与事件结构',()=>{
  const html=readFileSync(join(OUT,'index.html'),'utf8');
- assert.match(html,/<template>\s*<article class="landing-thought">[\s\S]*?<\/article>\s*<\/template>/);
+ if (html.includes('<template>')) assert.match(html,/<template>\s*<article class="landing-thought">[\s\S]*?<\/article>\s*<\/template>/);
+ else assert.match(html, /id="thought-list"[^>]*>\s*<p class="empty">这里是空的。<\/p>/);
  assert.doesNotMatch(html,/<p class="landing-event-excerpt">\s*<article/);
 });
 
@@ -524,4 +526,15 @@ test('codex pro 为手动重点：首页只显示重点，普通记录仍在日�
   const entry=readFileSync(join(OUT,'entry/2026-10-16-codex-pro/index.html'),'utf8');
   assert.match(entry,/class="tag hl">重点/);
   const day=readFileSync(join(OUT,'day/2026-10-16/index.html'),'utf8');assert.match(day,/晚餐：辣椒炒肉/);
+});
+
+
+test('14 日示例条目和日总结已删除，首页起始为真实记录日，空日仍可访问',()=>{
+  assert.equal(existsSync('content/entries/2026-10-14-example.md'),false);
+  assert.equal(existsSync('content/daily/2026-10-14.md'),false);
+  assert.equal(existsSync(join(OUT,'entry/2026-10-14-example/index.html')),false);
+  const home=readFileSync(join(OUT,'index.html'),'utf8');
+  assert.match(home,/始于 <time>2026-10-15<\/time>/);
+  const day=readFileSync(join(OUT,'day/2026-10-14/index.html'),'utf8');
+  assert.match(day,/这里是空的。/);assert.doesNotMatch(day,/把时间轴画成了图|把想法画成图，一下清楚了/);
 });
