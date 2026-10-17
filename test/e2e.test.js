@@ -531,7 +531,10 @@ test('codex pro 为手动重点：首页只显示重点，普通记录仍在日�
 
 test('14 日示例条目已删除，首页起始随真实记录日更新（2026-10-17 补录 10-14 真实内容后始于 10-14）',()=>{
   assert.equal(existsSync('content/entries/2026-10-14-example.md'),false);
-  assert.equal(existsSync('content/daily/2026-10-14.md'),false);
+  // 2026-10-17 用户补写真实 10-14 日总结（「想读论文 → 分享日记」）：无日总结的旧断言作废，
+  // 守卫改为「示例日总结标题不得回归」
+  const daily14 = existsSync('content/daily/2026-10-14.md') ? readFileSync('content/daily/2026-10-14.md','utf8') : '';
+  assert.doesNotMatch(daily14,/示例|占位/);
   assert.equal(existsSync(join(OUT,'entry/2026-10-14-example/index.html')),false);
   const home=readFileSync(join(OUT,'index.html'),'utf8');
   // 2026-10-17 用户补录 10-14 八条真实条目：首页「始于」随之从 10-15 提前到 10-14
