@@ -912,6 +912,8 @@ G1 贴底后 `nav.bottom === innerHeight`，视口底边之下没有区域，此
 | `lib/`、`src/`、`scripts/`、`test/`、`docs/`、`eleventy.config.js`、`package.json`、`README.md`、`AGENTS.md`、`content/taxonomy.yml` | MIT | `LICENSE` |
 | `content/entries/**/*.md`、`content/daily/**/*.md`（真实日记正文） | CC BY-NC-ND 4.0 | `LICENSE-CONTENT.md` |
 
+**`LICENSE` 保持纯 MIT 文本，末尾不加任何自定条款**：GitHub 的 licensee 遇到附加条款会判成 `NOASSERTION`，仓库页面于是显示「Other」——而「Other」恰恰最劝退想复用的人。2026-10-17 首次推送上线的实测就是这样：MIT 末尾追加了一段中文范围说明，检测结果立刻掉成 `NOASSERTION`。因此边界说明只放两处：`LICENSE-CONTENT.md` 正文与 README 的「许可」一节；`LICENSE` 只留标准 MIT 全文。
+
 **为什么不是整仓一个许可**：`content/` 是个人真实写作。整仓 MIT 等于把日记一并授权给他人商用与改编；反过来只留「保留所有权利」又会让人连 README 和 taxonomy 都不敢动，和「框架可复用」的定位冲突。分开授权是唯一同时满足两边的写法。
 
 **为什么 `content/taxonomy.yml` 归 MIT 而不是 CC**：复用时必须登记自己的集子和标签（§4.3 要求显式登记）。若登记表也算「不可改编」，这套框架就不可用——所以它跟代码走。
@@ -922,4 +924,4 @@ G1 贴底后 `nav.bottom === innerHeight`，视口底边之下没有区域，此
 
 **边界（别把许可证当防盗）**：公开网页本来就会被抓取，许可证不阻止抓取，也不追溯改变已经公开的内容；它界定的是「授权了什么」，在被搬运、被商用打包时提供依据。Git 历史里已入库的内容不会因新增许可而改变——清理旧内容仍然要走「改当前文件 ≠ 清历史」那条独立路径（§11.2）。
 
-**维护约定**：`test/license.test.js` 机械守住这三件事——`LICENSE` 仍是 MIT 且写着不含日记正文的边界、`package.json` 的 `license` 字段与之一致、`LICENSE-CONTENT.md` 把范围钉在 `content/entries/` 与 `content/daily/` 并内嵌完整法律文本。改许可属于设计层，先讨论再动。
+**维护约定**：`test/license.test.js` 机械守住五件事——`LICENSE` 仍是**纯** MIT 文本（末尾不得追加条款）、`package.json` 的 `license` 字段与之一致、`LICENSE-CONTENT.md` 把范围钉在 `content/entries/` 与 `content/daily/` 并声明 `content/taxonomy.yml` 归 MIT、CC 法律文本内嵌其中、README「许可」一节链对两个文件。改许可属于设计层，先讨论再动。

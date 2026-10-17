@@ -2,6 +2,8 @@
 
 本仓库**只**对下列写作内容适用 CC BY-NC-ND 4.0。代码与文档的许可见根目录 [LICENSE](LICENSE)（MIT）。
 
+根目录 `LICENSE` 是**纯 MIT 文本**，故意不附加范围说明：GitHub 的许可证识别遇到附加条款会判成「Other」，反而误导想复用的人。两种许可的分界线只写在这里和 [README](README.md) 的「许可」一节。
+
 ## 覆盖范围
 
 - `content/entries/**/*.md`：每条事件或思考的 front matter 与正文

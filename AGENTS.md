@@ -202,7 +202,7 @@ npm run check           # node scripts/check-site-constraints.mjs
 - 不要引第三方客户端图表库（静态站，构建时算数 + 内联 SVG）。
 - 不要擅自 push 或改部署工作流（`.github/workflows/deploy.yml`）：push 即发布（设计文档 §13），push 前必须本地 `npm test` + `npm run build` 全绿；工作流改动属于设计层，先讨论。
 - 不要为了图省事手改生成产物。
-- 不要擅自更改许可范围：`LICENSE`（代码与文档，MIT）与 `LICENSE-CONTENT.md`（`content/entries/`、`content/daily/` 的日记正文，CC BY-NC-ND 4.0）的分界按目录写死，理由见设计文档 §14；改许可属于设计层，先讨论。`test/license.test.js` 会守住这三条边界。
+- 不要擅自更改许可范围：`LICENSE`（代码与文档，纯 MIT 文本，**末尾不得追加条款**——GitHub 许可证识别会因此判成 Other）与 `LICENSE-CONTENT.md`（`content/entries/`、`content/daily/` 的日记正文，CC BY-NC-ND 4.0）的分界按目录写死，理由见设计文档 §14；改许可属于设计层，先讨论。`test/license.test.js` 会守住这些边界。
 
 ## 9. 环境事实
 
