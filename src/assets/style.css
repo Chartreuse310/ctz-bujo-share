@@ -424,3 +424,7 @@ footer.note b{color:var(--ink);font-weight:600}
 /* 图形与文字行居中，避免字体实心三角的基线位置偏差。 */
 .delta-value{display:inline-flex;align-items:center;gap:.4em;white-space:nowrap;vertical-align:middle}
 .delta-value svg{display:block;flex:none;width:.7em;height:.56em;fill:currentColor}
+
+/* 总数与差值共用一条居中行，避免外层基线和内层 middle 混用。 */
+.rank-row .v{display:flex;align-items:center;justify-content:flex-end;gap:.45em;white-space:nowrap}
+.rank-row .v > span{display:flex;align-items:center}

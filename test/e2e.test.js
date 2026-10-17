@@ -377,7 +377,7 @@ test("趋势图真实渲染：数据点 + 月窗口轴标签改日号（10-01 �
 test("排行行环比徽标使用有符号条数差值", () => {
   const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
   // 本月有值、上月为空，也显示具体增加条数。
-  assert.match(html, /<span class="v">[^<]*<span class="up"><span class="delta-value" aria-label="▲ \+\d+ 条">/, "排行行 v 内应有条数差值");
+  assert.match(html, /<span class="v"><span class="rank-total">\d+<\/span><span class="up"><span class="delta-value" aria-label="▲ \+\d+ 条">/, "排行行 v 内应有条数差值");
   // 顺带核对本轮拍板⑧：今日页 stat-pair 的「本月 N」副行保留
   const dayHtml = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   assert.match(dayHtml, /<span class="s">本月 \d+<\/span>/, "今日页 stat-pair 副行应保留");
@@ -454,4 +454,11 @@ test('统计三角与文字分别排版并按行中心对齐', () => {
   assert.match(html, /class="delta-value" aria-label="▲ \+\d+ 条"><svg[^>]*aria-hidden="true"/);
   const css=readFileSync(join(OUT,'assets/style.css'),'utf8');
   assert.match(css, /\.delta-value\{[^}]*display:inline-flex;[^}]*align-items:center/);
+});
+
+test('排行总数与差值作为同一居中行排列', () => {
+  const html=readFileSync(join(OUT,'stats/index.html'),'utf8');
+  assert.match(html, /class="v"><span class="rank-total">\d+<\/span>/);
+  const css=readFileSync(join(OUT,'assets/style.css'),'utf8');
+  assert.match(css, /\.rank-row \.v\{display:flex;align-items:center;justify-content:flex-end;gap:/);
 });

@@ -37,7 +37,14 @@ try {
           const icon=rect(el.querySelector('svg')), text=rect(el.querySelector('span'));
           return Math.abs((icon.top+icon.bottom-text.top-text.bottom)/2);
         });
-        return { deltaCenters, titleGap, layers:rect(n).bottom<=rect(l).top && (!d || rect(l).bottom<=rect(d).top),
+        const rankCenters=[...document.querySelectorAll('.rank-row .v')].filter(el=>el.querySelector('.delta-value')).map(el=>{
+          const total=el.querySelector('.rank-total');
+          const range=document.createRange(); range.selectNodeContents(total || el.firstChild);
+          const a=range.getBoundingClientRect(); range.selectNodeContents(el.querySelector('.delta-value > span'));
+          const b=range.getBoundingClientRect();
+          return Math.abs((a.top+a.bottom-b.top-b.bottom)/2);
+        });
+        return { rankCenters, deltaCenters, titleGap, layers:rect(n).bottom<=rect(l).top && (!d || rect(l).bottom<=rect(d).top),
           kpiHeight:rect($('.kpi')).height,
           order:rect($('.kpis')).bottom<=rect($('.seg')).top && rect($('.seg')).bottom<=rect($('.grid2')).top,
           grid:$('.card.full').parentElement.className,
@@ -49,6 +56,7 @@ try {
       // 字体行框可能比字形盒稍高，Range 实测至少留出 8px 可见间距。
       assert.ok(r.titleGap>=8, JSON.stringify(r));
       assert.ok(r.deltaCenters.every(d=>d<=0.5), '三角与文字行中心误差超过 0.5px：'+JSON.stringify(r.deltaCenters));
+      assert.ok(r.rankCenters.every(d=>d<=0.5), '排行总数与差值文字中心误差超过 0.5px：'+JSON.stringify(r.rankCenters));
       assert.equal(r.grid,'grid2'); assert.equal(r.border,'1px');
       // 全部窗口不显示环比，窄屏首排卡片自然少一行；其余窗口与 demo 同为 128px。
       const expectedHeight = window==='all/' && width<1000 ? 102.625 : 128;

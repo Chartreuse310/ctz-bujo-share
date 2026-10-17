@@ -2469,7 +2469,7 @@ test -d _site/collection/all && echo "OK: 主集子页存在"
 - 三块：总量卡片（`.kpis`，5 张：事件 / 思考 / 日总结 / 有记录天数 / 重点条目）、横向排行（按集子 + 按 tag，`.rank-row` + 堆叠条）、纵向趋势（折线）
 - **不引入客户端图表库**，手写内联 SVG。折线图的实现直接参照 demo 的 `lineChart()`（`docs/ui-demos/g1-line.html:914-934`）：`viewBox="0 0 1000 260"`、4 条水平网格线、事件实线墨黑、思考虚线浅蓝灰 `#6f8fa6`（2026-10-17 修订，与墨黑明度对比至少 3:1）
 - 排行条宽度 = `value / max * 100%`；事件用墨色、思考用朱红（与 demo 一致）
-- 环比：共用 `withDelta()`，显示「▲ +N 条 / ▼ -N 条 / =」，上期为 0 同样计算差值；全部窗口无比较。通过 Nunjucks global 接线到排行模板；KPI 与排行共用差值显示宏，实心三角用内联 SVG 与文字行居中（inline-flex / align-items:center），CDP 验证中心误差不超过 0.5px
+- 环比：共用 `withDelta()`，显示「▲ +N 条 / ▼ -N 条 / =」，上期为 0 同样计算差值；全部窗口无比较。通过 Nunjucks global 接线到排行模板；KPI 与排行共用差值显示宏，实心三角用内联 SVG 与文字行居中（inline-flex / align-items:center），排行总数另包 span 并与差值共用 flex 居中行，CDP 验证三角/文字及总数/差值文字中心误差不超过 0.5px
 
 **窗口切换：三个真实页面，不用查询串**（这是上一轮草案的硬缺陷，已修）
 
