@@ -529,14 +529,19 @@ test('codex pro 为手动重点：首页只显示重点，普通记录仍在日�
 });
 
 
-test('14 日示例条目和日总结已删除，首页起始为真实记录日，空日仍可访问',()=>{
+test('14 日示例条目已删除，首页起始随真实记录日更新（2026-10-17 补录 10-14 真实内容后始于 10-14）',()=>{
   assert.equal(existsSync('content/entries/2026-10-14-example.md'),false);
   assert.equal(existsSync('content/daily/2026-10-14.md'),false);
   assert.equal(existsSync(join(OUT,'entry/2026-10-14-example/index.html')),false);
   const home=readFileSync(join(OUT,'index.html'),'utf8');
-  assert.match(home,/始于 <time>2026-10-15<\/time>/);
+  // 2026-10-17 用户补录 10-14 八条真实条目：首页「始于」随之从 10-15 提前到 10-14
+  assert.match(home,/始于 <time>2026-10-14<\/time>/);
   const day=readFileSync(join(OUT,'day/2026-10-14/index.html'),'utf8');
-  assert.match(day,/这里是空的。/);assert.doesNotMatch(day,/把时间轴画成了图|把想法画成图，一下清楚了/);
+  // 当日不再是空态，且渲染的是真实条目（示例条目文案不得回归）
+  assert.doesNotMatch(day,/这里是空的。/);
+  assert.doesNotMatch(day,/把时间轴画成了图|把想法画成图，一下清楚了/);
+  assert.match(day,/早餐：麦当劳/);
+  assert.match(day,/抛砖引玉/);
 });
 
 test('早餐条目仅保留通用店名，去除可定位的分店信息且链接不变',()=>{
