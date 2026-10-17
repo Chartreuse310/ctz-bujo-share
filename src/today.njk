@@ -5,7 +5,7 @@ navActive: home
 permalink: /today/
 ---
 
-{% set dayDate = site.today %}
+{% set dayDate = site.home.latest or site.today %}
 {% include "day-body.njk" %}
 
 {% include "share-dialog.njk" %}

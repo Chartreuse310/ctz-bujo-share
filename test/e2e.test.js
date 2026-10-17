@@ -291,8 +291,8 @@ test("统计块参照 demo .stat-pair：口径=事件/思考 + 分色（事件�
 });
 
 test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () => {
-  // 无记录的今日页与日页统一使用既有单行空态。
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  // 今日默认最近有内容日；空态直接验证无记录的日页。
+  const html = readFileSync(join(OUT, "day/2026-10-01/index.html"), "utf8");
   assert.match(html, /<div class="empty">这里是空的。<\/div>/);
   // demo 两段引导不恢复
   assert.ok(!html.includes("这天没有条目"));

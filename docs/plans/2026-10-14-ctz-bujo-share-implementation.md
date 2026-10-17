@@ -2328,7 +2328,7 @@ git commit -m "feat: 基础布局与 G1 通栏细线底栏"
 - 侧栏 `.side`（demo `.blk` 块结构）：块一 `.blk > .blk-h(h3 小月历 + 「月视图 →」链接) + .mini(.mini-head + .mini-dow + .mini-grid)`，格子为 `<a class="mini-cell">`（**CSS 选择器用 `.mini-grid a`，不是 button**）；`mini-foot` **只保留「今天」灰方块一枚图例**；块二 `.blk > .blk-h(h3 统计 + 「查看统计 →」) + .stat-pair`（衬线 30px 大数字**墨色不分色** + `.l` 标签 + `.s`「本月 N」副行，口径 = 条目/日总结）
 - 侧栏小月历点进 `/day/<date>/`
 
-关键取数：`site.dailyByDate[site.today]`、`site.entriesByDate[site.today]`、`buildMonthGrid(site.thisMonth, site.entries, site.today)`。
+关键取数：先令 `dayDate = site.home.latest or site.today`（复用首页聚合中条目/小结的最大日期，无内容时回退真实今天）；读取 `site.dailyByDate[dayDate]`、`site.entriesByDate[dayDate]`，侧栏月份取 dayDate 所在月，小月历真实今天仍传 site.today。分享共用 dayDate。
 
 **验证**
 
@@ -2809,3 +2809,11 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 ## 修复记录：空日链接 404（2026-10-17）
 
 月历与小月历链接到已展示月份的每一天；分页源改为这些月份的全部合法日期，不能只列有记录的日期。沿用既有日页空态，不更改内容统计或记录起止。`test/e2e.test.js` 新增月历/小月历全部日链接产物存在与空日内容断言；先复现缺失日页失败，再修复。全量测试 157/157；构建与本地生产子路径 HTTP 验证通过。
+
+
+## 增量：今日默认最近有内容日期（2026-10-17 用户拍板）
+
+- 设计依据 §5.3：复用已有 `site.home.latest`，无内容才回退 `site.today`，不改实际今天的定义或原阅读视觉。
+- TDD：`test/share-build.test.js` 先验证旧实现失败，再覆盖最近仅小结/仅条目、未来合法日期、无内容回退，以及分享日期/正文同步；原空态回归改用无记录的日页。
+- 实现：`src/today.njk` 统一 dayDate；阅读与分享共用，保留独立日页按 URL 取日期。文档同步 AGENTS.md、设计文档与本计划。
+- 验证：全量测试、构建、分享 CDP、原站硬约束、文档/计划校验通过后创建单个提交，不 push。

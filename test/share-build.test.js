@@ -46,3 +46,17 @@ test('没有日总结时只提供条目；空日不伪造记录',()=>{
   rmSync(join(root,'content/entries'),{recursive:true});
   assert.deepEqual(scripts(build()),[]);
 });
+
+test('今日默认最近有条目或小结的日期，分享同步；未来日期合法，完全无内容回退今天',()=>{
+  mkdirSync(join(root,'content/entries'),{recursive:true});
+  const entry=join(root,'content/entries/1999-12-31-record.md');
+  const daily=join(root,'content/daily/2000-01-01.md');
+  writeFileSync(entry,'---\ntype: event\ntitle: 最近事件\ndate: 1999-12-31\n---\n\n事件正文。');
+  writeFileSync(daily,'---\ntitle: 最近小结\n---\n\n小结正文。');
+  const latest=build();assert.match(latest,/data-date="2000-01-01"/);assert.match(latest,/2000 年 1 月 1 日/);
+  assert.deepEqual(scripts(latest).map(x=>x.id),['daily']);
+  rmSync(daily);const onlyEntry=build();assert.match(onlyEntry,/data-date="1999-12-31"/);assert.equal(scripts(onlyEntry)[0].title,'最近事件');
+  const future=join(root,'content/daily/2099-01-01.md');writeFileSync(future,'---\ntitle: 未来记录\n---\n\n合法未来正文。');
+  assert.match(build(),/data-date="2099-01-01"/);
+  rmSync(future);rmSync(entry);const empty=build();assert.ok(empty.includes(`data-date="${date}"`));assert.deepEqual(scripts(empty),[]);
+});
