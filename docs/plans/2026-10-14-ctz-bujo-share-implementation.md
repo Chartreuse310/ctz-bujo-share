@@ -1621,15 +1621,15 @@ test("rankBy：登记但零条目的也保留（值为 0）", () => {
   assert.deepEqual(rows.map((r) => [r.name, r.total]), [["绘画", 0], ["书影音", 0]]);
 });
 
-test("withDelta：上期为 0 显示「新增」，不是 +∞%", () => {
-  assert.equal(withDelta(5, 0).label, "新增");
+test("withDelta：上期为 0 显示增加条数", () => {
+  assert.equal(withDelta(5, 0).label, "↑ +5 条");
   assert.equal(withDelta(5, 0).direction, "up");
 });
 
-test("withDelta：持平 / 上升百分比 / 下降百分比", () => {
+test("withDelta：持平 / 增加条数 / 减少条数", () => {
   assert.equal(withDelta(5, 5).label, "=");
-  assert.equal(withDelta(6, 4).label, "↑ 50%");
-  assert.equal(withDelta(2, 4).label, "↓ 50%");
+  assert.equal(withDelta(6, 4).label, "↑ +2 条");
+  assert.equal(withDelta(2, 4).label, "↓ -2 条");
 });
 
 test("withDelta：无上期时返回 null 标签", () => {
@@ -1755,17 +1755,14 @@ export function rankBy(entries, keyOf, knownNames = []) {
   );
 }
 
-/** 环比标注。上期为 0 时显示「新增」而不是 +∞%（设计文档 §6）。 */
+/** 与上期相比的条数差值；全部窗口没有上期，不显示比较。 */
 export function withDelta(current, previous) {
   if (previous === null || previous === undefined) return { label: null, direction: "none" };
-  if (previous === 0) return current > 0
-    ? { label: "新增", direction: "up" }
-    : { label: "=", direction: "none" };
-  if (current === previous) return { label: "=", direction: "none" };
-  const pct = Math.round(((current - previous) / previous) * 100);
-  return current > previous
-    ? { label: `↑ ${Math.abs(pct)}%`, direction: "up" }
-    : { label: `↓ ${Math.abs(pct)}%`, direction: "down" };
+  const diff = current - previous;
+  if (diff === 0) return { label: "=", direction: "none" };
+  return diff > 0
+    ? { label: `↑ +${diff} 条`, direction: "up" }
+    : { label: `↓ ${diff} 条`, direction: "down" };
 }
 
 /** 按日趋势（本月窗口）。缺日补 0。 */
@@ -2463,7 +2460,7 @@ test -d _site/collection/all && echo "OK: 主集子页存在"
 
 ### Task 3.6：统计页（手写内联 SVG）
 
-**2026-10-17 验收补充**：恢复标题 → KPI（三层块布局）→ 真实链接窗口切换 → 同一 `.grid2` 内排行与趋势卡。横坐标显式条件分支处理首点 0；纵坐标宏显式传最大值，单时间桶绘圆点。回归测试覆盖首点 x=56、最大值 y=30、单点可见、空数据、窗口 href 与块布局；CDP 验证 1440/760/761px 的实际几何、颜色、滚动与跳转。
+**2026-10-17 验收补充**：窗口标签位于标题下方，margin-top:16px、margin-bottom:0；恢复标题 → KPI（三层块布局）→ 真实链接窗口切换 → 同一 `.grid2` 内排行与趋势卡。横坐标显式条件分支处理首点 0；纵坐标宏显式传最大值，单时间桶绘圆点。回归测试覆盖首点 x=56、最大值 y=30、单点可见、空数据、窗口 href 与块布局；CDP 验证 1440/760/761px 的实际几何、颜色、滚动与跳转。
 
 **文件**：新建 `src/stats.njk` + `src/stats.11tydata.js` + `src/_includes/trend-svg.njk`
 
@@ -2472,7 +2469,7 @@ test -d _site/collection/all && echo "OK: 主集子页存在"
 - 三块：总量卡片（`.kpis`，5 张：事件 / 思考 / 日总结 / 有记录天数 / 重点条目）、横向排行（按集子 + 按 tag，`.rank-row` + 堆叠条）、纵向趋势（折线）
 - **不引入客户端图表库**，手写内联 SVG。折线图的实现直接参照 demo 的 `lineChart()`（`docs/ui-demos/g1-line.html:914-934`）：`viewBox="0 0 1000 260"`、4 条水平网格线、事件实线墨黑、思考虚线浅蓝灰 `#6f8fa6`（2026-10-17 修订，与墨黑明度对比至少 3:1）
 - 排行条宽度 = `value / max * 100%`；事件用墨色、思考用朱红（与 demo 一致）
-- 环比：用 `withDelta()`，上期为 0 显示「新增」
+- 环比：共用 `withDelta()`，显示「↑ +N 条 / ↓ -N 条 / =」，上期为 0 同样计算差值；全部窗口无比较。通过 Nunjucks global 接线到排行模板
 
 **窗口切换：三个真实页面，不用查询串**（这是上一轮草案的硬缺陷，已修）
 

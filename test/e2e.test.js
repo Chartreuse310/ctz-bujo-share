@@ -302,13 +302,13 @@ test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () =>
 //   只用于统计页横条图 + 今日页统计块大数字；朱红仍只给重点/选中态；
 // ③KPI 副行恢复（日总结卡=窗口标签、有记录天数卡=共 N 条条目）；
 // ④页头大标题与窗口标签间距拉大；⑤页脚 note 不恢复；⑥趋势月窗口轴标签改日号；
-// ⑦排行行环比徽标（↑x% / = / 新增）；⑧今日页 stat-pair 口径改事件/思考。
+// ⑦排行行比较（2026-10-17 改为有符号条数差值）；⑧今日页 stat-pair 口径改事件/思考。
 
 test("统计页类名对齐 demo 原名：.l/.d/.nm/.seg，野生类 .k/.delta/.win-nav/.name 不得残留（夜·十一①）", () => {
   const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
   // KPI 标签用 .l（CSS 既有规则 .kpi .l），环比用 .d（.kpi .d.up 朱红）
   assert.match(html, /<span class="l">事件<\/span>/, "KPI 标签应是 .l");
-  assert.match(html, /<span class="d up">/, "KPI 环比应是 .d.up（新增）");
+  assert.match(html, /<span class="d up">/, "KPI 差值应是 .d.up（增加）");
   assert.ok(!html.includes('class="k"') && !html.includes('class="delta'), "野生类 .k/.delta 不得残留");
   // 排行行名字用 .nm
   assert.match(html, /<span class="nm">/, "排行行名字应是 .nm");
@@ -374,15 +374,15 @@ test("趋势图真实渲染：数据点 + 月窗口轴标签改日号（10-01 �
   assert.ok(texts.some((t) => />1[05]</.test(t) || />20</.test(t) || />25</.test(t) || />10</.test(t)), "应有 5/10/15… 日号标签");
 });
 
-test("排行行环比徽标：↑x% / = / 新增（夜·十一⑦）", () => {
+test("排行行环比徽标使用有符号条数差值", () => {
   const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
-  // 数据现状：本月有值、上月为空 → 全部「新增」；= / ↑% 逻辑由 withDelta 保证（lib 单测已覆盖）
-  assert.match(html, /<span class="v">[^<]*<span class="nw">新增<\/span>/, "排行行 v 内应有 nw 徽标");
+  // 本月有值、上月为空，也显示具体增加条数。
+  assert.match(html, /<span class="v">[^<]*<span class="up">↑ \+\d+ 条<\/span>/, "排行行 v 内应有条数差值");
   // 顺带核对本轮拍板⑧：今日页 stat-pair 的「本月 N」副行保留
   const dayHtml = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   assert.match(dayHtml, /<span class="s">本月 \d+<\/span>/, "今日页 stat-pair 副行应保留");
   const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
-  assert.match(css, /\.rank-row \.v \.nw\{/, ".nw 徽标样式应存在");
+  assert.match(css, /\.rank-row \.v \.up\{/, ".up 差值样式应存在");
 });
 
 test("页脚 note 不恢复（夜·十一⑤）", () => {
@@ -443,3 +443,8 @@ test('KPI 三层文字独立成行，蓝灰与墨黑明度差异足够', () => {
   const lum = hex => hex.match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((a,x,i)=>a+x*[.2126,.7152,.0722][i],0);
   assert.ok((lum(color('blue'))+.05)/(lum(color('ink'))+.05) >= 3, '两系列明度对比至少 3:1');
 });
+
+test('统计页窗口标签在标题下方留出 16px', () => {
+ const css=readFileSync(join(OUT,'assets/style.css'),'utf8');
+ assert.match(css, /\.stats-page \.head h1 em\{margin:16px 0 0\}/);
+ });

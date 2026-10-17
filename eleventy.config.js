@@ -1,4 +1,5 @@
 import { RenderPlugin } from "@11ty/eleventy";
+import { withDelta } from "./lib/stats.js";
 import * as calendar from "./lib/calendar.js";
 
 export default function (eleventyConfig) {
@@ -7,6 +8,8 @@ export default function (eleventyConfig) {
   // 全站内部 URL 统一 {{ base }} 开头；默认 = 生产值，CTZ_BASE_URL="" 可切回根路径（本地根部署）。
   const base = (process.env.CTZ_BASE_URL ?? "/ctz-bujo-share").replace(/\/$/, "");
   eleventyConfig.addNunjucksGlobal("base", base);
+
+  eleventyConfig.addNunjucksGlobal("withDelta", withDelta);
 
   // 正文 Markdown 渲染：用 Eleventy 自带插件，避免直接依赖 markdown-it
   eleventyConfig.addPlugin(RenderPlugin);

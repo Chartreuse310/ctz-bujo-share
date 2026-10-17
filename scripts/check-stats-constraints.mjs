@@ -28,10 +28,12 @@ try {
         const $=s=>document.querySelector(s), rect=e=>e.getBoundingClientRect();
         const n=$('.kpi .n'),l=$('.kpi .l'),d=$('.kpi .d');
         const svg=$('.card.full svg');
+        const title=$('.head h1'), range=document.createRange(); range.selectNodeContents(title.firstChild);
+        const titleGap=rect(title.querySelector('em')).top-range.getBoundingClientRect().bottom;
         const points=[...svg.querySelectorAll('path')].flatMap(p=>[...p.getAttribute('d').matchAll(/[ML]([\\d.-]+) ([\\d.-]+)/g)].map(m=>[+m[1],+m[2]]));
         const ink=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
         const blue=getComputedStyle(document.documentElement).getPropertyValue('--blue').trim();
-        return { layers:rect(n).bottom<=rect(l).top && (!d || rect(l).bottom<=rect(d).top),
+        return { titleGap, layers:rect(n).bottom<=rect(l).top && (!d || rect(l).bottom<=rect(d).top),
           kpiHeight:rect($('.kpi')).height,
           order:rect($('.kpis')).bottom<=rect($('.seg')).top && rect($('.seg')).bottom<=rect($('.grid2')).top,
           grid:$('.card.full').parentElement.className,
@@ -40,6 +42,8 @@ try {
           border:getComputedStyle($('.grid2')).borderLeftWidth };
       })()`);
       assert.ok(r.layers && r.order && !r.overflow, JSON.stringify(r));
+      // 字体行框可能比字形盒稍高，Range 实测至少留出 8px 可见间距。
+      assert.ok(r.titleGap>=8, JSON.stringify(r));
       assert.equal(r.grid,'grid2'); assert.equal(r.border,'1px');
       // 全部窗口不显示环比，窄屏首排卡片自然少一行；其余窗口与 demo 同为 128px。
       const expectedHeight = window==='all/' && width<1000 ? 102.625 : 128;

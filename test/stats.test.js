@@ -93,15 +93,15 @@ test("rankBy：登记但零条目的也保留（值为 0）", () => {
   assert.deepEqual(rows.map((r) => [r.name, r.total]), [["绘画", 0], ["书影音", 0]]);
 });
 
-test("withDelta：上期为 0 显示「新增」，不是 +∞%", () => {
-  assert.equal(withDelta(5, 0).label, "新增");
+test("withDelta：上期为 0 显示增加条数", () => {
+  assert.equal(withDelta(5, 0).label, "↑ +5 条");
   assert.equal(withDelta(5, 0).direction, "up");
 });
 
-test("withDelta：持平 / 上升百分比 / 下降百分比", () => {
+test("withDelta：持平 / 增加条数 / 减少条数", () => {
   assert.equal(withDelta(5, 5).label, "=");
-  assert.equal(withDelta(6, 4).label, "↑ 50%");
-  assert.equal(withDelta(2, 4).label, "↓ 50%");
+  assert.equal(withDelta(6, 4).label, "↑ +2 条");
+  assert.equal(withDelta(2, 4).label, "↓ -2 条");
 });
 
 test("withDelta：无上期时返回 null 标签", () => {

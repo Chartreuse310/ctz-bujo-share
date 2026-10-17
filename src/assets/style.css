@@ -417,3 +417,6 @@ footer.note b{color:var(--ink);font-weight:600}
 
 /* KPI 保留 span 语义，恢复 demo div 的三层块布局。 */
 .kpi > span{display:block}
+
+/* em 在“统计”之后，间距必须放在它的上方。 */
+.stats-page .head h1 em{margin:16px 0 0}

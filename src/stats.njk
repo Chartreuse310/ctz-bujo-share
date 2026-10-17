@@ -38,7 +38,7 @@
       <div class="rank-row">
         <span class="nm">{{ r.name }}</span>
         <span class="stack"><i class="ev" style="width: {{ (r.events / maxV * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxV * 100) | round(1) }}%"></i></span>
-        <span class="v">{{ r.total }} {% if rs.prev %}{% set pr = 0 %}{% for p in rs.prev %}{% if p.name == r.name %}{% set pr = p.total %}{% endif %}{% endfor %}{% if pr == 0 and r.total > 0 %}<span class="nw">新增</span>{% elseif r.total == pr %}<span>=</span>{% else %}{% set pct = ((r.total - pr) / pr * 100) | round | abs %}<span class="{{ 'up' if r.total > pr else 'dn' }}">{{ '↑' if r.total > pr else '↓' }} {{ pct }}%</span>{% endif %}{% endif %}</span>
+        <span class="v">{{ r.total }} {% if rs.prev %}{% set pr = 0 %}{% for p in rs.prev %}{% if p.name == r.name %}{% set pr = p.total %}{% endif %}{% endfor %}{% set delta = withDelta(r.total, pr) %}<span class="{{ delta.direction }}">{{ delta.label }}</span>{% endif %}</span>
       </div>
       {% endfor %}
     </section>
