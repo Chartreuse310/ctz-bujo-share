@@ -1622,14 +1622,14 @@ test("rankBy：登记但零条目的也保留（值为 0）", () => {
 });
 
 test("withDelta：上期为 0 显示增加条数", () => {
-  assert.equal(withDelta(5, 0).label, "↑ +5 条");
+  assert.equal(withDelta(5, 0).label, "▲ +5 条");
   assert.equal(withDelta(5, 0).direction, "up");
 });
 
 test("withDelta：持平 / 增加条数 / 减少条数", () => {
   assert.equal(withDelta(5, 5).label, "=");
-  assert.equal(withDelta(6, 4).label, "↑ +2 条");
-  assert.equal(withDelta(2, 4).label, "↓ -2 条");
+  assert.equal(withDelta(6, 4).label, "▲ +2 条");
+  assert.equal(withDelta(2, 4).label, "▼ -2 条");
 });
 
 test("withDelta：无上期时返回 null 标签", () => {
@@ -1761,8 +1761,8 @@ export function withDelta(current, previous) {
   const diff = current - previous;
   if (diff === 0) return { label: "=", direction: "none" };
   return diff > 0
-    ? { label: `↑ +${diff} 条`, direction: "up" }
-    : { label: `↓ ${diff} 条`, direction: "down" };
+    ? { label: `▲ +${diff} 条`, direction: "up" }
+    : { label: `▼ ${diff} 条`, direction: "down" };
 }
 
 /** 按日趋势（本月窗口）。缺日补 0。 */
@@ -2469,7 +2469,7 @@ test -d _site/collection/all && echo "OK: 主集子页存在"
 - 三块：总量卡片（`.kpis`，5 张：事件 / 思考 / 日总结 / 有记录天数 / 重点条目）、横向排行（按集子 + 按 tag，`.rank-row` + 堆叠条）、纵向趋势（折线）
 - **不引入客户端图表库**，手写内联 SVG。折线图的实现直接参照 demo 的 `lineChart()`（`docs/ui-demos/g1-line.html:914-934`）：`viewBox="0 0 1000 260"`、4 条水平网格线、事件实线墨黑、思考虚线浅蓝灰 `#6f8fa6`（2026-10-17 修订，与墨黑明度对比至少 3:1）
 - 排行条宽度 = `value / max * 100%`；事件用墨色、思考用朱红（与 demo 一致）
-- 环比：共用 `withDelta()`，显示「↑ +N 条 / ↓ -N 条 / =」，上期为 0 同样计算差值；全部窗口无比较。通过 Nunjucks global 接线到排行模板
+- 环比：共用 `withDelta()`，显示「▲ +N 条 / ▼ -N 条 / =」，上期为 0 同样计算差值；全部窗口无比较。通过 Nunjucks global 接线到排行模板
 
 **窗口切换：三个真实页面，不用查询串**（这是上一轮草案的硬缺陷，已修）
 

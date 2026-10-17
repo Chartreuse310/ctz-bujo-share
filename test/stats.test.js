@@ -94,14 +94,14 @@ test("rankBy：登记但零条目的也保留（值为 0）", () => {
 });
 
 test("withDelta：上期为 0 显示增加条数", () => {
-  assert.equal(withDelta(5, 0).label, "↑ +5 条");
+  assert.equal(withDelta(5, 0).label, "▲ +5 条");
   assert.equal(withDelta(5, 0).direction, "up");
 });
 
 test("withDelta：持平 / 增加条数 / 减少条数", () => {
   assert.equal(withDelta(5, 5).label, "=");
-  assert.equal(withDelta(6, 4).label, "↑ +2 条");
-  assert.equal(withDelta(2, 4).label, "↓ -2 条");
+  assert.equal(withDelta(6, 4).label, "▲ +2 条");
+  assert.equal(withDelta(2, 4).label, "▼ -2 条");
 });
 
 test("withDelta：无上期时返回 null 标签", () => {

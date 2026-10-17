@@ -377,7 +377,7 @@ test("趋势图真实渲染：数据点 + 月窗口轴标签改日号（10-01 �
 test("排行行环比徽标使用有符号条数差值", () => {
   const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
   // 本月有值、上月为空，也显示具体增加条数。
-  assert.match(html, /<span class="v">[^<]*<span class="up">↑ \+\d+ 条<\/span>/, "排行行 v 内应有条数差值");
+  assert.match(html, /<span class="v">[^<]*<span class="up">▲ \+\d+ 条<\/span>/, "排行行 v 内应有条数差值");
   // 顺带核对本轮拍板⑧：今日页 stat-pair 的「本月 N」副行保留
   const dayHtml = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   assert.match(dayHtml, /<span class="s">本月 \d+<\/span>/, "今日页 stat-pair 副行应保留");
