@@ -1,6 +1,6 @@
 # ctz-bujo-share 实现计划
 
-**目标**：把已定稿的设计文档（`docs/specs/2026-10-14-ctz-bujo-share-design.md`）落成一个可构建、可发布的静态日记站——本地写 Markdown，跑一次构建产出「本月 / 今日 / 集子·标签 / 统计」四屏与条目详情页。
+**目标**：把已定稿的设计文档（`docs/specs/2026-10-14-ctz-bujo-share-design.md`）落成一个可构建、可发布的静态日记站——本地写 Markdown，跑一次构建产出「本月 / 今日 / 集子·标签 / 统计」四屏、独立首页与条目详情页。
 
 **架构**：Eleventy 只当模板层，`content/` 是纯数据、由 `lib/` 用 zod 校验成普通对象；`src/_data/site.js` 把校验结果喂给模板。`lib/` 不 import Eleventy，因此能脱离构建用 `node --test` 单测。视觉基线是已定稿的 **D 编辑体 + G1 细线底栏**（`docs/ui-demos/g1-line.html`），CSS 从该文件移植，**不重新设计**。
 
@@ -72,7 +72,8 @@ lib/stats.js                    统计聚合
 src/_data/site.js               全局数据：调 lib/
 src/_includes/base.njk          页面外壳（含 G1 底栏）
 src/_includes/entry.njk         条目页版式
-src/index.njk                   今日（首页）
+src/index.njk                   独立首页（设计文档 §5.5）
+src/today.njk                   今日 /today/（原版式）
 src/month.njk                   /month/<YYYY-MM>/ 列表页
 src/day.njk                     /day/<YYYY-MM-DD>/
 src/entry.njk                   /entry/<slug>/
@@ -2199,7 +2200,7 @@ git commit -m "feat: 从 G1 定稿移植设计系统 CSS"
   <link rel="stylesheet" href="/assets/style.css" />
 </head>
 <body>
-  <div class="brand">ctz<span>/</span>bujo</div>
+  <a class="brand" href="/">ctz<span>/</span>bujo</a>
 
   <main>
     {{ content | safe }}
@@ -2207,7 +2208,7 @@ git commit -m "feat: 从 G1 定稿移植设计系统 CSS"
 
   <nav class="nav tabbar" aria-label="四屏导航">
     <a href="/month/{{ site.thisMonth }}/"{% if navActive == 'month' %} class="on" aria-current="page"{% endif %}>本月</a>
-    <a href="/"{% if navActive == 'home' %} class="on" aria-current="page"{% endif %}>今日</a>
+    <a href="/today/"{% if navActive == 'home' %} class="on" aria-current="page"{% endif %}>今日</a>
     <a href="/collection/all/"{% if navActive == 'index' %} class="on" aria-current="page"{% endif %}>集子 · 标签</a>
     <a href="/stats/"{% if navActive == 'stats' %} class="on" aria-current="page"{% endif %}>统计</a>
   </nav>
@@ -2228,6 +2229,7 @@ git commit -m "feat: 从 G1 定稿移植设计系统 CSS"
   const links = [...document.querySelectorAll(".tabbar a")];
   if (!links.length) return;
   const i = links.findIndex((a) => a.classList.contains("on"));
+  if (i < 0) return; // 独立首页不参与四屏滑动
 
   const go = (step) => {
     const next = links[(i + step + links.length) % links.length];
@@ -2313,9 +2315,9 @@ git commit -m "feat: 基础布局与 G1 通栏细线底栏"
 
 > 每个页面 Task 都以「`npx @11ty/eleventy` 构建成功 + 断言产物里的关键标记」收尾。设计文档 §5 的路径与 §12.1 的硬约束是验收标准。
 
-### Task 3.1：今日（首页）
+### Task 3.1：今日（原版式，入口迁至 /today/）
 
-**文件**：`src/index.njk`（改写）
+**文件**：`src/today.njk`（由原今日模板迁移，permalink 为 `/today/`）
 
 **要点**（设计文档 §5 路径表 + §5.3（2026-10-16 夜·八拍板）+ demo 的 `renderDay`/`renderSide`）
 
@@ -2332,13 +2334,19 @@ git commit -m "feat: 基础布局与 G1 通栏细线底栏"
 
 ```bash
 npx @11ty/eleventy
-grep -c "dateline" _site/index.html
-grep -o "今日小结" _site/index.html | head -1
+grep -c "dateline" _site/today/index.html
+grep -o "今日小结" _site/today/index.html | head -1
 ```
 
-**提交**：`feat: 今日日页（首页）`
+**提交**：`feat: 保留今日日页并迁移入口`
 
 ---
+
+### 首页增量（2026-10-17 拍板，待实现设计补齐并审阅）
+
+以设计文档 §5.5 为准：独立首页 `/`，今日 `/today/`，原四屏内容、布局及底栏不变，站点名称返回首页。首页包含介绍和记录起止、随机 3 条思考与「换几条」、最近事件、现有集子与标签入口。首页不注册为第五屏，也不触发四屏滑动。
+
+实施前补齐介绍文案、近期事件数量、随机抽样及起止日期统计口径，再走 TDD。验收须覆盖：首页与今日产物分别存在；四项底栏的今日链接指向 `/today/`；品牌链接回 `/`；思考不重复且只抽 thought，少于 3 条与空数据可用；最近事件只含 event；分类链接来源为现有 taxonomy；换一组可用；原四屏回归及 760/761px 几何验证通过。不得将旧首页断言直接替换为新首页后漏测今日页。
 
 ### Task 3.2：月视图（合并分屏）—— 硬约束最多的一屏
 
@@ -2398,7 +2406,7 @@ grep -c "matrix" _site/month/*/index.html
 
 分页 `site.dailies ∪ {有条目但无日总结的日期}` → `/day/<date>/`。
 
-**要点**：与首页同版式（复用同一段模板体，抽到 `src/_includes/day-body.njk` 并用 `{% include %}`），只是日期来自 URL。用 `{% include %}` 时**不要**在 include 文件里写 front matter（实测：会把 front matter 当正文输出）。侧栏小月历定位到该日所在月。
+**要点**：与今日页同版式（复用同一段模板体，抽到 `src/_includes/day-body.njk` 并用 `{% include %}`），只是日期来自 URL。用 `{% include %}` 时**不要**在 include 文件里写 front matter（实测：会把 front matter 当正文输出）。侧栏小月历定位到该日所在月。
 
 **验证**
 
