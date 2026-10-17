@@ -1994,6 +1994,7 @@ git commit -m "feat: Eleventy 配置（src 作输入、RenderPlugin 渲染正文
 **文件**：新建 `src/_data/site.js`
 
 ```js
+import { buildHome } from "../../lib/home.js";
 import { loadContent } from "../../lib/load.js";
 import { totals, rankBy, withDelta, trendByDay, trendByMonth, windowRange, inRange } from "../../lib/stats.js";
 import { resolveCollection, resolveTag } from "../../lib/taxonomy.js";
@@ -2069,6 +2070,7 @@ export default function () {
 
   return {
     taxonomy, entries, dailies, collections, tags,
+    home: buildHome(entries, dailies),
     months, days, today, thisMonth, thisYear, windows, windowKeys,
     // 由 load.js 建好、供日页与首页直接取用的索引（Task 3.1 / 3.3 依赖它们）
     dailyByDate, entriesByDate,
@@ -2817,3 +2819,11 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 - TDD：`test/share-build.test.js` 先验证旧实现失败，再覆盖最近仅小结/仅条目、未来合法日期、无内容回退，以及分享日期/正文同步；原空态回归改用无记录的日页。
 - 实现：`src/today.njk` 统一 dayDate；阅读与分享共用，保留独立日页按 URL 取日期。文档同步 AGENTS.md、设计文档与本计划。
 - 验证：全量测试、构建、分享 CDP、原站硬约束、文档/计划校验通过后创建单个提交，不 push。
+
+
+## 增量：首页仅展示重点（2026-10-17 用户拍板）
+
+- 设计依据 §5.5。将 `content/entries/2026-10-16-codex-pro.md` 设为 `highlight: true`，其余字段与正文不变。
+- 先写失败测试：`test/home.test.js` 覆盖普通/重点事件和思考混合、缺省与 false 排除、无重点不回填；起止与今日默认日期不受筛选影响，输入不变。
+- 实现 `lib/home.js`：先筛选 `highlight === true` 再按既有日期倒序/文件名兜底排序，重点事件取最近 5 条；思考随机池只接收重点思考。dates 仍从全部条目与日总结计算。
+- `test/e2e.test.js` 验证首页出现 codex pro 并排除普通记录、详情显示重点、日页普通记录仍可见；运行全量测试、构建、首页 CDP 及文档校验后单独提交，不 push。
