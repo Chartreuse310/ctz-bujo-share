@@ -546,7 +546,7 @@ test('14 日示例条目已删除，首页起始随真实记录日更新（2026-
   // 用户「A → B」式输入表示标题应更新为 B（箭头是替换指令，不是标题原文）。
   // 日页条目标题结构 = .entry .top-row h4>a（h1 是日期，不是条目标题）
   const titles = [...day.matchAll(/<h4><a[^>]*>([^<]*)<\/a><\/h4>/g)].map((m) => m[1]);
-  assert.ok(titles.some((t) => t.includes('规则分歧 → 论文问题是否真实存在')), `规则分歧条目标题应含修正后箭头文案，实际 titles=${JSON.stringify(titles)}`);
+  assert.ok(titles.some((t) => t.includes('论文问题是否真实存在')), `规则分歧条目标题应为「论文问题是否真实存在」，实际 titles=${JSON.stringify(titles)}`);
   assert.ok(titles.every((t) => !t.startsWith('思考：') && !t.includes('（重点）')), `任何条目标题不得带「思考：」前缀或「（重点）」后缀，实际 titles=${JSON.stringify(titles)}`);
 });
 
