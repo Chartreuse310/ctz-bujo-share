@@ -13,7 +13,7 @@
 - 改了行为/逻辑 → 必须新增或更新测试；文档、CSS 数值、脚本这类改动 → 至少跑一遍对应的验证脚本（第 6 节）并记下结果。
 - **测试或验证没过，不得说「做完了」**。失败就修到过，或如实报告卡在哪里——不要跳过、不要注释掉断言、不要只跑一部分就说全绿。
 - 交付前把命令与结果一并报给用户（哪条命令、什么输出、是否全绿）。
-- 提交用 Conventional Commits（见第 4 节）；**部署走 GitHub Actions**（2026-10-15 拍板，设计文档 §13），推主分支即触发发布，日常不手动 push 除非要立即发布。
+- 提交用 Conventional Commits（见第 4 节）；**push 必须经用户当场确认**（2026-10-17 拍板）：每次改动提交、本地验证全绿后，先把运行结果交付用户确认，**不得直接 push**。部署走 GitHub Actions（2026-10-15 拍板，设计文档 §13），推主分支即触发发布。
 
 ## 1. 项目是什么
 
@@ -50,7 +50,7 @@
 
 1. **设计先行**。要改已定稿的设计（尤其视觉），先与用户讨论并在设计文档里落笔，再动代码。
 2. **实现计划经批准**后才开始写代码；计划里每个 Task 走 TDD：先写失败测试 → 再写实现 → 再提交。
-3. **一次改动一个 commit**，Conventional Commits 风格（本仓库历史用 `feat:` / `fix:` / `docs:` / `design:` / `chore:` / `test:`，消息写中文）。**部署走 GitHub Actions**（2026-10-15 拍板，设计文档 §13）：推主分支触发发布，因此 push 前必须本地验证全绿；日常不 push，要发布时才推。
+3. **一次改动一个 commit**，Conventional Commits 风格（本仓库历史用 `feat:` / `fix:` / `docs:` / `design:` / `chore:` / `test:`，消息写中文）。**push 必须经用户当场确认**（2026-10-17 拍板）：改动提交、本地验证全绿后，先把命令与结果报给用户，经确认才可 push——部署走 GitHub Actions（2026-10-15 拍板，设计文档 §13），推主分支即触发发布。
 4. 改完跑验证（见第 6 节），全绿才算做完。
 
 ## 5. 硬约束（不得凭自己判断改动）
@@ -200,7 +200,7 @@ npm run check           # node scripts/check-site-constraints.mjs
 - 不要给日期加未来上限校验。
 - 不要依赖 `.workbuddy-ai/` 或 `.agents/memory/`（前者被 gitignore、后者是运行时记忆）；有价值的内容提炼进设计文档。
 - 不要引第三方客户端图表库（静态站，构建时算数 + 内联 SVG）。
-- 不要擅自 push 或改部署工作流（`.github/workflows/deploy.yml`）：push 即发布（设计文档 §13），push 前必须本地 `npm test` + `npm run build` 全绿；工作流改动属于设计层，先讨论。
+- 不要擅自 push 或改部署工作流（`.github/workflows/deploy.yml`）：push 即发布（设计文档 §13），每次 push 前必须本地 `npm test` + `npm run build` 全绿、把运行结果交付用户并经当场确认（2026-10-17 拍板）；工作流改动属于设计层，先讨论。
 - 不要为了图省事手改生成产物。
 - 不要擅自更改许可范围：`LICENSE`（代码与文档，纯 MIT 文本，**末尾不得追加条款**——GitHub 许可证识别会因此判成 Other）与 `LICENSE-CONTENT.md`（`content/entries/`、`content/daily/` 的日记正文，CC BY-NC-ND 4.0）的分界按目录写死，理由见设计文档 §14；改许可属于设计层，先讨论。`test/license.test.js` 会守住这些边界。
 
