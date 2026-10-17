@@ -4,6 +4,8 @@
 {% set theMonth = theDate | substr(0, 7) %}
 {% set grid = buildMonthGrid(theMonth, site.entries, site.today, site.dailies) %}
 {% set monthFact = monthFacts(theMonth, site.entries, site.dailies) %}
+{% set evCount = 0 %}{% set thCount = 0 %}
+{% for e in site.entries %}{% if e.date | substr(0, 7) == theMonth %}{% if e.type == "event" %}{% set evCount = evCount + 1 %}{% else %}{% set thCount = thCount + 1 %}{% endif %}{% endif %}{% endfor %}
 <div class="wrap">
 <div class="home">
   <main class="day">
@@ -64,8 +66,10 @@
     <div class="blk">
       <div class="blk-h"><h3>统计</h3><span class="lnk"><a href="{{ base }}/stats/">查看统计 →</a></span></div>
       <a class="stat-pair" href="{{ base }}/stats/" title="进入统计页">
-        <span class="p"><span class="n">{{ site.entries | length }}</span><span class="l">条目</span><span class="s">本月 {{ monthFact.entries }}</span></span>
-        <span class="p"><span class="n">{{ site.dailies | length }}</span><span class="l">日总结</span><span class="s">本月 {{ monthFact.dailies }}</span></span>
+        {# 夜·十一②拍板：口径改事件/思考并分色（事件=墨黑 .ev、思考=蓝灰 .th）；「本月 N」副行保留。
+           evCount/thCount 在文件头按月累计（Nunjucks 的 set 在 for 内不外泄作用域问题已绕开：这里直接用累计变量）。 #}
+        <span class="p"><span class="n ev">{{ evCount }}</span><span class="l">事件</span><span class="s">本月 {{ evCount }}</span></span>
+        <span class="p"><span class="n th">{{ thCount }}</span><span class="l">思考</span><span class="s">本月 {{ thCount }}</span></span>
       </a>
     </div>
   </aside>

@@ -1,56 +1,54 @@
 {% set win = site.windows[w] %}
+{# 统计页（夜·十一拍板）：类名对齐 demo g1 原名——KPI 标签 .l、环比 .d、排行名 .nm、窗口切换 .seg；
+   卡片标题裸 h3（衬线 17px）与说明 .sub（mono 10px）拆开；页脚 note 不恢复（⑤）。 #}
 <div class="wrap">
 <div class="stats-page">
   <div class="head">
     <h1>统计<em>{{ win.range.label }}</em></h1>
-    <nav class="win-nav" aria-label="统计时间窗口">
-      <a href="{{ base }}/stats/" {% if w == "month" %}class="on" aria-current="page"{% endif %}>本月</a>
-      <a href="{{ base }}/stats/year/" {% if w == "year" %}class="on" aria-current="page"{% endif %}>本年</a>
-      <a href="{{ base }}/stats/all/" {% if w == "all" %}class="on" aria-current="page"{% endif %}>全部</a>
-    </nav>
+    <div class="seg" role="navigation" aria-label="统计时间窗口">
+      <button {% if w == "month" %}class="on" aria-current="page"{% endif %} data-href="{{ base }}/stats/">本月</button>
+      <button {% if w == "year" %}class="on" aria-current="page"{% endif %} data-href="{{ base }}/stats/year/">本年</button>
+      <button {% if w == "all" %}class="on" aria-current="page"{% endif %} data-href="{{ base }}/stats/all/">全部</button>
+    </div>
   </div>
 
-  {# 1. 总量卡片（5 张） #}
+  {# 1. 总量卡片（5 张）；③KPI 副行：日总结=窗口标签、有记录天数=共 N 条条目 #}
   <div class="kpis">
-    <div class="kpi"><span class="n">{{ win.totals.events }}</span><span class="k">事件</span>{% if win.totals.deltas %}<span class="delta {{ win.totals.deltas.events.direction }}">{{ win.totals.deltas.events.label }}</span>{% endif %}</div>
-    <div class="kpi"><span class="n">{{ win.totals.thoughts }}</span><span class="k">思考</span>{% if win.totals.deltas %}<span class="delta {{ win.totals.deltas.thoughts.direction }}">{{ win.totals.deltas.thoughts.label }}</span>{% endif %}</div>
-    <div class="kpi"><span class="n">{{ win.totals.dailies }}</span><span class="k">日总结</span></div>
-    <div class="kpi"><span class="n">{{ win.totals.days }}</span><span class="k">有记录天数</span></div>
-    <div class="kpi"><span class="n">{{ win.totals.highlights }}</span><span class="k">重点条目</span>{% if win.totals.deltas %}<span class="delta {{ win.totals.deltas.highlights.direction }}">{{ win.totals.deltas.highlights.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.events }}</span><span class="l">事件</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.events.direction }}">{{ win.totals.deltas.events.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.thoughts }}</span><span class="l">思考</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.thoughts.direction }}">{{ win.totals.deltas.thoughts.label }}</span>{% endif %}</div>
+    <div class="kpi"><span class="n">{{ win.totals.dailies }}</span><span class="l">日总结</span><span class="d">{{ win.range.label }}</span></div>
+    <div class="kpi"><span class="n">{{ win.totals.days }}</span><span class="l">有记录天数</span><span class="d">共 {{ win.totals.events + win.totals.thoughts }} 条条目</span></div>
+    <div class="kpi"><span class="n acc">{{ win.totals.highlights }}</span><span class="l">重点条目</span>{% if win.totals.deltas %}<span class="d {{ win.totals.deltas.highlights.direction }}">{{ win.totals.deltas.highlights.label }}</span>{% endif %}</div>
   </div>
 
-  {# 2. 横向排行：按集子 + 按 tag #}
+  {# 2. 横向排行：按集子 + 按 tag；②新配色 ev=墨黑 / th=蓝灰；⑦环比徽标（withDelta 同款逻辑在模板内联） #}
   <div class="grid2">
+    {% set collSub = win.range.label ~ " · 深色 = 事件，蓝灰 = 思考" %}
+    {% if win.prevByCollection %}{% set collSub = collSub ~ " · 右侧为环比上期" %}{% endif %}
+    {% set rankSets = [ { title: "按集子", rows: win.byCollection, prev: win.prevByCollection, sub: collSub },
+                         { title: "按标签", rows: win.byTag, prev: win.prevByTag, sub: win.range.label ~ " · 只统计已登记的 tag，一条可带多个" } ] %}
+    {% for rs in rankSets %}
+    {% set maxV = 1 %}
+    {% for r in rs.rows %}{% if r.total > maxV %}{% set maxV = r.total %}{% endif %}{% endfor %}
     <section class="card">
-      <h3 class="sub">按集子</h3>
-      {% set maxC = 1 %}
-      {% for r in win.byCollection %}{% if r.total > maxC %}{% set maxC = r.total %}{% endif %}{% endfor %}
-      {% for r in win.byCollection %}
+      <h3>{{ rs.title }}</h3>
+      <div class="sub">{{ rs.sub }}</div>
+      {% for r in rs.rows %}
       <div class="rank-row">
-        <span class="name">{{ r.name }}</span>
-        <span class="stack"><i class="ev" style="width: {{ (r.events / maxC * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxC * 100) | round(1) }}%"></i></span>
-        <span class="v">{{ r.total }}</span>
+        <span class="nm">{{ r.name }}</span>
+        <span class="stack"><i class="ev" style="width: {{ (r.events / maxV * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxV * 100) | round(1) }}%"></i></span>
+        <span class="v">{{ r.total }} {% if rs.prev %}{% set pr = 0 %}{% for p in rs.prev %}{% if p.name == r.name %}{% set pr = p.total %}{% endif %}{% endfor %}{% if pr == 0 and r.total > 0 %}<span class="nw">新增</span>{% elseif r.total == pr %}<span>=</span>{% else %}{% set pct = ((r.total - pr) / pr * 100) | round | abs %}<span class="{{ 'up' if r.total > pr else 'dn' }}">{{ '↑' if r.total > pr else '↓' }} {{ pct }}%</span>{% endif %}{% endif %}</span>
       </div>
       {% endfor %}
     </section>
-
-    <section class="card">
-      <h3 class="sub">按标签</h3>
-      {% set maxT = 1 %}
-      {% for r in win.byTag %}{% if r.total > maxT %}{% set maxT = r.total %}{% endif %}{% endfor %}
-      {% for r in win.byTag %}
-      <div class="rank-row">
-        <span class="name">{{ r.name }}</span>
-        <span class="stack"><i class="ev" style="width: {{ (r.events / maxT * 100) | round(1) }}%"></i><i class="th" style="width: {{ (r.thoughts / maxT * 100) | round(1) }}%"></i></span>
-        <span class="v">{{ r.total }}</span>
-      </div>
-      {% endfor %}
-    </section>
+    {% endfor %}
   </div>
 
-  {# 3. 纵向趋势：手写内联 SVG #}
-  <section class="card">
-    <h3 class="sub">趋势</h3>
+  {# 3. 纵向趋势：手写内联 SVG（旧缺陷：include 从未传 pts，线上恒空壳——修） #}
+  <section class="card full">
+    <h3>趋势</h3>
+    <div class="sub">{% if w == "month" %}按日 · {{ win.range.label }} · 实线 = 事件，虚线 = 思考{% else %}按月 · {{ win.range.label }} · 实线 = 事件，虚线 = 思考{% endif %}</div>
+    {% set pts = win.trend %}
     {% include "trend-svg.njk" %}
     <div class="legend">
       <span><i class="line ev"></i>事件</span>

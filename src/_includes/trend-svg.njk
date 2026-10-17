@@ -12,16 +12,16 @@
   {% set gy = T + ih * (1 - (maxV * i / 3) / maxV) %}
   <line x1="{{ L }}" y1="{{ gy | round(1) }}" x2="{{ W - R }}" y2="{{ gy | round(1) }}" stroke="{% if i == 0 %}#111111{% else %}#efeeec{% endif %}" stroke-width="1"/>
   {% endfor %}
-  {# 事件实线 #}
-  <path d="{% for p in pts %}{{ "M" if loop.first else " L" }}{{ xi(loop.index0) }} {{ yv(p.events) }}{% endfor %}" fill="none" stroke="#1b3a5c" stroke-width="2"/>
-  {# 思考虚线 #}
-  <path d="{% for p in pts %}{{ "M" if loop.first else " L" }}{{ xi(loop.index0) }} {{ yv(p.thoughts) }}{% endfor %}" fill="none" stroke="#a3a39e" stroke-width="2" stroke-dasharray="6 5"/>
-  {# 稀疏坐标标注：每隔 ceil(n/6) 个 #}
+  {# 事件实线（夜·十一②新配色：事件=墨黑） #}
+  <path d="{% for p in pts %}{{ "M" if loop.first else " L" }}{{ xi(loop.index0) }} {{ yv(p.events) }}{% endfor %}" fill="none" stroke="#111111" stroke-width="2"/>
+  {# 思考虚线（蓝灰） #}
+  <path d="{% for p in pts %}{{ "M" if loop.first else " L" }}{{ xi(loop.index0) }} {{ yv(p.thoughts) }}{% endfor %}" fill="none" stroke="var(--blue, #1b3a5c)" stroke-width="2" stroke-dasharray="6 5"/>
+  {# 稀疏坐标标注：每隔 ceil(n/6) 个；⑥月窗口 label 是完整日期，切片 8 起 = 日号；年/全部窗口 label 是 YYYY-MM，切片后 = MM（两位月号） #}
   {% set step = (n / 6) | round(0, "ceil") | int %}
   {% if step < 1 %}{% set step = 1 %}{% endif %}
   {% for p in pts %}
     {% if loop.first or loop.last or loop.index0 % step == 0 %}
-    <text class="axis" x="{{ xi(loop.index0) }}" y="{{ H - 16 }}" text-anchor="middle">{{ p.label | substr(5) }}</text>
+    <text class="axis" x="{{ xi(loop.index0) }}" y="{{ H - 16 }}" text-anchor="middle">{{ (p.label | substr(8) if p.label | length > 7 else p.label | substr(5)) | int }}</text>
     {% endif %}
   {% endfor %}
   {% for i in range(0, 4) %}

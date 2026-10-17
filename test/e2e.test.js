@@ -275,16 +275,16 @@ test("小月历格子样式选择器是 .mini-grid a（button/a 失配防复发�
   assert.ok(!css.match(/\.mini-grid button\{/), "button 选择器不得残留（模板无 button）");
 });
 
-test("统计块参照 demo .stat-pair：衬线大数字墨色 + 「本月 N」副行（§5.3）", () => {
+test("统计块参照 demo .stat-pair：口径=事件/思考 + 分色（事件墨 / 思考蓝灰）+「本月 N」副行（§5.3 + 夜·十一②）", () => {
   const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
-  // 大数字墨色不分色：不得出现 demo 的 .n.ev/.n.th 分色类
-  assert.ok(!html.includes('class="n ev"') && !html.includes('class="n th"'));
-  assert.match(html, /<span class="n">\d+<\/span><span class="l">条目<\/span><span class="s">本月 \d+<\/span>/);
-  assert.match(html, /<span class="n">\d+<\/span><span class="l">日总结<\/span><span class="s">本月 \d+<\/span>/);
+  // 夜·十一②：口径从「条目/日总结」改为「事件/思考」，大数字分色（取代夜·八「一律墨色」旧约）
+  assert.match(html, /<span class="n ev">\d+<\/span><span class="l">事件<\/span><span class="s">本月 \d+<\/span>/);
+  assert.match(html, /<span class="n th">\d+<\/span><span class="l">思考<\/span><span class="s">本月 \d+<\/span>/);
   const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
-  // 分色规则不采用（大数字一律墨色）
-  assert.ok(!css.match(/\.stat-pair \.p \.n\.(ev|th)/), "stat-pair 大数字分色规则不得存在");
-  assert.match(css, /\.stat-pair \.p \.n\{[^}]*color:var\(--ink\)/);
+  // 分色落 CSS：ev=墨、th=蓝灰；朱红不得用于 stat-pair 数字
+  assert.match(css, /\.stat-pair \.p \.n\.ev\{[^}]*var\(--ink\)/);
+  assert.match(css, /\.stat-pair \.p \.n\.th\{[^}]*var\(--blue\)/);
+  assert.ok(!css.match(/\.stat-pair \.p \.n[^.{]*accent/), "stat-pair 大数字不得用朱红");
 });
 
 test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () => {
@@ -294,6 +294,100 @@ test("空状态是单行「这里是空的。」（§5.3 拍板文案）", () =>
   // demo 两段引导不恢复
   assert.ok(!html.includes("这天没有条目"));
   assert.ok(!html.includes("还没有记录"));
+});
+
+// ===== 统计页 g1 基线对齐 + 新配色（2026-10-16 夜·十一拍板）=====
+// 拍板：①类名失配全修（模板回 demo 原名 .l/.d/.nm/.seg 结构，h3 与 .sub 拆开）；
+// ②新配色：事件=墨黑（--ink）、思考=蓝灰（--blue），取代「事件/思考不分色」旧约——
+//   只用于统计页横条图 + 今日页统计块大数字；朱红仍只给重点/选中态；
+// ③KPI 副行恢复（日总结卡=窗口标签、有记录天数卡=共 N 条条目）；
+// ④页头大标题与窗口标签间距拉大；⑤页脚 note 不恢复；⑥趋势月窗口轴标签改日号；
+// ⑦排行行环比徽标（↑x% / = / 新增）；⑧今日页 stat-pair 口径改事件/思考。
+
+test("统计页类名对齐 demo 原名：.l/.d/.nm/.seg，野生类 .k/.delta/.win-nav/.name 不得残留（夜·十一①）", () => {
+  const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
+  // KPI 标签用 .l（CSS 既有规则 .kpi .l），环比用 .d（.kpi .d.up 朱红）
+  assert.match(html, /<span class="l">事件<\/span>/, "KPI 标签应是 .l");
+  assert.match(html, /<span class="d up">/, "KPI 环比应是 .d.up（新增）");
+  assert.ok(!html.includes('class="k"') && !html.includes('class="delta'), "野生类 .k/.delta 不得残留");
+  // 排行行名字用 .nm
+  assert.match(html, /<span class="nm">/, "排行行名字应是 .nm");
+  assert.ok(!html.includes('class="name"'), "野生类 .name 不得残留");
+  // 窗口切换器 = demo .seg 分段控件（button 语义 + .on 黑底）
+  assert.match(html, /<div class="seg"[\s>]/, "窗口切换器应是 .seg 容器");
+  assert.match(html, /<button[^>]*class="on"[^>]*>本月<\/button>/, "本月按钮应有 .on 选中态");
+  assert.ok(!html.includes("win-nav"), "野生类 .win-nav 不得残留");
+  // 卡片标题 h3 与说明 .sub 拆开（此前 h3 class="sub" 把标题塞进说明类）
+  assert.match(html, /<h3>按集子<\/h3>/, "卡片标题应是裸 h3（衬线 17px）");
+  assert.match(html, /<div class="sub">[^<]{6,}<\/div>/, "每卡应有 .sub 说明行");
+  // CSS 端核对：.seg button.on 黑底反白规则存在
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  assert.match(css, /\.seg button\.on\{[^}]*background:var\(--ink\)/, ".seg 选中态应黑底反白");
+});
+
+test("统计页与今日页新配色：事件=墨黑、思考=蓝灰（夜·十一②）", () => {
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  // 蓝灰变量落 CSS（具体色值 = demo 趋势事件线 #1b3a5c 一族，克制、非高饱和）
+  assert.match(css, /--blue:\s*#[0-9a-fA-F]{6}/, "应新增 --blue 变量");
+  // 排行堆叠条：ev=墨黑、th=蓝灰（demo 的 i.th 朱红被取代——朱红只给重点/选中）
+  const ev = css.match(/\.rank-row \.stack i\.ev\{[^}]*\}/);
+  const th = css.match(/\.rank-row \.stack i\.th\{[^}]*\}/);
+  assert.ok(ev && /var\(--ink\)/.test(ev[0]), `i.ev 应墨黑：${ev && ev[0]}`);
+  assert.ok(th && /var\(--blue\)/.test(th[0]), `i.th 应蓝灰：${th && th[0]}`);
+  // 朱红不得再出现在事件/思考分色上
+  const thAccent = css.match(/\.rank-row \.stack i\.th\{[^}]*accent/);
+  assert.ok(!thAccent, "i.th 不得用朱红（朱红只给重点/选中态）");
+  // 今日页统计块：口径改事件/思考，大数字分色（事件墨 / 思考蓝灰）
+  const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  assert.match(html, /<span class="n ev">\d+<\/span><span class="l">事件<\/span>/, "今日页第一格 = 事件（.n.ev）");
+  assert.match(html, /<span class="n th">\d+<\/span><span class="l">思考<\/span>/, "今日页第二格 = 思考（.n.th）");
+  assert.ok(!html.includes("<span class=\"l\">条目</span>"), "「条目」口径退场");
+  const nEv = css.match(/\.stat-pair \.p \.n\.ev\{[^}]*\}/);
+  const nTh = css.match(/\.stat-pair \.p \.n\.th\{[^}]*\}/);
+  assert.ok(nEv && /var\(--ink\)/.test(nEv[0]), `.stat-pair .n.ev 应墨黑：${nEv && nEv[0]}`);
+  assert.ok(nTh && /var\(--blue\)/.test(nTh[0]), `.stat-pair .n.th 应蓝灰：${nTh && nTh[0]}`);
+});
+
+test("KPI 副行恢复：日总结卡=窗口标签、有记录天数卡=共 N 条条目（夜·十一③）", () => {
+  const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
+  // 月窗口标签 = 「2026 年 10 月」
+  assert.match(html, /<span class="l">日总结<\/span><span class="d">[^<]+月<\/span>/, "日总结卡应有窗口标签副行");
+  assert.match(html, /<span class="l">有记录天数<\/span><span class="d">共 \d+ 条条目<\/span>/, "有记录天数卡应有共 N 条副行");
+});
+
+test("页头大标题与窗口标签间距拉大（夜·十一④）", () => {
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  const m = css.match(/\.head h1 em\{[^}]*\}/);
+  assert.ok(m, ".head h1 em 规则应存在");
+  assert.match(m[0], /margin-bottom:\s*(1[2-9]|2\d)px/, `em 下边距应 ≥12px（现状 6px 太贴）：${m[0]}`);
+});
+
+test("趋势图真实渲染：数据点 + 月窗口轴标签改日号（10-01 → 1，夜·十一⑥）", () => {
+  const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
+  const svg = html.match(/<svg[\s\S]*?<\/svg>/);
+  assert.ok(svg, "应有趋势 SVG");
+  const texts = svg[0].match(/<text[^>]*>[^<]*<\/text>/g) || [];
+  // 旧缺陷：stats.njk include 时从未传 pts，趋势图只画空 path + 4 个 y 轴刻度（线上恒空壳）
+  assert.ok(texts.length > 6, `SVG 文本应 >6 个（x 轴标签 + y 轴刻度），实际 ${texts.length}`);
+  assert.ok(!texts.some((t) => />10-01</.test(t)), "月窗口不得再标完整月-日");
+  assert.ok(texts.some((t) => />1<\/text>/.test(t)), "应出现日号「1」");
+  assert.ok(texts.some((t) => />1[05]</.test(t) || />20</.test(t) || />25</.test(t) || />10</.test(t)), "应有 5/10/15… 日号标签");
+});
+
+test("排行行环比徽标：↑x% / = / 新增（夜·十一⑦）", () => {
+  const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
+  // 数据现状：本月有值、上月为空 → 全部「新增」；= / ↑% 逻辑由 withDelta 保证（lib 单测已覆盖）
+  assert.match(html, /<span class="v">[^<]*<span class="nw">新增<\/span>/, "排行行 v 内应有 nw 徽标");
+  // 顺带核对本轮拍板⑧：今日页 stat-pair 的「本月 N」副行保留
+  const dayHtml = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
+  assert.match(dayHtml, /<span class="s">本月 \d+<\/span>/, "今日页 stat-pair 副行应保留");
+  const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
+  assert.match(css, /\.rank-row \.v \.nw\{/, ".nw 徽标样式应存在");
+});
+
+test("页脚 note 不恢复（夜·十一⑤）", () => {
+  const html = readFileSync(join(OUT, "stats/index.html"), "utf8");
+  assert.ok(!html.includes("footer"), "统计页不得有 footer note");
 });
 
 // 「今日小结」正文段间距 > 行间距（2026-10-16 用户拍板，取代 demo 原款 margin:0）：
