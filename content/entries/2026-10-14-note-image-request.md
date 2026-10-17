@@ -1,6 +1,6 @@
 ---
 type: thought
-title: 思考：跟我要笔记原图怎么办
+title: 跟我要笔记原图怎么办
 date: 2026-10-14
 order: 3
 ---

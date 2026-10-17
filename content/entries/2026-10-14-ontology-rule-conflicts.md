@@ -1,6 +1,6 @@
 ---
 type: event
-title: 🎯 本体构建中涉及的规则分歧
+title: 🎯 本体构建中涉及的规则分歧 → 论文问题是否真实存在
 date: 2026-10-14
 order: 2
 collection: 博士学位论文

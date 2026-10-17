@@ -1,6 +1,6 @@
 ---
 type: thought
-title: 思考：不知道为什么有点儿闷
+title: 不知道为什么有点儿闷
 date: 2026-10-14
 order: 6
 ---
