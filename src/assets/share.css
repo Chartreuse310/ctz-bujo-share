@@ -1,0 +1,59 @@
+/* Sharing is isolated from the daily reading layout. A 540 × 720 logical page
+   exports at 2×; viewport width changes only the preview scale. */
+.share-open{display:block;margin:24px 0 0 auto;border:0;border-bottom:1px solid var(--rule);padding:4px 0;background:none;font-size:12px;cursor:pointer}
+.share-open[hidden]{display:none}
+.share-dialog{position:fixed;inset:16px;margin:auto;width:calc(100% - 32px);max-width:1160px;max-height:calc(100dvh - 32px);padding:24px 28px 40px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);overflow:auto;overscroll-behavior:contain}
+.share-dialog::backdrop{background:rgba(35,32,28,.3)}
+.share-toolbar{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--ink);padding-bottom:16px;margin-bottom:24px}
+.share-toolbar h2{font:600 25px/1.4 var(--serif);margin:0}
+.share-dialog button{cursor:pointer}
+.share-close{border:0;background:none;font-size:12px;padding:8px 0}
+.share-layout{display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:start}
+.share-choices{min-width:0}
+.share-hint,.share-status{font-size:12px;color:var(--ink-3);margin:0 0 16px}
+.share-option{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-top:1px solid var(--rule-2);font-size:13px;cursor:pointer;overflow-wrap:anywhere}
+.share-option input{accent-color:var(--accent);flex:none;margin:5px 0 0;width:15px;height:15px}
+.share-option small{display:block;font-size:10px;color:var(--ink-3);margin-bottom:3px}
+.share-preview-button{margin:18px 0 14px;background:var(--ink);border:1px solid var(--ink);color:var(--bg);padding:9px 16px;font-size:12px}
+.share-dialog button:disabled{opacity:.45;cursor:default}
+.share-status{overflow-wrap:anywhere}
+.share-results{min-width:0;display:flex;flex-direction:column;gap:28px;align-items:center}
+.share-result{width:100%;max-width:540px}
+.share-page-frame{width:100%;aspect-ratio:3/4;position:relative;box-shadow:0 3px 16px #0000000a}
+.share-page-frame>.share-card{position:absolute;left:0;top:0;transform-origin:top left;transform:scale(var(--share-scale,1))}
+.share-save{display:block;margin:10px 0 0 auto;border:0;border-bottom:1px solid var(--rule);background:none;padding:5px 0;font-size:12px}
+.share-card{position:relative;width:540px;height:720px;background:var(--bg);color:var(--ink);box-sizing:border-box;font:15px/1.8 var(--sans);text-align:left;letter-spacing:normal;flex:none}
+.share-card-header{position:absolute;top:30px;left:36px;right:36px;display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:12px}
+.share-card-date{font:600 24px/1.4 var(--serif);margin:0}
+.share-card-header small{margin-left:auto;font:10px/1.5 var(--mono);color:var(--ink-3)}
+.share-card-footer{position:absolute;bottom:28px;left:36px;right:36px;display:flex;justify-content:space-between;border-top:1px solid var(--rule);padding-top:10px;font:10px/1.5 var(--mono);color:var(--ink-3)}
+.share-content{position:absolute;top:102px;bottom:66px;left:36px;right:36px;display:flow-root}
+.share-record{display:flow-root;margin:0 0 20px;overflow-wrap:anywhere;min-width:0}
+.share-record:last-child{margin-bottom:0}
+.share-record-head{display:flow-root;margin-bottom:10px}
+.share-record h3{font:600 23px/1.5 var(--serif);margin:0 0 9px;overflow-wrap:anywhere}
+.share-record .share-kind{display:block;font:10px/1.5 var(--mono);color:var(--ink-3);margin:0 0 6px}
+.share-record[data-kind="daily"] .share-kind{color:var(--accent)}
+.share-record .share-tags{display:flex;flex-wrap:wrap;gap:5px}
+.share-record .tag{font:10px/1.5 var(--sans);margin:0;padding:2px 7px;white-space:normal;max-width:100%;overflow-wrap:anywhere}
+.share-text{display:flow-root;font:15px/1.85 var(--sans);overflow-wrap:anywhere;word-break:normal}
+.share-text p{margin:0 0 10px}
+.share-text>:last-child{margin-bottom:0}
+.share-text :is(h1,h2,h3,h4,h5,h6){font:600 19px/1.5 var(--serif);margin:14px 0 8px}
+.share-text blockquote{margin:10px 0;padding:0 0 0 14px;border-left:1px solid var(--ink-3)}
+.share-text :is(ul,ol){margin:8px 0;padding-left:24px}
+.share-text li{margin:0 0 5px}
+.share-text pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all;font:12px/1.8 var(--mono);padding:10px;background:var(--rule-2);margin:10px 0}
+.share-text code{font-family:var(--mono);font-size:.85em;white-space:pre-wrap;overflow-wrap:anywhere}
+.share-text table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;margin:10px 0}
+.share-text :is(th,td){border:1px solid var(--rule);padding:6px;overflow-wrap:anywhere}
+.share-text img{display:block;max-width:100%;max-height:360px;width:auto;height:auto;object-fit:contain;margin:10px 0}
+.share-text hr{border:0;border-top:1px solid var(--rule);margin:12px 0}
+.share-text a{text-decoration:underline;text-underline-offset:3px}
+.share-measure{position:fixed;left:-10000px;top:0;width:540px;pointer-events:none;visibility:hidden}
+@media(max-width:760px){
+ .share-dialog{inset:8px;width:calc(100% - 16px);max-height:calc(100dvh - 16px);padding:20px 16px 32px}
+ .share-layout{grid-template-columns:minmax(0,1fr);gap:24px}
+ .share-toolbar{gap:12px}
+ .share-toolbar h2{font-size:23px}
+}

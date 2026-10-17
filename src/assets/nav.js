@@ -7,6 +7,7 @@
   if (i < 0) return; // 独立首页与详情页不参与四屏手势
 
   const go = (step) => {
+    if (document.querySelector("dialog[open]")) return;
     const next = links[(i + step + links.length) % links.length];
     if (next) location.href = next.href;
   };

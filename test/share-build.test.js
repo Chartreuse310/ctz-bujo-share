@@ -1,0 +1,48 @@
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, cpSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+let root, html, dayHtml;
+const now = new Date();
+const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+const out = resolve('.e2e-site/share-fixture');
+const scripts = source => [...source.split('id="share-source"')[1].matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+function build() {
+  execFileSync(process.execPath, ['node_modules/@11ty/eleventy/cmd.cjs','--output',out], {env:{...process.env, CTZ_CONTENT_ROOT:root},stdio:'pipe'});
+  return readFileSync(join(out,'today/index.html'),'utf8');
+}
+before(()=>{
+  root=mkdtempSync(join(tmpdir(),'ctz-share-build-'));
+  mkdirSync(join(root,'content/entries'),{recursive:true});mkdirSync(join(root,'content/daily'));
+  cpSync('content/taxonomy.yml',join(root,'content/taxonomy.yml'));
+  for(const [name,order] of [['a',undefined],['c',1],['b',1]]) {
+    writeFileSync(join(root,`content/entries/${date}-${name}.md`),`---\ntype: thought\ntitle: ${JSON.stringify('🏃 </script> & 标题 '+name)}\ndate: ${date}\n${order===undefined?'slug: daily\n':`order: ${order}\n`}tags: [跑步]\n---\n\n第一段。\n\n第二段。\n\n第三段。\n\n第四段完整结尾 ${name}。`);
+  }
+  writeFileSync(join(root,`content/daily/${date}.md`),'---\ntitle: 小结\n---\n\n日总结完整正文。');
+  html=build();dayHtml=readFileSync(join(out,`day/${date}/index.html`),'utf8');
+});
+after(()=>{rmSync(root,{recursive:true,force:true});rmSync(out,{recursive:true,force:true});});
+
+test('今日分享源含独立小结与完整正文，条目按 order 与文件名排序',()=>{
+  const data=scripts(html);
+  assert.deepEqual(data.map(d=>d.id),['daily',`entry:${date}-b`,`entry:${date}-c`,'entry:daily']);
+  assert.equal(data[0].html.trim(),'<p>日总结完整正文。</p>');
+  assert.equal(data[1].title,'🏃 </script> & 标题 b');
+  assert.match(data[1].html,/第四段完整结尾 b/);
+  assert.deepEqual(data[1].tags,['跑步']);
+});
+test('分享资源有子路径前缀，普通日页没有分享入口，阅读摘要保留',()=>{
+  assert.match(html,/href="\/ctz-bujo-share\/assets\/share.css"/);
+  assert.match(html,/src="\/ctz-bujo-share\/assets\/share.js"/);
+  assert.match(html,/class="excerpt" data-href=/);
+  assert.doesNotMatch(dayHtml,/share-dialog|share-source|assets\/share/);
+});
+test('没有日总结时只提供条目；空日不伪造记录',()=>{
+  rmSync(join(root,`content/daily/${date}.md`));
+  assert.equal(scripts(build()).length,3);
+  rmSync(join(root,'content/entries'),{recursive:true});
+  assert.deepEqual(scripts(build()),[]);
+});

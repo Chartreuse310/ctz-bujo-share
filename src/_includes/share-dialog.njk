@@ -1,0 +1,30 @@
+{% set theDaily = site.dailyByDate[dayDate] %}
+{% set theEntries = site.entriesByDate[dayDate] or [] %}
+<link rel="stylesheet" href="{{ base }}/assets/share.css" />
+<button type="button" class="share-open" hidden>分享今日 ↗</button>
+<dialog class="share-dialog" aria-labelledby="share-title" data-date="{{ dayDate }}">
+  <div class="share-toolbar">
+    <h2 id="share-title">分享今日</h2>
+    <button type="button" class="share-close">返回今日 ×</button>
+  </div>
+  <div class="share-layout">
+    <section class="share-choices" aria-label="选择分享内容">
+      <p class="share-hint">选择记录，留成几张小卡片。</p>
+      <div class="share-options"></div>
+      <button type="button" class="share-preview-button">预览卡片</button>
+      <p class="share-status" role="status" aria-live="polite"></p>
+    </section>
+    <section class="share-results" aria-label="分享卡片预览" aria-busy="false"></section>
+  </div>
+</dialog>
+<div id="share-source" hidden>
+{% if theDaily %}
+  {% set dailyHtml = theDaily.body | renderContent("md") %}
+  <script type="application/json">{{ {id: "daily", title: theDaily.title, html: dailyHtml, kind: "daily", tags: []} | shareJson | safe }}</script>
+{% endif %}
+{% for e in theEntries %}
+  {% set entryHtml = e.body | renderContent("md") %}
+  <script type="application/json">{{ {id: "entry:" ~ e.slug, title: e.title, html: entryHtml, kind: e.type, collection: e.collectionName, tags: e.tags, highlight: e.highlight} | shareJson | safe }}</script>
+{% endfor %}
+</div>
+<script type="module" src="{{ base }}/assets/share.js"></script>

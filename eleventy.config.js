@@ -1,3 +1,4 @@
+import { shareJson } from "./lib/share.js";
 import { homeText } from "./lib/home.js";
 import { RenderPlugin } from "@11ty/eleventy";
 import { withDelta } from "./lib/stats.js";
@@ -12,6 +13,7 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addNunjucksGlobal("withDelta", withDelta);
   eleventyConfig.addFilter("homeText", homeText);
+  eleventyConfig.addFilter("shareJson", shareJson);
 
   // 正文 Markdown 渲染：用 Eleventy 自带插件，避免直接依赖 markdown-it
   eleventyConfig.addPlugin(RenderPlugin);

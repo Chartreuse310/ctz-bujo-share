@@ -2757,9 +2757,9 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 你点头后我就按这个计划开始实现。实现时会走 TDD：每个 Task 先写失败测试，再写实现，再提交。
 
 
-## 增量：今日页 3:4 分享卡片（2026-10-17，待审阅，尚未实施）
+## 增量：今日页 3:4 分享卡片（2026-10-17，已批准并实现，手机真机保存待验收）
 
-设计依据：`docs/specs/2026-10-14-ctz-bujo-share-design.md` §5.6。以下为新增任务草案；不表示历史计划或本增量已获开工批准。先审阅落档设计，再确认实现计划。每个 Task 先写失败测试，再实现，验证通过后创建一个自洽的中文 Conventional Commit；不 push。
+设计依据：`docs/specs/2026-10-14-ctz-bujo-share-design.md` §5.6。用户审阅落档设计与任务草案后回复「ok」，批准本增量。S1–S3 先写失败测试，再实现；三个步骤作为完整的分享功能改动单元验证、提交，不 push。
 
 ### Task S1：完整分享数据与选择状态
 
@@ -2784,3 +2784,23 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 - 然后接入逐张保存，生成中避免重复操作；只保存对应当前预览的页。处理 Blob URL 生命周期，确保清理不会抢先打断下载。
 - CDP 捕获实际下载并解码 PNG 检查尺寸和不透明背景；验证子路径部署下资源可加载。手机端需走实际保存链路；无法接触真实设备时如实标注该项待验，不用模拟视口结果替代。
 - 交付前：`npm test`、`npm run build`、分享 CDP 检查及受影响的现有站点约束验证全部通过；报告具体命令、结果与尚未验证的平台范围。
+
+
+### 分享增量验证记录（2026-10-17）
+
+- S1：`test/share.test.js`、`test/share-build.test.js` 覆盖安全 JSON 往返、完整正文、小结缺省/空日、order/文件名排序、显式 slug 与小结标识隔离、子路径资源及普通日页不开放分享。
+- S2：`scripts/check-share-constraints.mjs` 在 375 / 760 / 761 / 1440px 检查隔离长文样例、多个滚动位置、元素级裁切/遮挡、整条换页、段落/行续页、列表/引用/宽内容/分隔线跨页、选择改变后旧结果失效；375px 额外使用 DPR 3 和真实 Input 触滑事件。
+- S3：采用浏览器原生 SVG foreignObject + Canvas，复制实测计算样式并内嵌图片，无新增依赖；实际下载并解码 PNG 检查 1080 × 1440，检查不透明背景、页头/正文/页脚文字像素和正文图片像素。图片请求失败后重试成功，加载中改选不会覆盖新预览。
+- 原站 `npm run check` 回归月历无滚动/零裁切/左月历零位移、236px/56px 栅格、三类页面多视口底栏采样，无回归。
+- 尚未取得 iOS Safari / Android 真机实际保存证据；不能用模拟视口下载结果宣称真机已验收。此项保留为交付限制。
+
+
+| 本次执行命令 | 结果 |
+| --- | --- |
+| `npm test` | 156 tests / 156 pass / 0 fail |
+| `npm run build` | 退出码 0；31 页，8 份静态资源 |
+| `SITE_URL=http://127.0.0.1:8082 npm run check` | ALL PASS |
+| `SITE_URL=http://127.0.0.1:8083/ctz-bujo-share node scripts/check-share-constraints.mjs` | ALL PASS；四档视口各 24 页；真实 PNG 下载及像素检查通过；生产子路径资源无 4xx/5xx |
+| `node scripts/check-agents-md.mjs` | 通过 |
+| `node scripts/verify-plan.mjs` | 83 tests / 83 pass / 0 fail |
+| `git diff --check` | 无输出，退出码 0 |
