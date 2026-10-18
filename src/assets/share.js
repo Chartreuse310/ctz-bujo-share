@@ -22,7 +22,7 @@ open.addEventListener('click',()=>{
   for(const item of items){
     const label=document.createElement('label');label.className='share-option';
     const box=document.createElement('input');box.type='checkbox';box.checked=true;box.value=item.id;
-    const span=document.createElement('span'),kind=document.createElement('small');kind.textContent=item.kind==='daily'?'今日小结':item.kind==='event'?'事件':'思考';
+    const span=document.createElement('span'),kind=document.createElement('small');kind.textContent=item.kind==='daily'?'当日小结':item.kind==='event'?'事件':'思考';
     span.append(kind,document.createTextNode(item.title));label.append(box,span);options.append(label);
   }
   invalidate();dialog.showModal();

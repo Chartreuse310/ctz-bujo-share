@@ -9,7 +9,7 @@ const el = (name, className, text) => {
 export function makeCard(date, index = 1, total = 1) {
   const card = el('div', 'share-card');
   const header = el('header', 'share-card-header');
-  header.append(el('b', 'share-card-date', date.replaceAll('-', ' · ')), el('small', '', '今日记录'));
+  header.append(el('b', 'share-card-date', date.replaceAll('-', ' · ')), el('small', '', '当日记录'));
   const footer = el('footer', 'share-card-footer');
   footer.append(el('span', '', 'ctz/bujo'), el('span', 'share-page-number', `${index} / ${total}`));
   card.append(header, el('div', 'share-content'), footer);
@@ -20,7 +20,7 @@ function record(item, continued = false) {
   const article = el('article', 'share-record');
   article.dataset.shareId = item.id; article.dataset.kind = item.kind;
   const head = el('div', 'share-record-head');
-  head.append(el('span', 'share-kind', (item.kind === 'daily' ? '今日小结' : item.kind === 'event' ? '事件' : '思考') + (continued ? ' · 续' : '')));
+  head.append(el('span', 'share-kind', (item.kind === 'daily' ? '当日小结' : item.kind === 'event' ? '事件' : '思考') + (continued ? ' · 续' : '')));
   head.append(el('h3', '', item.title));
   const tags = el('div', 'share-tags');
   if (item.collection) tags.append(el('span', 'tag coll', item.collection));

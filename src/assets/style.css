@@ -238,14 +238,8 @@ footer.note{margin-top:34px;padding-top:16px}
 .mini-grid a .ul{background:var(--ink-3)}
 .mini-grid a.hl .ul{background:var(--accent)}
 .mini-grid a.sel{border-color:var(--ink);color:var(--ink);font-weight:700}
-.mini-grid a.today{background:var(--rule-2);border-color:var(--rule);color:var(--ink);font-weight:600}
-.mini-grid a.today.sel{box-shadow:inset 0 0 0 1px var(--ink)}
 .mini-grid a.sel .ul{background:var(--ink)}
 .mini-grid a.sel.hl .ul{background:var(--accent)}
-.mini-foot{margin-top:8px;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);display:flex;gap:11px;flex-wrap:wrap}
-.mini-foot i{display:inline-block;width:14px;height:2px;background:var(--ink-3);margin-right:5px;vertical-align:middle}
-.mini-foot i.red{background:var(--accent)}
-.mini-foot b{display:inline-block;width:11px;height:11px;background:var(--rule-2);border:1px solid var(--rule);margin-right:5px;vertical-align:-1px}
 /* 统计块（§5.3 夜·八拍板）：完全参照 demo .stat-pair，但大数字一律墨色不分色
    （demo 的 .n.ev 墨/.n.th 朱红分色不采用）；口径 = 条目/日总结 + 「本月 N」副行。
    静态站整卡是 <a> 跳统计页，格子用 <span class="p">。 */

@@ -227,7 +227,7 @@ test("月历格子文案所有视口档都是两行截断（§5.2，矮视口档
 
 // —— 今日页 g1 基线对齐（设计文档 §5.3，2026-10-16 夜·八拍板）——
 // 与 demo g1-line.html 的 #s-home 屏逐组件机械核对后定稿：tag 胶囊、.blk 块结构、
-// mini-cell 格子、统计块「本月 N」副行、今日小结 .lbl/.h2、.top-row 条目头、空状态文案。
+// mini-cell 格子、统计块「本月 N」副行、当日小结 .lbl/.h2、.top-row 条目头、空状态文案。
 test("今日页 tag 呈现为胶囊（.tag.type/.coll/.hl），meta 文本行作废（§5.3）", () => {
   const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   // PhD 条目：类型描边 + 集子黑底反白 + tag 灰描边（tag 胶囊带「# 」前缀文案）
@@ -247,16 +247,16 @@ test("今日页条目头用 .top-row 且摘要/tags 挂 46px 缩进（§5.3）",
   assert.match(css, /\.entry \.excerpt\{[^}]*margin:12px 0 0 46px/);
 });
 
-test("今日页「今日小结」用 .lbl 朱红标签 + 衬线 h2（§5.3）", () => {
+test("今日页「当日小结」用 .lbl 朱红标签 + 衬线 h2（§5.3）", () => {
   const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   // 模板带缩进换行，断言行内顺序而非跨行拼接
-  assert.match(html, /<aside class="pull">\s*<b class="lbl">今日小结<\/b>\s*<h2>/);
+  assert.match(html, /<aside class="pull">\s*<b class="lbl">当日小结<\/b>\s*<h2>/);
   assert.match(html, /<h2>读综述论文/);
   const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
   assert.match(css, /\.pull \.lbl\{[^}]*color:var\(--accent\)/);
 });
 
-test("今日页侧栏是 .blk 块结构 + mini-foot 只留「今天」图例（§5.3）", () => {
+test("今日页侧栏是 .blk 块结构 + 小月历不标记今天（§5.3）", () => {
   const html = readFileSync(join(OUT, "day/2026-10-15/index.html"), "utf8");
   assert.match(html, /<div class="blk">/);
   assert.match(html, /<h3>小月历<\/h3>/);
@@ -264,7 +264,8 @@ test("今日页侧栏是 .blk 块结构 + mini-foot 只留「今天」图例（�
   assert.match(html, /月视图 →/);
   assert.match(html, /查看统计 →/);
   // 图例只保留「今天」一枚灰方块样本
-  assert.match(html, /<div class="mini-foot"><b><\/b>今天<\/div>/);
+  assert.ok(!html.includes('class="mini-foot"'));
+  assert.ok(!/class="mini-cell [^"]*\btoday\b/.test(html));
   assert.ok(!html.includes("有记录</span>"), "demo 的「有记录」图例不恢复");
   assert.ok(!html.includes("含重点</span>"), "demo 的「含重点」图例不恢复");
 });
@@ -275,7 +276,7 @@ test("小月历格子样式选择器是 .mini-grid a（button/a 失配防复发�
   assert.match(css, /\.mini-grid a\{[^}]*height:26px/);
   assert.match(css, /\.mini-grid a\.hl \.ul\{[^}]*var\(--accent\)/);
   assert.match(css, /\.mini-grid a\.sel\{[^}]*border-color:var\(--ink\)/);
-  assert.match(css, /\.mini-grid a\.today\{[^}]*background:var\(--rule-2\)/);
+  assert.ok(!css.includes(".mini-grid a.today"));
   assert.ok(!css.match(/\.mini-grid button\{/), "button 选择器不得残留（模板无 button）");
 });
 
@@ -394,9 +395,9 @@ test("页脚 note 不恢复（夜·十一⑤）", () => {
   assert.ok(!html.includes("footer"), "统计页不得有 footer note");
 });
 
-// 「今日小结」正文段间距 > 行间距（2026-10-16 用户拍板，取代 demo 原款 margin:0）：
+// 「当日小结」正文段间距 > 行间距（2026-10-16 用户拍板，取代 demo 原款 margin:0）：
 // 段间 +10px（≈0.7 行），比条目卡片（.entry .excerpt，拍板为段距 0）松，段落分隔感更清楚。
-test("今日小结正文段间距大于行间距（.pull p margin-top:10px，§5.3 补拍板）", () => {
+test("当日小结正文段间距大于行间距（.pull p margin-top:10px，§5.3 补拍板）", () => {
   const css = readFileSync(join(OUT, "assets/style.css"), "utf8");
   const m = css.match(/\.pull p\{[^}]*\}/);
   assert.ok(m, "style.css 应有 .pull p 规则");
@@ -559,4 +560,13 @@ test('早餐条目仅保留通用店名，去除可定位的分店信息且链�
   assert.match(html,/带了自己做的拿铁/);
   const day=readFileSync(join(OUT,'day/2026-10-15/index.html'),'utf8');
   assert.match(day,/>🥪 早餐：麦当劳<\/a>/);
+});
+
+ test('近日入口文案与分享同步，保留 today URL', () => {
+  const html = readFileSync(join(OUT, 'today/index.html'), 'utf8');
+  assert.match(html, /<title>近日/);
+  assert.match(html, /href="[^" ]*\/today\/"[^>]*>近日<\/a>/);
+  assert.match(html, /分享近日/);
+  assert.match(html, /返回近日/);
+  assert.ok(!html.includes('今天</div>'));
 });

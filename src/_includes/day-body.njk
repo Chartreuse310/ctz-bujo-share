@@ -17,7 +17,7 @@
 
     {% if theDaily %}
     <aside class="pull">
-      <b class="lbl">今日小结</b>
+      <b class="lbl">当日小结</b>
       <h2>{{ theDaily.title }}</h2>
       {{ theDaily.body | renderContent("md") | safe }}
     </aside>
@@ -56,11 +56,10 @@
         <div class="mini-grid">
           {% for c in grid.cells %}
             {% if c.blank %}<span class="void" aria-hidden="true"></span>
-            {% else %}<a class="mini-cell {% if c.entryCount %}has{% endif %} {% if c.hasHighlight %}hl{% endif %} {% if c.date == theDate %}sel{% endif %} {% if c.isToday %}today{% endif %}" href="{{ base }}/day/{{ c.date }}/" title="{{ c.date }}{% if c.entryCount %} · {{ c.entryCount }} 条{% endif %}"><span>{{ c.day }}</span><i class="ul"></i></a>
+            {% else %}<a class="mini-cell {% if c.entryCount %}has{% endif %} {% if c.hasHighlight %}hl{% endif %} {% if c.date == theDate %}sel{% endif %}" href="{{ base }}/day/{{ c.date }}/" title="{{ c.date }}{% if c.entryCount %} · {{ c.entryCount }} 条{% endif %}"><span>{{ c.day }}</span><i class="ul"></i></a>
             {% endif %}
           {% endfor %}
         </div>
-        <div class="mini-foot"><b></b>今天</div>
       </div>
     </div>
     <div class="blk">

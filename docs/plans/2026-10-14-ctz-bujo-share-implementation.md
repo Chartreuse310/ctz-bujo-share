@@ -2210,7 +2210,7 @@ git commit -m "feat: 从 G1 定稿移植设计系统 CSS"
 
   <nav class="nav tabbar" aria-label="四屏导航">
     <a href="/month/{{ site.thisMonth }}/"{% if navActive == 'month' %} class="on" aria-current="page"{% endif %}>本月</a>
-    <a href="/today/"{% if navActive == 'home' %} class="on" aria-current="page"{% endif %}>今日</a>
+    <a href="/today/"{% if navActive == 'home' %} class="on" aria-current="page"{% endif %}>近日</a>
     <a href="/collection/all/"{% if navActive == 'index' %} class="on" aria-current="page"{% endif %}>集子 · 标签</a>
     <a href="/stats/"{% if navActive == 'stats' %} class="on" aria-current="page"{% endif %}>统计</a>
   </nav>
@@ -2290,7 +2290,7 @@ git commit -m "feat: 从 G1 定稿移植设计系统 CSS"
 ```njk
 ---
 layout: base.njk
-title: 今日
+title: 近日
 navActive: home
 ---
 <div class="wrap"><h1>外壳自检</h1></div>
@@ -2327,10 +2327,10 @@ git commit -m "feat: 基础布局与 G1 通栏细线底栏"
 - 有日总结时渲染 `.pull`（今日小结）：mono 朱红 `.lbl` 标签 + 标题进衬线 `h2`
 - `.sect-h h3`（mono 10px + 延伸线）+ 条目列表：每条 `.entry`，条目头用 `.top-row`（**不得复用右栏 `.dlrow .r1` 类名**）、`.idx` 序号、`h4` 标题、**tag 胶囊行**（`.tags` 46px 缩进：`.tag.type` 描边 / `.tag.coll` 黑底反白 / `.tag` 灰描边 / `.tag.hl` 朱红）、摘要 `.excerpt` 46px 缩进
 - 空状态：单行 `.empty`「这里是空的。」（2026-10-16 拍板文案）
-- 侧栏 `.side`（demo `.blk` 块结构）：块一 `.blk > .blk-h(h3 小月历 + 「月视图 →」链接) + .mini(.mini-head + .mini-dow + .mini-grid)`，格子为 `<a class="mini-cell">`（**CSS 选择器用 `.mini-grid a`，不是 button**）；`mini-foot` **只保留「今天」灰方块一枚图例**；块二 `.blk > .blk-h(h3 统计 + 「查看统计 →」) + .stat-pair`（衬线 30px 大数字**墨色不分色** + `.l` 标签 + `.s`「本月 N」副行，口径 = 条目/日总结）
+- 侧栏 `.side`（demo `.blk` 块结构）：块一 `.blk > .blk-h(h3 小月历 + 「月视图 →」链接) + .mini(.mini-head + .mini-dow + .mini-grid)`，格子为 `<a class="mini-cell">`（**CSS 选择器用 `.mini-grid a`，不是 button**）；小日历不标记真实今天，不显示 `mini-foot` 图例；块二 `.blk > .blk-h(h3 统计 + 「查看统计 →」) + .stat-pair`（衬线 30px 大数字**墨色不分色** + `.l` 标签 + `.s`「本月 N」副行，口径 = 条目/日总结）
 - 侧栏小月历点进 `/day/<date>/`
 
-关键取数：先令 `dayDate = site.home.latest or site.today`（复用首页聚合中条目/小结的最大日期，无内容时回退真实今天）；读取 `site.dailyByDate[dayDate]`、`site.entriesByDate[dayDate]`，侧栏月份取 dayDate 所在月，小月历真实今天仍传 site.today。分享共用 dayDate。
+关键取数：先令 `dayDate = site.home.latest or site.today`（复用首页聚合中条目/小结的最大日期，无内容时回退真实今天）；读取 `site.dailyByDate[dayDate]`、`site.entriesByDate[dayDate]`，侧栏月份取 dayDate 所在月，小月历不渲染真实今天样式与图例。分享共用 dayDate。
 
 **验证**
 
@@ -2835,3 +2835,10 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 - 先新增失败回归，再修改内容：`test/e2e.test.js` 检查详情与日页使用中性标题、正文仍在；不在公开测试中复写删除的具体地点。
 - 同步 AGENTS.md 的录入/发布前隐私提醒：识别可能暴露地点、行程、身份、联系信息及第三方隐私的细节，先提醒并给出去掉/模糊化建议；用户明确删除时直接执行。当前内容修改不清除公开 Git 历史，不擅自重写历史或强推。
 - 验证：全量测试、构建、文档与计划检查全绿后提交；发布继续遵守现有的推送授权规则。
+
+
+## 增量：近日入口（2026-10-18 用户拍板）
+
+**近日入口（2026-10-18 拍板）**：四屏导航及页面名称由「今日」改为「近日」，URL 保留 `/today/`；默认展示最近有内容的一天。小日历不标记真实今天，移除 today 底色与「今天」图例，保留所查看日期的选中态、记录与重点提示。分享入口使用「分享近日 / 返回近日」，具体日期的小结与卡片使用「当日小结 / 当日记录」。
+
+先更新 e2e 断言并确认失败，再修改导航、页面标题、首页链接、分享文案及小日历模板与 CSS；验证 npm test、build、CDP、verify-plan 与 check-agents-md 全绿后提交。
