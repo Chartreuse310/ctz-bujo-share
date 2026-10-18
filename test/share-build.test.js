@@ -72,3 +72,20 @@ test('集子·标签页空态使用隔离空数据，保持单行提示（不依
   assert.match(html,/<div class="list-empty">绘画还没有条目。登记了的集子\/tag 都会生成页面，只是列表为空。<\/div>/);
   assert.ok(!html.includes('这里还没有条目'),'demo 两段式首句不得回归');
 });
+
+test('首页多条长思考的异步全文互不串位，无 JS 展示三条、随机池保留五条',()=>{
+  for(const dir of ['entries','daily']){rmSync(join(root,'content',dir),{recursive:true,force:true});mkdirSync(join(root,'content',dir),{recursive:true});}
+  for(let i=0;i<5;i++)writeFileSync(join(root,`content/entries/${date}-home-thought-${i}.md`),`---\ntype: thought\ntitle: 隔离思考 ${i}\ndate: ${date}\nhighlight: true\n---\n\n${('这是第'+i+'条的完整正文。').repeat(40)}\n\n**独立结尾 ${i}**`);
+  build();const home=readFileSync(join(out,'index.html'),'utf8');
+  const fallback=home.match(/id="thought-list"[^>]*>([\s\S]*?)<\/div>\s*<div id="thought-pool"/)?.[1];assert.ok(fallback);
+  assert.equal((fallback.match(/<article class="landing-thought">/g)||[]).length,3);
+  const pool=home.match(/id="thought-pool" hidden>([\s\S]*?)<\/div>\s*<\/section>/)?.[1];assert.ok(pool);
+  const templates=[...pool.matchAll(/<template>([\s\S]*?)<\/template>/g)];assert.equal(templates.length,5);
+  for(const [i,[,template]]of templates.entries()){
+    assert.equal((template.match(/<article class="landing-thought">/g)||[]).length,1);
+    assert.ok(template.includes(`隔离思考 ${i}`));
+    assert.ok(template.includes(('这是第'+i+'条的完整正文。').repeat(40)));
+    assert.ok(template.includes(`<strong>独立结尾 ${i}</strong>`));
+    for(let j=0;j<5;j++)if(j!==i)assert.ok(!template.includes(`独立结尾 ${j}`));
+  }
+});

@@ -17,16 +17,16 @@ permalink: /
   <section aria-labelledby="thought-heading" class="landing-section">
     <div class="landing-section-head"><h2 id="thought-heading">随手翻翻</h2><button id="shuffle-thoughts" type="button" hidden>换几条 ↻</button></div>
     <div id="thought-list" class="landing-thoughts" aria-live="polite" aria-atomic="true">
-      {% for e in site.home.thoughts %}{% if loop.index <= 3 %}{% include "home-thought.njk" %}{% endif %}{% else %}<p class="empty">这里是空的。</p>{% endfor %}
+      {% asyncEach e in site.home.thoughts %}{% if loop.index <= 3 %}{% set homeThoughtBody = e.body | renderContent("md") %}{% include "home-thought.njk" %}{% endif %}{% else %}<p class="empty">这里是空的。</p>{% endeach %}
     </div>
-    <div id="thought-pool" hidden>{% for e in site.home.thoughts %}<template>{% include "home-thought.njk" %}</template>{% endfor %}</div>
+    <div id="thought-pool" hidden>{% asyncEach e in site.home.thoughts %}<template>{% set homeThoughtBody = e.body | renderContent("md") %}{% include "home-thought.njk" %}</template>{% endeach %}</div>
   </section>
 
   <div class="landing-bottom">
     <section aria-labelledby="recent-heading" class="landing-section">
       <div class="landing-section-head"><h2 id="recent-heading">最近在做</h2><a href="{{ base }}/month/{{ site.thisMonth }}/">月视图 →</a></div>
       {% for e in site.home.recent %}
-      <article class="landing-event"><p class="landing-meta">{{ e.date }} · <a href="{{ e.collectionUrl }}">{{ e.collectionName }}</a></p><h3><a href="{{ e.url }}">{{ e.title }}</a></h3><p class="landing-event-excerpt">{{ e.body | homeText | truncate(100) }}</p></article>
+      <article class="landing-event"><p class="landing-meta">{{ e.date }} · <a href="{{ e.collectionUrl }}">{{ e.collectionName }}</a></p><h3><a href="{{ e.url }}">{{ e.title }}</a></h3><div class="landing-event-excerpt">{{ e.body | renderContent("md") | safe }}</div></article>
       {% else %}<p class="empty">这里是空的。</p>{% endfor %}
     </section>
     <aside class="landing-section" aria-labelledby="interests-heading">

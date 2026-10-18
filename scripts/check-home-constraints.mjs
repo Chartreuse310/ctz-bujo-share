@@ -37,7 +37,31 @@ for(const [w,h] of [[375,812],[760,900],[761,900],[1440,900]]) {
  if(r.overflow||r.bad.length||r.count!==r.expected||!r.unique||!r.changed||r.buttonHidden!==(r.pool<=3)) fail(w+' '+JSON.stringify(r));else ok(w+' 首页几何与换一组 PASS');
  const links=await ev(`[...document.querySelectorAll('.landing a,.brand')].map(a=>a.href)`);
  for(const url of new Set(links)){const response=await fetch(url);if(!response.ok)fail('链接 '+url+' '+response.status);}
+ const full=await ev(`(async()=>{
+  await document.fonts.ready;
+  const workout=[...document.querySelectorAll('.landing-event')].find(e=>e.textContent.includes('一分化·全身B'));
+  const prose=workout?.querySelector('.landing-event-excerpt');
+  const complete=!!prose&&prose.querySelectorAll('p').length===3&&prose.textContent.includes('而在不关心的领域更多地放弃。');
+  const box=document.querySelector('.landing-excerpt');
+  box.insertAdjacentHTML('beforeend','<p><strong>长正文验证</strong> '+ '连续长文本'.repeat(120) + '</p><blockquote><p>引用内容</p></blockquote><pre><code>'+ 'long_code_'.repeat(100) + '</code></pre><p><a href="https://example.com">'+ 'long_link_'.repeat(100) +'</a></p><table><tr><td>'+ 'wide_cell_'.repeat(100) +'</td><td>第二列</td></tr></table>');
+  const bodies=[...document.querySelectorAll('.landing-excerpt,.landing-event-excerpt')];
+  const bad=bodies.filter(b=>b.scrollHeight>b.clientHeight+1||b.scrollWidth>b.clientWidth+1||getComputedStyle(b).webkitLineClamp!=='none').map(b=>b.className);
+  return {complete,bad,overflow:document.documentElement.scrollWidth>innerWidth+1};
+ })()`);
+ if(!full.complete||full.bad.length||full.overflow)fail(w+' 全文与宽内容 '+JSON.stringify(full));else ok(w+' 全文、分段、长链接/代码/表格 PASS');
+ for(const fraction of [0,.5,1]) {
+  const nav=await ev(`(()=>{
+   scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*${fraction});
+   const n=document.querySelector('.tabbar'),r=n.getBoundingClientRect();let hits=true;
+   for(let x=8;x<innerWidth;x+=24)for(let y=r.top+4;y<r.bottom;y+=8)if(!n.contains(document.elementFromPoint(x,y)))hits=false;
+   const bodies=[...document.querySelectorAll('.landing-excerpt,.landing-event-excerpt')];
+   const last=bodies.at(-1).getBoundingClientRect();
+   return {hits,opaque:getComputedStyle(n).backgroundColor!=='rgba(0, 0, 0, 0)',endSafe:${fraction}!==1||last.bottom<=r.top+1};
+  })()`);
+  if(!nav.hits||!nav.opaque||!nav.endSafe)fail(w+' 滚动 '+fraction+' 底栏 '+JSON.stringify(nav));
+ }
 }
+
 // 隔离补足候选，验证真实数据只有少量思考时走不到的换组分支。
 const shuffle=await ev(`(async()=>{
  const pool=document.querySelector('#thought-pool');

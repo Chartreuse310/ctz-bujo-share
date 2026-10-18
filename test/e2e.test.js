@@ -619,3 +619,24 @@ test('导师横向标签使用用户确认的商业项目 slug，并关联 10 �
   const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
   assert.deepEqual(data.find(x=>x.id==='entry:2026-10-17-advisor-ppt').tags,['导师横向']);
 });
+
+test('首页重点事件和思考显示与详情一致的完整 Markdown 正文，不再按字数截断',()=>{
+  const home=readFileSync(join(OUT,'index.html'),'utf8');
+  const events=[...home.matchAll(/<article class="landing-event">([\s\S]*?)<\/article>/g)];
+  const thoughts=[...home.matchAll(/<article class="landing-thought">([\s\S]*?)<\/article>/g)];
+  assert.ok(events.length>0);assert.ok(thoughts.length>0);
+  for(const [,article] of [...events,...thoughts]) {
+    const slug=article.match(/href="[^" ]*\/entry\/([^/]+)\//)?.[1];assert.ok(slug);
+    const detail=readFileSync(join(OUT,`entry/${slug}/index.html`),'utf8');
+    const full=detail.match(/<div class="entry-body">([\s\S]*?)<\/div>/)?.[1].trim();
+    const body=article.match(/<div class="landing-(?:event-)?excerpt">([\s\S]*?)<\/div>/)?.[1].trim();
+    assert.equal(body,full,slug+' 首页正文必须与详情全文一致');
+  }
+  const pool=home.match(/<div id="thought-pool" hidden>([\s\S]*?)<\/div>\s*<\/section>/)?.[1];assert.ok(pool);
+  const templates=[...pool.matchAll(/<template>([\s\S]*?)<\/template>/g)];assert.ok(templates.length);
+  for(const [,template]of templates)assert.equal((template.match(/<article class="landing-thought">/g)||[]).length,1,'每个随机候选只含一条思考');
+  const fallback=home.match(/id="thought-list"[^>]*>([\s\S]*?)<\/div>\s*<div id="thought-pool"/)?.[1];assert.ok(fallback);
+  assert.equal((fallback.match(/<article class="landing-thought">/g)||[]).length,Math.min(3,templates.length),'无 JS 首屏也须保留完整候选');
+  assert.match(home,/<p>听了两个播客：<\/p>/);
+  assert.match(home,/而在不关心的领域更多地放弃。/);
+});

@@ -1,6 +1,6 @@
 <article class="landing-thought">
   <p class="landing-meta">{{ e.date }} · {{ e.collectionName }}</p>
   <h3><a href="{{ e.url }}">{{ e.title }}</a></h3>
-  <div class="landing-excerpt">{{ e.body | homeText | truncate(180) }}</div>
+  <div class="landing-excerpt">{{ homeThoughtBody | safe }}</div>
   <a class="landing-read" href="{{ e.url }}">读这条思考 →</a>
 </article>
