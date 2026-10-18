@@ -98,11 +98,6 @@ test("集子·标签页标题区：res-head（h2 衬线集子名 + .cnt 事件�
   assert.match(css, /\.idx-row\.on\{[^}]*color:var\(--accent\)/, "idx 选中态必须落 CSS（曾因无样式落到浏览器默认蓝）");
 });
 
-test("集子·标签页空态：单行提示性文案（夜·十⑤，非 demo 两段式）", () => {
-  const html = readFileSync(join(OUT, "collection/drawing/index.html"), "utf8");
-  assert.match(html, /<div class="list-empty">绘画还没有条目。登记了的集子\/tag 都会生成页面，只是列表为空。<\/div>/);
-  assert.ok(!html.includes("这里还没有条目"), "demo 两段式首句不得回归");
-});
 
 
 test("条目页 URL 含日期前缀（设计文档 §5.1）", () => {
@@ -572,7 +567,7 @@ test('早餐条目仅保留通用店名，去除可定位的分店信息且链�
 });
 
 
-test('10 月 17 日日总结完整录入三段正文，近日与分享同步且不拆成条目',()=>{
+test('10 月 17 日日总结完整保留三段正文，近日与分享同步且与条目独立',()=>{
   const day=readFileSync(join(OUT,'day/2026-10-17/index.html'),'utf8');
   assert.match(day,/导师横向PPT &amp; 素描塑造理论05|导师横向PPT & 素描塑造理论05/);
   const pull=day.match(/<aside class="pull">([\s\S]*?)<\/aside>/)?.[1];assert.ok(pull);
@@ -580,11 +575,33 @@ test('10 月 17 日日总结完整录入三段正文，近日与分享同步且�
   assert.match(pull,/mac上只放正在跑的项目。/);
   assert.match(pull,/遂提了个issue结束。/);
   assert.match(pull,/需要慢慢平静下来。/);
-  assert.doesNotMatch(day,/<article class="entry">/);
   const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
   assert.match(recent,/data-date="2026-10-17"/);
   const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(data.map(x=>x.id),['daily']);
+  assert.equal(data[0].id,'daily');
+  assert.equal(data.filter(x=>x.id==='daily').length,1);
   assert.equal(data[0].title,'导师横向PPT & 素描塑造理论05');
   assert.match(data[0].html,/需要慢慢平静下来。/);
+});
+
+
+test('10 月 17 日五条事件按输入顺序录入，正文和分享完整保留',()=>{
+  const html=readFileSync(join(OUT,'day/2026-10-17/index.html'),'utf8');
+  const titles=[...html.matchAll(/<h4><a[^>]*>([^<]*)<\/a><\/h4>/g)].map(m=>m[1]);
+  assert.deepEqual(titles,['🥪 早餐：麦当劳（外卖）','🧰 导师横向PPT','💪 一分化·全身B','🍚 晚餐：秋葵炒肉+螺狮粉','🎨 模特徐素描塑造：理论课05（衣褶）']);
+  const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
+  const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+  assert.equal(data.length,6);assert.ok(data.slice(1).every(x=>x.kind==='event'));
+  assert.match(data[1].html,/吃了猪柳炒双蛋堡和奶铁/);
+  assert.match(data[2].html,/和更新同门发来的PPT/);
+  assert.match(data[3].html,/这让我很触动，好像忽然找到了做好设计的意义。/);
+  assert.match(data[3].html,/而在不关心的领域更多地放弃。/);
+  assert.match(data[4].html,/世界依旧是一个巨大的草台班子。/);
+  assert.match(data[5].html,/晚上抓紧补上了这节课。/);
+  assert.deepEqual(data[3].tags,['一分化','播客']);
+  assert.deepEqual(data[4].tags,['视频']);
+  assert.equal(data[5].collection,'绘画');
+  assert.deepEqual(data[5].tags,['模特徐素描塑造']);
+  const tag=readFileSync(join(OUT,'tag/motexu-sketch/index.html'),'utf8');
+  assert.match(tag,/模特徐素描塑造/);assert.match(tag,/理论课05（衣褶）/);
 });

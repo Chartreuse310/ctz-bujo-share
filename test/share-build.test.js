@@ -60,3 +60,15 @@ test('今日默认最近有条目或小结的日期，分享同步；未来日�
   assert.match(build(),/data-date="2099-01-01"/);
   rmSync(future);rmSync(entry);const empty=build();assert.ok(empty.includes(`data-date="${date}"`));assert.deepEqual(scripts(empty),[]);
 });
+
+
+test('集子·标签页空态使用隔离空数据，保持单行提示（不依赖真实绘画集子无条目）',()=>{
+  for(const dir of ['entries','daily']){
+    rmSync(join(root,'content',dir),{recursive:true,force:true});
+    mkdirSync(join(root,'content',dir),{recursive:true});
+  }
+  build();
+  const html=readFileSync(join(out,'collection/drawing/index.html'),'utf8');
+  assert.match(html,/<div class="list-empty">绘画还没有条目。登记了的集子\/tag 都会生成页面，只是列表为空。<\/div>/);
+  assert.ok(!html.includes('这里还没有条目'),'demo 两段式首句不得回归');
+});
