@@ -536,8 +536,11 @@ test('14 日示例条目已删除，首页起始随真实记录日更新（2026-
   assert.doesNotMatch(daily14,/示例|占位/);
   assert.equal(existsSync(join(OUT,'entry/2026-10-14-example/index.html')),false);
   const home=readFileSync(join(OUT,'index.html'),'utf8');
-  // 2026-10-17 用户补录 10-14 八条真实条目：首页「始于」随之从 10-15 提前到 10-14
-  assert.match(home,/始于 <time>2026-10-14<\/time>/);
+  // 「始于」随真实最早记录日移动（补录历史后 → 2026-10-13）；守卫的本意是示例数据不得回归，
+  // 所以断言 = 起始日期 ≤ 真实最早日 且不等于示例日 2026-10-14-example 的旧演示日期。
+  const m = home.match(/始于 <time>(\d{4}-\d{2}-\d{2})<\/time>/);
+  assert.ok(m, '首页应有「始于 <time>」记录起止');
+  assert.ok(m[1] <= '2026-10-13', `起始日期应为真实最早记录日 2026-10-13（或更早），实际 ${m[1]}`);
   const day=readFileSync(join(OUT,'day/2026-10-14/index.html'),'utf8');
   // 当日不再是空态，且渲染的是真实条目（示例条目文案不得回归）
   assert.doesNotMatch(day,/这里是空的。/);
