@@ -3,6 +3,9 @@ type: thought
 title: 交替推进法
 date: 2026-10-13
 order: 3
+highlight: true
+collection: 博士学位论文
+tags: ["PhD V2.0 P0"]
 ---
 
 在使用一种很适合P人的任务推进方法：

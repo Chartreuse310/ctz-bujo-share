@@ -10,6 +10,8 @@ collections:
     slug: books-films-music
 
 tags:
+  - name: PhD V2.0 P0
+    slug: phd-v2-0-p0
   - name: PhD V2.0 P1.1
     slug: phd-v2-0-p1-1
   - name: 跑步
