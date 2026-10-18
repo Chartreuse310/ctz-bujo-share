@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>沙楚子手绘图标</title>
+  <rect width="64" height="64" rx="10" fill="#fff"/>
+  <g fill="none" stroke="#20201e" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 12 Q23 14 43 11 M9 13 Q7 33 9 56 M7 57 Q30 57 57 55 M55 37 Q54 47 56 56"/>
+    <path d="M19 30 C12 29 11 38 14 42 C19 48 27 44 27 38 C27 33 24 29 19 30Z"/>
+    <path d="M38 20 C32 21 30 27 33 31 C37 37 43 35 47 32 C51 27 46 21 41 20Z"/>
+    <path d="M35 43 C30 43 30 49 32 51 C35 55 42 51 41 48 C40 45 38 43 35 43Z"/>
+    <path id="question" d="M51 9 C57 5 63 11 59 16 Q58 18 54 19 L55 26"/>
+  </g>
+  <circle cx="55.5" cy="31.5" r="2.5" fill="#20201e"/>
+</svg>
