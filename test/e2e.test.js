@@ -513,9 +513,9 @@ test('月历与小月历的所有日期链接都有日页，空日不返回 404'
     assert.ok(dates.length >= 28);
     for (const date of dates) assert.ok(existsSync(join(OUT, `day/${date}/index.html`)), `${page} 的 ${date} 链接没有生成日页`);
   }
-  const empty = readFileSync(join(OUT, 'day/2026-10-17/index.html'), 'utf8');
+  const empty = readFileSync(join(OUT, 'day/2026-10-01/index.html'), 'utf8');
   assert.match(empty, /这里是空的。/);
-  assert.match(empty, /2026 年 10 月 17 日/);
+  assert.match(empty, /2026 年 10 月 1 日/);
 });
 
 
@@ -569,4 +569,22 @@ test('早餐条目仅保留通用店名，去除可定位的分店信息且链�
   assert.match(html, /分享近日/);
   assert.match(html, /返回近日/);
   assert.ok(!html.includes('今天</div>'));
+});
+
+
+test('10 月 17 日日总结完整录入三段正文，近日与分享同步且不拆成条目',()=>{
+  const day=readFileSync(join(OUT,'day/2026-10-17/index.html'),'utf8');
+  assert.match(day,/导师横向PPT &amp; 素描塑造理论05|导师横向PPT & 素描塑造理论05/);
+  const pull=day.match(/<aside class="pull">([\s\S]*?)<\/aside>/)?.[1];assert.ok(pull);
+  assert.equal((pull.match(/<p>/g)||[]).length,3);
+  assert.match(pull,/mac上只放正在跑的项目。/);
+  assert.match(pull,/遂提了个issue结束。/);
+  assert.match(pull,/需要慢慢平静下来。/);
+  assert.doesNotMatch(day,/<article class="entry">/);
+  const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
+  assert.match(recent,/data-date="2026-10-17"/);
+  const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+  assert.deepEqual(data.map(x=>x.id),['daily']);
+  assert.equal(data[0].title,'导师横向PPT & 素描塑造理论05');
+  assert.match(data[0].html,/需要慢慢平静下来。/);
 });
