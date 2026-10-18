@@ -640,3 +640,11 @@ test('首页重点事件和思考显示与详情一致的完整 Markdown 正文�
   assert.match(home,/<p>听了两个播客：<\/p>/);
   assert.match(home,/而在不关心的领域更多地放弃。/);
 });
+
+ test("用户修正的中文引号在首页与详情页原样保留", () => {
+  for (const path of ["index.html", "entry/2026-10-14-external-drive-brick/index.html"]) {
+    const html = readFileSync(join(OUT, path), "utf8");
+    assert.ok(html.includes("抛砖引玉的“砖”对我而言竟如此重要！"), path);
+    assert.ok(!html.includes('抛砖引玉的&quot;砖&quot;对我而言竟如此重要！'), path);
+  }
+});

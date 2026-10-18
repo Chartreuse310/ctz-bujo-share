@@ -1,6 +1,6 @@
 ---
 type: thought
-title: 抛砖引玉的"砖"对我而言竟如此重要！
+title: 抛砖引玉的“砖”对我而言竟如此重要！
 date: 2026-10-14
 order: 7
 highlight: true
