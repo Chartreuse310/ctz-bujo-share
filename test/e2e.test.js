@@ -605,3 +605,14 @@ test('10 月 17 日五条事件按输入顺序录入，正文和分享完整保�
   const tag=readFileSync(join(OUT,'tag/motexu-sketch/index.html'),'utf8');
   assert.match(tag,/模特徐素描塑造/);assert.match(tag,/理论课05（衣褶）/);
 });
+
+test('导师横向标签使用用户确认的商业项目 slug，并关联 10 月 17 日 PPT 条目',()=>{
+  const tag=readFileSync(join(OUT,'tag/supervisor-commercial-project/index.html'),'utf8');
+  assert.match(tag,/# 导师横向/);
+  assert.match(tag,/entry\/2026-10-17-advisor-ppt\//);
+  const entry=readFileSync(join(OUT,'entry/2026-10-17-advisor-ppt/index.html'),'utf8');
+  assert.match(entry,/href="\/ctz-bujo-share\/tag\/supervisor-commercial-project\/"[^>]*># 导师横向<\/a>/);
+  const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
+  const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+  assert.deepEqual(data.find(x=>x.id==='entry:2026-10-17-advisor-ppt').tags,['导师横向']);
+});
