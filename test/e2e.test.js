@@ -514,10 +514,13 @@ test('月历与小月历的所有日期链接都有日页，空日不返回 404'
 });
 
 
-test('codex pro 为手动重点：首页只显示重点，普通记录仍在日页',()=>{
+test('健身与 codex pro 为手动重点：首页只显示重点，普通记录仍在日页',()=>{
   const home=readFileSync(join(OUT,'index.html'),'utf8');
   const events=[...home.matchAll(/<article class="landing-event">([\s\S]*?)<\/article>/g)];
-  assert.equal(events.length,1);assert.match(events[0][1],/充了个codex pro/);
+  assert.equal(events.length,2);
+  assert.match(events[0][1],/一分化·全身B/);assert.match(events[1][1],/充了个codex pro/);
+  const workout=readFileSync(join(OUT,'entry/2026-10-17-workout-fullbody-b/index.html'),'utf8');
+  assert.match(workout,/class="tag hl">重点/);
   assert.doesNotMatch(home,/晚餐：辣椒炒肉|早餐：星巴克/);
   const entry=readFileSync(join(OUT,'entry/2026-10-16-codex-pro/index.html'),'utf8');
   assert.match(entry,/class="tag hl">重点/);
