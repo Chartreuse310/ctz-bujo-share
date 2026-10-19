@@ -1,3 +1,4 @@
+import { loadContent } from "../lib/load.js";
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -573,7 +574,7 @@ test('早餐条目仅保留通用店名，去除可定位的分店信息且链�
 });
 
 
-test('10 月 17 日日总结完整保留三段正文，近日与分享同步且与条目独立',()=>{
+test('10 月 17 日历史小结完整保留三段正文且与条目独立',()=>{
   const day=readFileSync(join(OUT,'day/2026-10-17/index.html'),'utf8');
   assert.match(day,/导师横向PPT &amp; 素描塑造理论05|导师横向PPT & 素描塑造理论05/);
   const pull=day.match(/<aside class="pull">([\s\S]*?)<\/aside>/)?.[1];assert.ok(pull);
@@ -581,22 +582,22 @@ test('10 月 17 日日总结完整保留三段正文，近日与分享同步且�
   assert.match(pull,/mac上只放正在跑的项目。/);
   assert.match(pull,/遂提了个issue结束。/);
   assert.match(pull,/需要慢慢平静下来。/);
-  const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
-  assert.match(recent,/data-date="2026-10-17"/);
-  const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
-  assert.equal(data[0].id,'daily');
-  assert.equal(data.filter(x=>x.id==='daily').length,1);
-  assert.equal(data[0].title,'导师横向PPT & 素描塑造理论05');
-  assert.match(data[0].html,/需要慢慢平静下来。/);
+  const { dailies } = loadContent(process.cwd());
+  const daily = dailies.find(d => d.date === '2026-10-17');
+  assert.equal(daily.title, '导师横向PPT & 素描塑造理论05');
+  assert.match(daily.body, /需要慢慢平静下来。/);
 });
 
 
-test('10 月 17 日五条事件按输入顺序录入，正文和分享完整保留',()=>{
+test('10 月 17 日历史事件按输入顺序录入，正文和分类完整保留',()=>{
   const html=readFileSync(join(OUT,'day/2026-10-17/index.html'),'utf8');
   const titles=[...html.matchAll(/<h4><a[^>]*>([^<]*)<\/a><\/h4>/g)].map(m=>m[1]);
   assert.deepEqual(titles,['🥪 早餐：麦当劳（外卖）','🧰 导师横向PPT','💪 一分化·全身B','🍚 晚餐：秋葵炒肉+螺狮粉','🎨 模特徐素描塑造：理论课05（衣褶）']);
-  const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
-  const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+  const { entriesByDate } = loadContent(process.cwd());
+  const data = [{kind:'daily'}, ...entriesByDate['2026-10-17'].map(e => ({
+    ...e, kind:e.type, collection:e.collectionName,
+    html:readFileSync(join(OUT, 'entry', e.slug, 'index.html'), 'utf8')
+  }))];
   assert.equal(data.length,6);assert.ok(data.slice(1).every(x=>x.kind==='event'));
   assert.match(data[1].html,/吃了猪柳炒双蛋堡和奶铁/);
   assert.match(data[2].html,/和更新同门发来的PPT/);
@@ -618,9 +619,8 @@ test('导师横向标签使用用户确认的商业项目 slug，并关联 10 �
   assert.match(tag,/entry\/2026-10-17-advisor-ppt\//);
   const entry=readFileSync(join(OUT,'entry/2026-10-17-advisor-ppt/index.html'),'utf8');
   assert.match(entry,/href="\/ctz-bujo-share\/tag\/supervisor-commercial-project\/"[^>]*># 导师横向<\/a>/);
-  const recent=readFileSync(join(OUT,'today/index.html'),'utf8');
-  const data=[...recent.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(data.find(x=>x.id==='entry:2026-10-17-advisor-ppt').tags,['导师横向']);
+  const { entries } = loadContent(process.cwd());
+  assert.deepEqual(entries.find(e=>e.slug==='2026-10-17-advisor-ppt').tags,['导师横向']);
 });
 
 test('首页重点事件和思考显示与详情一致的完整 Markdown 正文，不再按字数截断',()=>{
@@ -650,4 +650,17 @@ test('首页重点事件和思考显示与详情一致的完整 Markdown 正文�
     assert.ok(html.includes("抛砖引玉的“砖”对我而言竟如此重要！"), path);
     assert.ok(!html.includes('抛砖引玉的&quot;砖&quot;对我而言竟如此重要！'), path);
   }
+});
+
+test("10月18日日总结与五条事件按输入顺序呈现，保留正文标点与清单", () => {
+  const html = readFileSync(join(OUT, "day/2026-10-18/index.html"), "utf8");
+  assert.ok(html.includes("文件整理DAY1"));
+  assert.ok(html.includes("完成了同步空间00-02整体的思路和初步的清理，下一步是一一核对。"));
+  const titles = ["🥪 早餐：麦当劳", "🧩 日记分享", "💾 文件整理", "🏃‍♀️ 室内跑步·3km", "🍚 蔡澜"];
+  const positions = titles.map(title => html.indexOf(title));
+  assert.ok(positions.every(position => position >= 0));
+  assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
+  assert.ok(html.includes("（跑步伴奏：嗨咻 003.在婚姻中追求爱情的我，傻么？）"));
+  assert.ok(html.includes("<li>笔记本（新）</li>"));
+  assert.ok(html.includes("<li>笔记本（旧）</li>"));
 });
