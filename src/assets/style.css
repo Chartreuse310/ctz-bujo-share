@@ -107,7 +107,7 @@ button{font:inherit;color:inherit}
   --rule-2:#ebe7dd;
   --accent:#a8321f;
   --accent-soft:#f6e6e1;
-  --thought-highlight:#c7cdd0;
+  --thought-highlight:#d3d8db;
   --blue:#6f8fa6;                  /* 夜·十一②：思考色（浅蓝灰，与墨黑明度对比至少 3:1），事件=墨黑；朱红仍只给重点/选中态 */
   --top:0px;                       /* 顶部栏已删除：所有 calc(var(--top)+..) 归零 */
   --tab:52px;                      /* 底部导航条高度 */
