@@ -21,7 +21,9 @@ function record(item, continued = false) {
   article.dataset.shareId = item.id; article.dataset.kind = item.kind;
   const head = el('div', 'share-record-head');
   head.append(el('span', 'share-kind', (item.kind === 'daily' ? '当日小结' : item.kind === 'event' ? '事件' : '思考') + (continued ? ' · 续' : '')));
-  head.append(el('h3', item.kind === 'thought' ? 'thought-title' : '', item.title));
+  const title = el('h3', item.kind === 'thought' ? 'thought-title' : '', item.kind === 'thought' ? null : item.title);
+  if (item.kind === 'thought') title.append(el('span', 'thought-mark', item.title));
+  head.append(title);
   const tags = el('div', 'share-tags');
   if (item.collection) tags.append(el('span', 'tag coll', item.collection));
   for (const tag of item.tags || []) tags.append(el('span', 'tag', '# ' + tag));

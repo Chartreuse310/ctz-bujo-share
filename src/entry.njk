@@ -2,7 +2,7 @@
 <article class="entry-page postcard">
   <header class="postcard-head">
     <div class="postcard-date">{{ entry.date | zhDate }} · {{ weekdayName(entry.date) }}</div>
-    <h1{% if entry.type == "thought" %} class="thought-title"{% endif %}>{{ entry.title }}</h1>
+    <h1{% if entry.type == "thought" %} class="thought-title"{% endif %}>{% if entry.type == "thought" %}<span class="thought-mark">{{ entry.title }}</span>{% else %}{{ entry.title }}{% endif %}</h1>
   </header>
   <div class="entry-body">
     {{ entry.body | renderContent("md") | safe }}
