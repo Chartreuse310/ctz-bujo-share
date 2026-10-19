@@ -23,7 +23,7 @@ open.addEventListener('click',()=>{
     const label=document.createElement('label');label.className='share-option';
     const box=document.createElement('input');box.type='checkbox';box.checked=true;box.value=item.id;
     const span=document.createElement('span'),kind=document.createElement('small');kind.textContent=item.kind==='daily'?'当日小结':item.kind==='event'?'事件':'思考';
-    const title=document.createElement("span");title.className="share-option-title";if(item.kind==='thought')title.classList.add('thought-title','thought-mark');title.textContent=item.title;
+    const title=document.createElement("span");title.className="share-option-title";if(item.kind==='thought')title.classList.add('thought-title');title.textContent=item.title;if(item.kind==='thought'){const mark=document.createElement('span');mark.className='thought-mark';mark.textContent=item.title;title.replaceChildren(mark);}
     span.append(kind,title);label.append(box,span);options.append(label);
   }
   invalidate();dialog.showModal();

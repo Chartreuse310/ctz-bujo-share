@@ -107,7 +107,7 @@ button{font:inherit;color:inherit}
   --rule-2:#ebe7dd;
   --accent:#a8321f;
   --accent-soft:#f6e6e1;
-  --thought-highlight:#e3e7e9;
+  --thought-highlight:#c7cdd0;
   --blue:#6f8fa6;                  /* 夜·十一②：思考色（浅蓝灰，与墨黑明度对比至少 3:1），事件=墨黑；朱红仍只给重点/选中态 */
   --top:0px;                       /* 顶部栏已删除：所有 calc(var(--top)+..) 归零 */
   --tab:52px;                      /* 底部导航条高度 */
@@ -497,4 +497,4 @@ footer.note b{color:var(--ink);font-weight:600}
 /* 类型仅作用于条目标题；不向正文或元数据传播。 */
 .thought-title,.thought-title a,.thought-title a:hover{color:var(--ink)}
 
-.thought-mark{background:linear-gradient(transparent 18%,var(--thought-highlight) 18%,var(--thought-highlight) 92%,transparent 92%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.thought-mark{background:var(--thought-highlight);padding:0.08em 0.22em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
