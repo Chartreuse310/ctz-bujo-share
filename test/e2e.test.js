@@ -664,3 +664,13 @@ test("10月18日日总结与五条事件按输入顺序呈现，保留正文标�
   assert.ok(html.includes("<li>笔记本（新）</li>"));
   assert.ok(html.includes("<li>笔记本（旧）</li>"));
 });
+
+test("10月18日跑步记录关联用户确认的跑步与播客标签", () => {
+  const { entries } = loadContent(process.cwd());
+  const entry = entries.find(e => e.slug === "2026-10-18-indoor-running-3km");
+  assert.deepEqual(entry.tags, ["跑步", "播客"]);
+  for (const slug of ["running", "podcast"]) {
+    const html = readFileSync(join(OUT, "tag", slug, "index.html"), "utf8");
+    assert.ok(html.includes("/entry/2026-10-18-indoor-running-3km/"), slug);
+  }
+});
