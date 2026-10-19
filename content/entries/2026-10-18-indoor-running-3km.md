@@ -3,7 +3,7 @@ type: event
 title: 🏃‍♀️ 室内跑步·3km
 date: 2026-10-18
 order: 4
-highlight: false
+highlight: true
 tags: ["跑步", "播客"]
 ---
 

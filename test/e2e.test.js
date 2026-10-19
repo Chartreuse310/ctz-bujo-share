@@ -518,8 +518,12 @@ test('月历与小月历的所有日期链接都有日页，空日不返回 404'
 test('健身与 codex pro 为手动重点：首页只显示重点，普通记录仍在日页',()=>{
   const home=readFileSync(join(OUT,'index.html'),'utf8');
   const events=[...home.matchAll(/<article class="landing-event">([\s\S]*?)<\/article>/g)];
-  assert.equal(events.length,2);
-  assert.match(events[0][1],/一分化·全身B/);assert.match(events[1][1],/充了个codex pro/);
+  const { entries } = loadContent(process.cwd());
+  const expected = entries.filter(e => e.type === 'event' && e.highlight)
+    .sort((a,b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)).slice(0,5);
+  assert.equal(events.length, expected.length);
+  events.forEach((event, index) => assert.ok(event[1].includes(`/entry/${expected[index].slug}/`)));
+  assert.match(home,/一分化·全身B/);assert.match(home,/充了个codex pro/);
   const workout=readFileSync(join(OUT,'entry/2026-10-17-workout-fullbody-b/index.html'),'utf8');
   assert.match(workout,/class="tag hl">重点/);
   assert.doesNotMatch(home,/晚餐：辣椒炒肉|早餐：星巴克/);
@@ -673,4 +677,16 @@ test("10月18日跑步记录关联用户确认的跑步与播客标签", () => {
     const html = readFileSync(join(OUT, "tag", slug, "index.html"), "utf8");
     assert.ok(html.includes("/entry/2026-10-18-indoor-running-3km/"), slug);
   }
+});
+
+test("10月18日文件整理与室内跑步为重点并在首页显示全文", () => {
+  const { entries } = loadContent(process.cwd());
+  const home = readFileSync(join(OUT, "index.html"), "utf8");
+  for (const slug of ["2026-10-18-file-organization", "2026-10-18-indoor-running-3km"]) {
+    const entry = entries.find(e => e.slug === slug);
+    assert.equal(entry.highlight, true, slug);
+    assert.ok(home.includes(`/entry/${slug}/`), slug);
+  }
+  assert.ok(home.includes("<li>笔记本（旧）</li>"));
+  assert.ok(home.includes("（跑步伴奏：嗨咻 003.在婚姻中追求爱情的我，傻么？）"));
 });
