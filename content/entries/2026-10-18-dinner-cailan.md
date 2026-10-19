@@ -1,6 +1,6 @@
 ---
 type: event
-title: 🍚 蔡澜
+title: 🍚 晚餐：蔡澜
 date: 2026-10-18
 order: 5
 highlight: false

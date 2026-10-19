@@ -660,7 +660,7 @@ test("10月18日日总结与五条事件按输入顺序呈现，保留正文标�
   const html = readFileSync(join(OUT, "day/2026-10-18/index.html"), "utf8");
   assert.ok(html.includes("文件整理DAY1"));
   assert.ok(html.includes("完成了同步空间00-02整体的思路和初步的清理，下一步是一一核对。"));
-  const titles = ["🥪 早餐：麦当劳", "🧩 日记分享", "💾 文件整理", "🏃‍♀️ 室内跑步·3km", "🍚 蔡澜"];
+  const titles = ["🥪 早餐：麦当劳", "🧩 日记分享", "💾 文件整理", "🏃‍♀️ 室内跑步·3km", "🍚 晚餐：蔡澜"];
   const positions = titles.map(title => html.indexOf(title));
   assert.ok(positions.every(position => position >= 0));
   assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
@@ -700,4 +700,13 @@ test("10月14日两条灯泡记录按用户的emoji默认规则归为事件", ()
     const html = readFileSync(join(OUT, "entry", slug, "index.html"), "utf8");
     assert.match(html, /class="tag type">事件/);
   }
+});
+
+test("10月18日蔡澜餐食补齐用户指定的晚餐前缀且保留正文", () => {
+  const { entries } = loadContent(process.cwd());
+  const entry = entries.find(e => e.slug === "2026-10-18-dinner-cailan");
+  assert.equal(entry.title, "🍚 晚餐：蔡澜");
+  assert.equal(entry.body.trim(), "久违地吃了蔡澜，每个菜品依旧很精致。就是真的很贵……");
+  const html = readFileSync(join(OUT, "entry", entry.slug, "index.html"), "utf8");
+  assert.ok(html.includes("🍚 晚餐：蔡澜"));
 });
