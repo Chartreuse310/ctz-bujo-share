@@ -74,9 +74,26 @@ try {
     })()`);
     assert.ok(state.count>3, JSON.stringify(state)); assert.ok(state.complete, '正文丢失/重复 '+JSON.stringify(state));
     assert.deepEqual(state.bad, [], JSON.stringify(state)); assert.equal(state.overflow,false);
+    const fixed = await ev(`(() => {
+      const toolbar=document.querySelector('.share-toolbar'), choices=document.querySelector('.share-choices'), results=document.querySelector('.share-results');
+      const start=[toolbar,choices].map(e=>e.getBoundingClientRect().top);
+      const errors=[];
+      for(const fraction of [0,.5,1]) {
+        results.scrollTop=(results.scrollHeight-results.clientHeight)*fraction;
+        [toolbar,choices].forEach((e,i)=>{if(Math.abs(e.getBoundingClientRect().top-start[i])>.5)errors.push('moved '+i);});
+      }
+      for(const label of document.querySelectorAll('.share-option')) {
+        const a=label.querySelector('input').getBoundingClientRect(),b=label.querySelector('.share-option-title').getBoundingClientRect();
+        if(Math.abs((a.top+a.bottom-b.top-b.bottom)/2)>.5)errors.push('checkbox alignment');
+      }
+      results.scrollTop=0;
+      return {errors,scrollable:results.scrollHeight>results.clientHeight,outer:document.querySelector('.share-dialog').scrollHeight>document.querySelector('.share-dialog').clientHeight+1};
+    })()`);
+    assert.deepEqual(fixed.errors,[]);assert.ok(fixed.scrollable);assert.equal(fixed.outer,false);
+    console.log(width+'px 顶栏/选项常驻、勾选对齐 PASS');
     // Verify geometry again at another scroll position and no accidental four-screen navigation.
     for(const fraction of [0,.5,1]) {
-      const hits=await ev(`(()=>{const d=document.querySelector('.share-dialog');d.scrollTop=(d.scrollHeight-d.clientHeight)*${fraction};return [...d.querySelectorAll('button,.share-options label')].filter(e=>{const r=e.getBoundingClientRect(),dr=d.getBoundingClientRect();if(r.top<dr.top||r.bottom>dr.bottom||!r.width||!r.height)return false;const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);return !e.contains(hit);}).map(e=>e.className);})()`);
+      const hits=await ev(`(()=>{const d=document.querySelector('.share-dialog');d.scrollTop=(d.scrollHeight-d.clientHeight)*${fraction};return [...d.querySelectorAll('button,.share-options label')].filter(e=>{const r=e.getBoundingClientRect(),dr=d.getBoundingClientRect();const cr=e.closest('.share-choices,.share-results')?.getBoundingClientRect();if(r.top<dr.top||r.bottom>dr.bottom||!r.width||!r.height||(cr&&(r.top<cr.top||r.bottom>cr.bottom)))return false;const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);return !e.contains(hit);}).map(e=>e.className);})()`);
       assert.deepEqual(hits,[],'弹窗内可见操作被遮挡');
     }
     if(width===375){
@@ -119,6 +136,20 @@ try {
     await ev(`document.querySelectorAll('.share-options input')[1].click();document.querySelector('.share-preview-button').click()`);
     for(let t=0;t<100 && await ev('document.querySelector(".share-results").getAttribute("aria-busy")==="true"');t++)await delay(50);
     assert.deepEqual(await ev(`[...document.querySelectorAll('.share-results [data-share-id]')].map(e=>e.dataset.shareId)`),['short']);
+    // Real pointer clicks: card content stays open; unused layout gap exits.
+    await ev('document.querySelector(".share-results").scrollTop=0');
+    for(const selector of ['.share-card', '.share-layout']) {
+      const point=await ev(`(()=>{const e=document.querySelector('${selector}'),r=e.getBoundingClientRect(),v=document.querySelector('.share-results').getBoundingClientRect();return '${selector}'==='.share-card'?{x:r.left+20,y:Math.max(r.top,v.top)+20}:{x:r.left+r.width/2,y:r.top-12};})()`);
+      await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});
+      await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});
+      assert.equal(await ev('document.querySelector(".share-dialog").open'),selector==='.share-card');
+    }
+    await ev('document.querySelector(".share-open").click()');
+    await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,x:1,y:1});
+    await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,x:1,y:1});
+    assert.equal(await ev('document.querySelector(".share-dialog").open'),false,'弹窗外侧留白退出');
+    console.log(width+'px 卡片点击不退出、内部及外侧留白退出 PASS');
+    await ev('document.querySelector(".share-open").click()');
     await ev('document.querySelector(".share-close").click()');assert.equal(await ev('document.querySelector(".share-dialog").open'),false);
     console.log(width+'px 全取消、重新选择、旧预览失效、返回今日 PASS');
   }

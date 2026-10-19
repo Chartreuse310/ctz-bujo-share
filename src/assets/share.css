@@ -2,23 +2,26 @@
    exports at 2×; viewport width changes only the preview scale. */
 .share-open{display:block;margin:24px 0 0 auto;border:0;border-bottom:1px solid var(--rule);padding:4px 0;background:none;font-size:12px;cursor:pointer}
 .share-open[hidden]{display:none}
-.share-dialog{position:fixed;inset:16px;margin:auto;width:calc(100% - 32px);max-width:1160px;max-height:calc(100dvh - 32px);padding:24px 28px 40px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);overflow:auto;overscroll-behavior:contain}
+.share-dialog{position:fixed;inset:16px;margin:auto;width:calc(100% - 32px);max-width:1160px;max-height:calc(100dvh - 32px);padding:24px 28px 40px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:contain;height:calc(100dvh - 32px)}
+.share-dialog[open]{display:flex;flex-direction:column}
 .share-dialog::backdrop{background:rgba(35,32,28,.3)}
-.share-toolbar{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--ink);padding-bottom:16px;margin-bottom:24px}
+.share-toolbar{flex:none;background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--ink);padding-bottom:16px;margin-bottom:24px}
 .share-toolbar h2{font:600 25px/1.4 var(--serif);margin:0}
 .share-dialog button{cursor:pointer}
 .share-close{border:0;background:none;font-size:12px;padding:8px 0}
-.share-layout{display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:start}
-.share-choices{min-width:0}
+.share-layout{flex:1;min-height:0;display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:stretch}
+.share-choices{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}
 .share-hint,.share-status{font-size:12px;color:var(--ink-3);margin:0 0 16px}
-.share-option{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-top:1px solid var(--rule-2);font-size:13px;cursor:pointer;overflow-wrap:anywhere}
-.share-option input{accent-color:var(--accent);flex:none;margin:5px 0 0;width:15px;height:15px}
-.share-option small{display:block;font-size:10px;color:var(--ink-3);margin-bottom:3px}
+.share-option{display:grid;grid-template-columns:15px minmax(0,1fr);align-items:center;gap:10px;padding:13px 0;border-top:1px solid var(--rule-2);font-size:13px;cursor:pointer;overflow-wrap:anywhere}
+.share-option input{accent-color:var(--accent);flex:none;margin:0;grid-column:1;grid-row:2;width:15px;height:15px}
+.share-option>span{display:contents}
+.share-option .share-option-title{grid-column:2;grid-row:2}
+.share-option small{grid-column:2;grid-row:1;display:block;font-size:10px;color:var(--ink-3);margin-bottom:3px}
 .share-preview-button{margin:18px 0 14px;background:var(--ink);border:1px solid var(--ink);color:var(--bg);padding:9px 16px;font-size:12px}
 .share-dialog button:disabled{opacity:.45;cursor:default}
 .share-status{overflow-wrap:anywhere}
-.share-results{min-width:0;display:flex;flex-direction:column;gap:28px;align-items:center}
-.share-result{width:100%;max-width:540px}
+.share-results{min-height:0;overflow:auto;overscroll-behavior:contain;min-width:0;display:flex;flex-direction:column;gap:28px;align-items:center}
+.share-result{flex:none;width:100%;max-width:540px}
 .share-page-frame{width:100%;aspect-ratio:3/4;position:relative;box-shadow:0 3px 16px #0000000a}
 .share-page-frame>.share-card{position:absolute;left:0;top:0;transform-origin:top left;transform:scale(var(--share-scale,1))}
 .share-save{display:block;margin:10px 0 0 auto;border:0;border-bottom:1px solid var(--rule);background:none;padding:5px 0;font-size:12px}
@@ -52,8 +55,9 @@
 .share-text a{text-decoration:underline;text-underline-offset:3px}
 .share-measure{position:fixed;left:-10000px;top:0;width:540px;pointer-events:none;visibility:hidden}
 @media(max-width:760px){
- .share-dialog{inset:8px;width:calc(100% - 16px);max-height:calc(100dvh - 16px);padding:20px 16px 32px}
- .share-layout{grid-template-columns:minmax(0,1fr);gap:24px}
+ .share-dialog{inset:8px;width:calc(100% - 16px);height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);padding:20px 16px 32px}
+ .share-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,auto) minmax(0,1fr);gap:24px}
+ .share-choices{max-height:32dvh}
  .share-toolbar{gap:12px}
  .share-toolbar h2{font-size:23px}
 }

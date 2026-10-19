@@ -23,12 +23,18 @@ open.addEventListener('click',()=>{
     const label=document.createElement('label');label.className='share-option';
     const box=document.createElement('input');box.type='checkbox';box.checked=true;box.value=item.id;
     const span=document.createElement('span'),kind=document.createElement('small');kind.textContent=item.kind==='daily'?'当日小结':item.kind==='event'?'事件':'思考';
-    span.append(kind,document.createTextNode(item.title));label.append(box,span);options.append(label);
+    const title=document.createElement("span");title.className="share-option-title";title.textContent=item.title;
+    span.append(kind,title);label.append(box,span);options.append(label);
   }
   invalidate();dialog.showModal();
 });
 options.addEventListener('change',e=>{if(e.target.type!=='checkbox')return;e.target.checked?ids.add(e.target.value):ids.delete(e.target.value);invalidate();});
 dialog.querySelector('.share-close').addEventListener('click',()=>dialog.close());
+// Close only when the gesture starts and ends on unused space.
+const blank = target => target === dialog || target.matches('.share-layout,.share-results,.share-choices');
+let blankStart = false;
+dialog.addEventListener('pointerdown', e => {blankStart = blank(e.target);});
+dialog.addEventListener('click', e => {if(blankStart && blank(e.target)) dialog.close();blankStart=false;});
 dialog.addEventListener('close',()=>{if(dialog.open)return;invalidate();open.focus();});
 preview.addEventListener('click',async()=>{
   const version=++revision;results.replaceChildren();observer.disconnect();preview.disabled=true;
