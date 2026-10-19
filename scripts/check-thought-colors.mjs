@@ -31,7 +31,7 @@ for(const width of [760,761]){
  for(const path of paths){
   await send('Page.navigate',{url:SITE+path});await sleep(180);
   const r=await ev(`(()=>{const titles=[...document.querySelectorAll('.thought-title')];return {marks:[...document.querySelectorAll(".thought-mark")].map(t=>getComputedStyle(t).backgroundColor),colors:titles.map(t=>getComputedStyle(t).color),links:titles.flatMap(t=>[...t.querySelectorAll('a')].map(a=>getComputedStyle(a).color)),padding:[...document.querySelectorAll(".thought-mark")].map(t=>{const s=getComputedStyle(t);return {x:parseFloat(s.paddingLeft)/parseFloat(s.fontSize),y:parseFloat(s.paddingTop)/parseFloat(s.fontSize)}}),overflow:document.documentElement.scrollWidth>innerWidth};})()`);
-  if(r.padding.some(p=>Math.abs(p.x-.22)>.002||Math.abs(p.y-.08)>.002)||r.marks.some(m=>!m.includes("211, 216, 219"))||r.colors.some(c=>c!=='rgb(26, 25, 23)')||r.links.some(c=>c!=='rgb(26, 25, 23)')||r.overflow)fail(width+' '+path+' '+JSON.stringify(r));
+  if(r.padding.some(p=>Math.abs(p.x-.22)>.002||Math.abs(p.y-.08)>.002)||r.marks.some(m=>!m.includes("220, 224, 226"))||r.colors.some(c=>c!=='rgb(26, 25, 23)')||r.links.some(c=>c!=='rgb(26, 25, 23)')||r.overflow)fail(width+' '+path+' '+JSON.stringify(r));
  }
  ok(width+'px 所有思考日期/详情与首页标题 computed color PASS');
 }
@@ -39,5 +39,5 @@ await send('Page.navigate',{url:SITE+'/today/'});await sleep(400);
 await ev(`(()=>{const script=document.createElement('script');script.type='application/json';script.textContent=JSON.stringify({id:'color-fixture',kind:'thought',title:'颜色验证',html:'<p>正文验证。</p>',tags:[]});document.querySelector('#share-source').append(script);document.querySelector('.share-open').click();})()`);
 await ev(`document.querySelector('.share-preview-button').click()`);await sleep(1200);
 const share=await ev(`(()=>{const t=[...document.querySelectorAll('.share-option-title.thought-title,.share-record[data-kind="thought"] h3')];return {marks:[...document.querySelectorAll(".share-record[data-kind=thought] .thought-mark")].map(t=>getComputedStyle(t).backgroundColor),count:t.length,colors:t.map(e=>getComputedStyle(e).color)};})()`);
-if(!share.count||!share.marks.length||share.marks.some(m=>!m.includes("211, 216, 219"))||share.colors.some(c=>c!=='rgb(26, 25, 23)'))fail('分享标题 '+JSON.stringify(share));else ok('分享选项与卡片思考标题 PASS');
+if(!share.count||!share.marks.length||share.marks.some(m=>!m.includes("220, 224, 226"))||share.colors.some(c=>c!=='rgb(26, 25, 23)'))fail('分享标题 '+JSON.stringify(share));else ok('分享选项与卡片思考标题 PASS');
 console.log(fails?fails+' FAILURES':'ALL PASS');sock.close();process.exit(fails?1:0);
