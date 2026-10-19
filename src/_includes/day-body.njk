@@ -29,7 +29,7 @@
     <article class="entry">
       <div class="top-row">
         <span class="idx">{{ loop.index }}</span>
-        <h4><a href="{{ e.url }}">{{ e.title }}</a></h4>
+        <h4{% if e.type == "thought" %} class="thought-title"{% endif %}><a href="{{ e.url }}">{{ e.title }}</a></h4>
       </div>
       <div class="tags">
         <span class="tag type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span>

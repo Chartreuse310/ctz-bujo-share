@@ -21,7 +21,7 @@
       {% for e in entries %}
       <a class="resrow" href="{{ e.url }}">
         <span class="d">{{ e.date }}<br>{{ weekdayName(e.date) }}</span>
-        <div class="t"><h4>{{ e.title }}</h4>{% set firstP = e.body | firstPara %}{% if firstP %}<div class="sub">{{ firstP }}</div>{% endif %}</div>
+        <div class="t"><h4{% if e.type == "thought" %} class="thought-title"{% endif %}>{{ e.title }}</h4>{% set firstP = e.body | firstPara %}{% if firstP %}<div class="sub">{{ firstP }}</div>{% endif %}</div>
         <div class="r"><span class="tag type">{% if e.type == "event" %}事件{% else %}思考{% endif %}</span><span class="tag">{{ e.collectionName }}</span></div>
       </a>
       {% endfor %}
