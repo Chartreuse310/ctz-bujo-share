@@ -690,3 +690,14 @@ test("10月18日文件整理与室内跑步为重点并在首页显示全文", (
   assert.ok(home.includes("<li>笔记本（旧）</li>"));
   assert.ok(home.includes("（跑步伴奏：嗨咻 003.在婚姻中追求爱情的我，傻么？）"));
 });
+
+test("10月14日两条灯泡记录按用户的emoji默认规则归为事件", () => {
+  const { entries } = loadContent(process.cwd());
+  for (const slug of ["2026-10-14-ctz-bujo-share-idea", "2026-10-14-thesis-daily-card"]) {
+    const entry = entries.find(e => e.slug === slug);
+    assert.equal(entry.type, "event", slug);
+    assert.ok(entry.title.startsWith("💡 "), slug);
+    const html = readFileSync(join(OUT, "entry", slug, "index.html"), "utf8");
+    assert.match(html, /class="tag type">事件/);
+  }
+});

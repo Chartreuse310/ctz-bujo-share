@@ -1,5 +1,5 @@
 ---
-type: thought
+type: event
 title: 💡 ctz-bujo-share
 date: 2026-10-14
 order: 5

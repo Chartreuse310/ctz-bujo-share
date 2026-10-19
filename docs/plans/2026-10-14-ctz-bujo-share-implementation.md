@@ -2850,3 +2850,10 @@ git commit -m "docs: README 与设计文档回填实现期结论"
 - TDD：先对比首页每条重点与详情页的完整正文，确认旧模板失败；包含健身条目的第三段结尾与段落结构。随机候选模板与首次展示使用同一全文 include。
 - 实现：思考循环使用 Nunjucks asyncEach，并在循环中先 await renderContent 保存 homeThoughtBody，再交给同步 include 输出，避免 include 内部异步渲染导致首屏丢失或候选重复；`src/index.njk` 与 `src/_includes/home-thought.njk` 用 div 包裹正文，避免 p 嵌 p；`src/assets/style.css` 给完整正文补段距、长链接/代码换行、图片及表格约束，不设置 clamp 或定高。
 - 验证：全量测试与构建，文档/计划校验；首页 CDP 覆盖 375/760/761/1440px、正文完整性、换组、长文多处滚动和底栏采样。测试使用临时服务器与独立无头 Chrome，完成后关闭本轮启动的进程。
+
+
+### 录入默认类型修订（2026-10-19）
+
+**类型默认规则（2026-10-19 拍板）**：标题开头有 emoji 默认记为事件（`event`），没有则默认记为思考（`thought`）；用户明确指定类型时以用户指定为准。开头 emoji 原样保留、不剥离；正文中的 emoji 不影响类型。录入前告知默认分类，`type` 仍显式写入条目，不在构建时自动覆盖。
+
+验证历史录入：10 月 14 日「💡 ctz-bujo-share」「💡 thesis-daily-card」改为 event；回归测试检查两条显式类型、标题和正文保持不变。taxonomy、重点、顺序与日总结类型均不改。

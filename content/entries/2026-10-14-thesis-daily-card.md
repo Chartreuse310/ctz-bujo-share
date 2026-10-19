@@ -1,5 +1,5 @@
 ---
-type: thought
+type: event
 title: 💡 thesis-daily-card
 date: 2026-10-14
 order: 4
