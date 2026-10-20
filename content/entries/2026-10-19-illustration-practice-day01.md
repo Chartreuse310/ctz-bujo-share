@@ -3,7 +3,7 @@ type: event
 title: 🎨 插画自主练习 DAY01
 date: 2026-10-19
 order: 5
-highlight: false
+highlight: true
 collection: 绘画
 tags: ["插画自主练习"]
 ---

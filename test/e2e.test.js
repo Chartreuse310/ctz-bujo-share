@@ -716,7 +716,8 @@ test("10月19日日总结和五条事件完整录入，近日及分享日期同�
   const entries = entriesByDate["2026-10-19"];
   assert.equal(entries.length, 5);
   assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：星巴克（外卖）", "💼 导师横向线上汇报", "💾 文件整理", "🍚 晚餐：江边城外（外卖）", "🎨 插画自主练习 DAY01"]);
-  assert.ok(entries.every(e => e.type === "event" && e.highlight === false));
+  assert.ok(entries.every(e => e.type === "event"));
+  assert.deepEqual(entries.map(e => e.highlight), [false, false, false, false, true]);
   assert.equal(dailyByDate["2026-10-19"].title, "文件整理 & 绘画自主练习01");
   const html = readFileSync(join(OUT, "today/index.html"), "utf8");
   assert.match(html, /data-date="2026-10-19"/);
@@ -749,4 +750,13 @@ test("插画自主练习标签使用确认的slug并关联DAY01", () => {
   assert.ok(tag.includes("/entry/2026-10-19-illustration-practice-day01/"));
   const html = readFileSync(join(OUT, "entry", entry.slug, "index.html"), "utf8");
   assert.ok(html.includes("/tag/self-directed-illustration-practice/"));
+});
+
+test("插画自主练习DAY01标为重点并在首页展示完整正文", () => {
+  const { entries } = loadContent(process.cwd());
+  const entry = entries.find(e => e.slug === "2026-10-19-illustration-practice-day01");
+  assert.equal(entry.highlight, true);
+  const home = readFileSync(join(OUT, "index.html"), "utf8");
+  assert.ok(home.includes("/entry/2026-10-19-illustration-practice-day01/"));
+  assert.ok(home.includes(entry.body.trim()));
 });
