@@ -738,3 +738,15 @@ test("10月19日汇报与插画练习关联用户确认的标签和集子", () =
   const collection = readFileSync(join(OUT, "collection/drawing/index.html"), "utf8");
   assert.ok(collection.includes("/entry/2026-10-19-illustration-practice-day01/"));
 });
+
+test("插画自主练习标签使用确认的slug并关联DAY01", () => {
+  const { taxonomy, entries } = loadContent(process.cwd());
+  assert.deepEqual(taxonomy.tags.find(t => t.name === "插画自主练习"), { name: "插画自主练习", slug: "illustration-practice" });
+  const entry = entries.find(e => e.slug === "2026-10-19-illustration-practice-day01");
+  assert.deepEqual(entry.tags, ["插画自主练习"]);
+  assert.equal(entry.collectionName, "绘画");
+  const tag = readFileSync(join(OUT, "tag/illustration-practice/index.html"), "utf8");
+  assert.ok(tag.includes("/entry/2026-10-19-illustration-practice-day01/"));
+  const html = readFileSync(join(OUT, "entry", entry.slug, "index.html"), "utf8");
+  assert.ok(html.includes("/tag/illustration-practice/"));
+});
