@@ -710,3 +710,21 @@ test("10月18日蔡澜餐食补齐用户指定的晚餐前缀且保留正文", (
   const html = readFileSync(join(OUT, "entry", entry.slug, "index.html"), "utf8");
   assert.ok(html.includes("🍚 晚餐：蔡澜"));
 });
+
+test("10月19日日总结和五条事件完整录入，近日及分享日期同步", () => {
+  const { entriesByDate, dailyByDate } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-19"];
+  assert.equal(entries.length, 5);
+  assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：星巴克（外卖）", "💼 导师横向线上汇报", "💾 文件整理", "🍚 晚餐：江边城外（外卖）", "🎨 插画自主练习 DAY01"]);
+  assert.ok(entries.every(e => e.type === "event" && e.highlight === false));
+  assert.equal(dailyByDate["2026-10-19"].title, "文件整理 & 绘画自主练习01");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  assert.match(html, /data-date="2026-10-19"/);
+  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.equal(data.length, 6);
+  assert.equal(data[0].id, "daily");
+  for (let i = 0; i < entries.length; i++) assert.equal(data[i+1].id, "entry:" + entries[i].slug);
+  assert.match(data[3].html, /NAS（进行中，完成了Pictures）/);
+  assert.match(data[4].html, /就不饿了……/);
+  assert.match(data[5].html, /现实进行了第一次尝试，列出了其中的问题。/);
+});
