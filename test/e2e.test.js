@@ -728,3 +728,13 @@ test("10月19日日总结和五条事件完整录入，近日及分享日期同�
   assert.match(data[4].html, /就不饿了……/);
   assert.match(data[5].html, /现实进行了第一次尝试，列出了其中的问题。/);
 });
+
+test("10月19日汇报与插画练习关联用户确认的标签和集子", () => {
+  const { entries } = loadContent(process.cwd());
+  assert.deepEqual(entries.find(e => e.slug === "2026-10-19-supervisor-commercial-report").tags, ["导师横向"]);
+  assert.equal(entries.find(e => e.slug === "2026-10-19-illustration-practice-day01").collectionName, "绘画");
+  const tag = readFileSync(join(OUT, "tag/supervisor-commercial-project/index.html"), "utf8");
+  assert.ok(tag.includes("/entry/2026-10-19-supervisor-commercial-report/"));
+  const collection = readFileSync(join(OUT, "collection/drawing/index.html"), "utf8");
+  assert.ok(collection.includes("/entry/2026-10-19-illustration-practice-day01/"));
+});
