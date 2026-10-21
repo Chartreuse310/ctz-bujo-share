@@ -711,7 +711,7 @@ test("10月18日蔡澜餐食补齐用户指定的晚餐前缀且保留正文", (
   assert.ok(html.includes("🍚 晚餐：蔡澜"));
 });
 
-test("10月19日日总结和五条事件完整录入，近日及分享日期同步", () => {
+test("10月19日历史日总结和五条事件完整保留", () => {
   const { entriesByDate, dailyByDate } = loadContent(process.cwd());
   const entries = entriesByDate["2026-10-19"];
   assert.equal(entries.length, 5);
@@ -719,15 +719,10 @@ test("10月19日日总结和五条事件完整录入，近日及分享日期同�
   assert.ok(entries.every(e => e.type === "event"));
   assert.deepEqual(entries.map(e => e.highlight), [false, false, false, false, true]);
   assert.equal(dailyByDate["2026-10-19"].title, "文件整理 & 绘画自主练习01");
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
-  assert.match(html, /data-date="2026-10-19"/);
-  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
-  assert.equal(data.length, 6);
-  assert.equal(data[0].id, "daily");
-  for (let i = 0; i < entries.length; i++) assert.equal(data[i+1].id, "entry:" + entries[i].slug);
-  assert.match(data[3].html, /NAS（进行中，完成了Pictures）/);
-  assert.match(data[4].html, /就不饿了……/);
-  assert.match(data[5].html, /现实进行了第一次尝试，列出了其中的问题。/);
+  const html = readFileSync(join(OUT, "day/2026-10-19/index.html"), "utf8");
+  assert.match(html, /NAS（进行中，完成了Pictures）/);
+  assert.match(html, /就不饿了……/);
+  assert.match(html, /现实进行了第一次尝试，列出了其中的问题。/);
 });
 
 test("10月19日汇报与插画练习关联用户确认的标签和集子", () => {
@@ -759,4 +754,22 @@ test("插画自主练习DAY01标为重点并在首页展示完整正文", () => 
   const home = readFileSync(join(OUT, "index.html"), "utf8");
   assert.ok(home.includes("/entry/2026-10-19-illustration-practice-day01/"));
   assert.ok(home.includes(entry.body.trim()));
+});
+
+test("10月20日四条事件一条思考按输入顺序呈现，近日与分享同步", () => {
+  const { entriesByDate, dailyByDate } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-20"];
+  assert.deepEqual(entries.map(e => e.type), ["event", "thought", "event", "event", "event"]);
+  assert.deepEqual(entries.map(e => e.order), [1, 2, 3, 4, 5]);
+  assert.equal(dailyByDate["2026-10-20"].title, "插画自主练习01（解）");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  assert.match(html, /data-date="2026-10-20"/);
+  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.equal(data.length, 6);
+  assert.equal(data[0].id, "daily");
+  entries.forEach((e,i) => {assert.equal(data[i+1].id, "entry:"+e.slug);assert.equal(data[i+1].title, e.title);});
+  assert.match(data[2].html, /我悟了！/);
+  assert.match(data[2].html, /也许一开始把群论作为底层逻辑是更合理的。/);
+  assert.equal((data[2].html.match(/<p>/g)||[]).length, 3);
+  assert.match(data[5].html, /NAS（进行中）/);
 });
