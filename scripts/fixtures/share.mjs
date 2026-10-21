@@ -8,4 +8,5 @@ export const shareFixtures = [
   { id: 'rules', kind: 'thought', title: '分隔线跨页', tags: [], html: '<p>之前。</p>' + '<hr>'.repeat(50) + '<p>之后。</p>' },
   { id: 'blocks', kind: 'event', title: '列表、引用与宽内容', collection: '日常', tags: ['已有标签'],
     html: `<ol start="3">${Array.from({length: 16}, (_, i) => `<li>列表${i} ${'有序内容 '.repeat(28)}</li>`).join('')}</ol><blockquote><p>${'引用段落 '.repeat(180)}</p></blockquote><pre><code>${'wide_code_'.repeat(90)}</code></pre><table><tbody><tr><th>列一</th><th>列二</th></tr><tr><td>${'long-word'.repeat(30)}</td><td>正文</td></tr></tbody></table><p><a href="https://example.com">${'https://example.com/'.repeat(30)}</a></p>` },
+  { id: 'wrapped-thought-title', kind: 'thought', title: '为了赢苏联，美国当年让小学生学高等数学？【差评君】', tags: [], html: '<p>长标题高亮换行时，正文仍应完整生成。</p>' },
 ];

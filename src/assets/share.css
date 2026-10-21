@@ -35,6 +35,8 @@
 .share-record:last-child{margin-bottom:0}
 .share-record-head{display:flow-root;margin-bottom:10px}
 .share-record h3{font:600 23px/1.5 var(--serif);margin:0 0 9px;overflow-wrap:anywhere}
+/* Reserve the cloned inline highlight padding at wrapped line edges. */
+.share-record h3.thought-title{padding-inline:.22em}
 .share-record .share-kind{display:block;font:10px/1.5 var(--mono);color:var(--ink-3);margin:0 0 6px}
 .share-record[data-kind="daily"] .share-kind{color:var(--accent)}
 .share-record .share-tags{display:flex;flex-wrap:wrap;gap:5px}

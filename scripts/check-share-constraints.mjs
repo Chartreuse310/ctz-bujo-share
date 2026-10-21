@@ -46,6 +46,13 @@ try {
     await delay(500);
     const overlap=await ev(`(()=>{const b=document.querySelector('.share-open');b.scrollIntoView({block:'center'});const r=b.getBoundingClientRect();return [...document.querySelectorAll('.side *, .day .entry, .day .pull, .day .dateline')].filter(e=>{const a=e.getBoundingClientRect();return a.width&&a.height&&a.left<r.right&&a.right>r.left&&a.top<r.bottom&&a.bottom>r.top;}).map(e=>e.className);})()`);
     assert.deepEqual(overlap,[],'分享入口遮挡原阅读内容');
+    // Exercise real current content before synthetic fixtures (long highlighted titles).
+    await ev('document.querySelector(".share-open").click();document.querySelector(".share-preview-button").click()');
+    for(let t=0;t<200 && await ev('document.querySelector(".share-results").getAttribute("aria-busy")==="true"');t++) await delay(50);
+    const real=await ev(`(()=>{const cards=[...document.querySelectorAll('.share-results .share-card')];return {count:cards.length,status:document.querySelector('.share-status').textContent,bad:cards.filter(c=>{const e=c.querySelector('.share-content');return e.scrollWidth>e.clientWidth||e.scrollHeight>e.clientHeight;}).length};})()`);
+    assert.ok(real.count>0,JSON.stringify(real));assert.equal(real.bad,0);
+    await ev('document.querySelector(".share-close").click()');
+    console.log(width+'px 真实正文与长高亮标题生成成功 PASS');
     // Inject only the source fixture. Real controller handles all interaction and rendering.
     await ev(`(() => {
       const source=document.querySelector('#share-source'); source.replaceChildren();
