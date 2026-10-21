@@ -773,3 +773,19 @@ test("10月20日四条事件一条思考按输入顺序呈现，近日与分享�
   assert.equal((data[2].html.match(/<p>/g)||[]).length, 3);
   assert.match(data[5].html, /NAS（进行中）/);
 });
+
+test("10月20日思考与插画练习关联用户确认的集子和标签", () => {
+  const { entries } = loadContent(process.cwd());
+  for (const [slug, collection, tag, collectionSlug, tagSlug] of [
+    ["2026-10-20-concrete-learning", "书影音", "视频", "books-films-music", "video"],
+    ["2026-10-20-illustration-practice-day01-solution", "绘画", "插画自主练习", "drawing", "self-directed-illustration-practice"]
+  ]) {
+    const entry = entries.find(e => e.slug === slug);
+    assert.equal(entry.collectionName, collection);
+    assert.deepEqual(entry.tags, [tag]);
+    for (const path of [`collection/${collectionSlug}/index.html`, `tag/${tagSlug}/index.html`]) {
+      const html = readFileSync(join(OUT, path), "utf8");
+      assert.ok(html.includes(`/entry/${slug}/`), path);
+    }
+  }
+});

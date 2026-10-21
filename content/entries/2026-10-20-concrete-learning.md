@@ -4,6 +4,8 @@ title: 为了赢苏联，美国当年让小学生学高等数学？【差评君�
 date: 2026-10-20
 order: 2
 highlight: false
+collection: 书影音
+tags: ["视频"]
 ---
 
 我悟了！
