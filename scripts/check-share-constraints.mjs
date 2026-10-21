@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { shareFixtures } from './fixtures/share.mjs';
 
+const SHARE_PATH = process.env.SHARE_PATH || '/today/';
 const SITE = process.env.SITE_URL || 'http://127.0.0.1:8082';
 const pages = await (await fetch('http://127.0.0.1:9333/json/list')).json();
 const page = pages.find(p => p.type === 'page');
@@ -41,7 +42,7 @@ try {
   await send('Fetch.enable',{patterns:[{urlPattern:'*share-fixture.png*'}]});
   for (const [width,height] of [[375,812],[760,900],[761,900],[1440,900]]) {
     await send('Emulation.setDeviceMetricsOverride', {width,height,deviceScaleFactor:width===375?3:1,mobile:width===375});
-    await send('Page.navigate', {url:SITE+'/today/'});
+    await send('Page.navigate', {url:SITE+SHARE_PATH});
     await delay(500);
     const overlap=await ev(`(()=>{const b=document.querySelector('.share-open');b.scrollIntoView({block:'center'});const r=b.getBoundingClientRect();return [...document.querySelectorAll('.side *, .day .entry, .day .pull, .day .dateline')].filter(e=>{const a=e.getBoundingClientRect();return a.width&&a.height&&a.left<r.right&&a.right>r.left&&a.top<r.bottom&&a.bottom>r.top;}).map(e=>e.className);})()`);
     assert.deepEqual(overlap,[],'分享入口遮挡原阅读内容');
@@ -101,10 +102,10 @@ try {
       await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:260,y:400}]});
       await send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:100,y:400}]});
       await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await delay(320);
-      assert.equal(await ev('location.pathname'),new URL(SITE+'/today/').pathname,'弹窗触滑不应切到其他屏');
+      assert.equal(await ev('location.pathname'),new URL(SITE+SHARE_PATH).pathname,'弹窗触滑不应切到其他屏');
     }
     await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
-    assert.equal(await ev('location.pathname'), new URL(SITE+'/today/').pathname);
+    assert.equal(await ev('location.pathname'), new URL(SITE+SHARE_PATH).pathname);
     console.log(width+'px 默认选择、完整正文、多页、零裁切/遮挡 PASS ('+state.count+' 页)');
     if (width===375) {
       await ev('document.querySelector(".share-results").scrollIntoView({block:"start"})');

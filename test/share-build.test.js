@@ -34,11 +34,18 @@ test('今日分享源含独立小结与完整正文，条目按 order 与文件�
   assert.match(data[1].html,/第四段完整结尾 b/);
   assert.deepEqual(data[1].tags,['跑步']);
 });
-test('分享资源有子路径前缀，普通日页没有分享入口，阅读摘要保留',()=>{
+test('分享资源有子路径前缀，具体日页也有分享入口，阅读摘要保留',()=>{
   assert.match(html,/href="\/ctz-bujo-share\/assets\/share.css"/);
   assert.match(html,/src="\/ctz-bujo-share\/assets\/share.js"/);
   assert.match(html,/class="excerpt" data-href=/);
-  assert.doesNotMatch(dayHtml,/share-dialog|share-source|assets\/share/);
+  assert.match(dayHtml,/分享当日/);
+  assert.match(dayHtml,/返回当日/);
+  assert.ok(dayHtml.includes(`data-date="${date}"`));
+  assert.deepEqual(scripts(dayHtml),scripts(html));
+  const emptyDate=date.slice(0,8)+(date.endsWith('-01')?'02':'01');
+  const emptyDay=readFileSync(join(out,`day/${emptyDate}/index.html`),'utf8');
+  assert.ok(emptyDay.includes(`data-date="${emptyDate}"`));
+  assert.deepEqual(scripts(emptyDay),[],'其他日期不得误用近日记录');
 });
 test('没有日总结时只提供条目；空日不伪造记录',()=>{
   rmSync(join(root,`content/daily/${date}.md`));

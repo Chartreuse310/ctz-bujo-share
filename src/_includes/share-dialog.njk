@@ -1,11 +1,11 @@
 {% set theDaily = site.dailyByDate[dayDate] %}
 {% set theEntries = site.entriesByDate[dayDate] or [] %}
 <link rel="stylesheet" href="{{ base }}/assets/share.css" />
-<button type="button" class="share-open" hidden>分享近日 ↗</button>
+<button type="button" class="share-open" hidden>分享{{ "当日" if shareDay else "近日" }} ↗</button>
 <dialog class="share-dialog" aria-labelledby="share-title" data-date="{{ dayDate }}">
   <div class="share-toolbar">
-    <h2 id="share-title">分享近日</h2>
-    <button type="button" class="share-close">返回近日 ×</button>
+    <h2 id="share-title">分享{{ "当日" if shareDay else "近日" }}</h2>
+    <button type="button" class="share-close">返回{{ "当日" if shareDay else "近日" }} ×</button>
   </div>
   <div class="share-layout">
     <section class="share-choices" aria-label="选择分享内容">
