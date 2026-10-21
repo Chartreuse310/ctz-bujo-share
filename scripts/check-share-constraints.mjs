@@ -73,6 +73,13 @@ try {
         const cr=content.getBoundingClientRect(),fr=footer.getBoundingClientRect(),hr=head.getBoundingClientRect();
         if(content.scrollHeight>content.clientHeight+1 || content.scrollWidth>content.clientWidth+1) bad.push([index,'overflow']);
         for(const el of content.querySelectorAll('*')) {const r=el.getBoundingClientRect();if(!r.width||!r.height)continue;
+          if(el.classList.contains('thought-mark')) {
+            const range=document.createRange();range.selectNodeContents(el);
+            if([...range.getClientRects()].some(t=>t.left<cr.left-1||t.right>cr.right+1))bad.push([index,'thought text overflow']);
+            const bleed=parseFloat(getComputedStyle(el).paddingLeft)*(cr.width/content.offsetWidth);
+            if(r.left<cr.left-bleed-1||r.right>cr.right+1||r.bottom>fr.top+1)bad.push([index,'thought highlight overflow']);
+            continue;
+          }
           if(r.left<cr.left-1||r.right>cr.right+1||r.bottom>cr.bottom+1||r.top<hr.bottom-1||r.bottom>fr.top+1)bad.push([index,el.className||el.tagName,el.textContent.slice(0,25)]);
         }
         if(getComputedStyle(card).backgroundColor==='rgba(0, 0, 0, 0)')bad.push([index,'transparent']);
@@ -82,6 +89,9 @@ try {
     })()`);
     assert.ok(state.count>3, JSON.stringify(state)); assert.ok(state.complete, '正文丢失/重复 '+JSON.stringify(state));
     assert.deepEqual(state.bad, [], JSON.stringify(state)); assert.equal(state.overflow,false);
+    const titleAlignment = await ev(`(()=>{const errors=[];for(const record of document.querySelectorAll('.share-results .share-record[data-kind="thought"]')){const mark=record.querySelector('h3 .thought-mark'),kind=record.querySelector('.share-kind');const range=document.createRange();range.selectNodeContents(mark);const textLeft=range.getClientRects()[0]?.left;const left=kind.getBoundingClientRect().left;if(Math.abs(textLeft-left)>.5)errors.push({title:mark.textContent,delta:textLeft-left});}return errors;})()`);
+    assert.deepEqual(titleAlignment,[],'思考标题文字须与类型/正文左对齐');
+
     const fixed = await ev(`(() => {
       const toolbar=document.querySelector('.share-toolbar'), choices=document.querySelector('.share-choices'), results=document.querySelector('.share-results');
       const start=[toolbar,choices].map(e=>e.getBoundingClientRect().top);
