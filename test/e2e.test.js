@@ -756,14 +756,13 @@ test("插画自主练习DAY01标为重点并在首页展示完整正文", () => 
   assert.ok(home.includes(entry.body.trim()));
 });
 
-test("10月20日四条事件一条思考按输入顺序呈现，近日与分享同步", () => {
+test("10月20日历史记录按输入顺序呈现，分享保留完整正文", () => {
   const { entriesByDate, dailyByDate } = loadContent(process.cwd());
   const entries = entriesByDate["2026-10-20"];
   assert.deepEqual(entries.map(e => e.type), ["event", "thought", "event", "event", "event"]);
   assert.deepEqual(entries.map(e => e.order), [1, 2, 3, 4, 5]);
   assert.equal(dailyByDate["2026-10-20"].title, "插画自主练习01（解）");
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
-  assert.match(html, /data-date="2026-10-20"/);
+  const html = readFileSync(join(OUT, "day/2026-10-20/index.html"), "utf8");
   const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
   assert.equal(data.length, 6);
   assert.equal(data[0].id, "daily");
@@ -788,4 +787,28 @@ test("10月20日思考与插画练习关联用户确认的集子和标签", () =
       assert.ok(html.includes(`/entry/${slug}/`), path);
     }
   }
+});
+
+test("10月21日总结与四条事件录入，P1.2标签和借书分类按用户确认", () => {
+  const { entriesByDate, dailyByDate, taxonomy } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-21"];
+  assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：麦当劳（现场）", "💾 学院以往博士论文整理", "📖 借书《写作成瘾》", "🍚 晚餐：大闸蟹"]);
+  assert.ok(entries.every(e => e.type === "event" && !e.highlight));
+  assert.deepEqual(entries.map(e => e.order), [1,2,3,4]);
+  assert.equal(entries[1].collectionName, "博士学位论文");
+  assert.deepEqual(entries[1].tags, ["PhD V2.0 P1.2"]);
+  assert.equal(entries[2].collectionName, "日常");
+  assert.ok(!entries[1].body.includes("#PhD"));
+  assert.equal(taxonomy.tags.find(t => t.name === "PhD V2.0 P1.2").slug, "phd-v2-0-p1-2");
+  assert.equal(dailyByDate["2026-10-21"].title, "学位论文P1.2 & 大闸蟹");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  assert.match(html, /data-date="2026-10-21"/);
+  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.equal(data.length, 5);
+  assert.equal(data[0].id, "daily");
+  assert.equal((data[0].html.match(/<p>/g)||[]).length, 3);
+  assert.match(data[0].html, /感觉之后还需要补充本校以外的研究。/);
+  entries.forEach((e,i) => assert.equal(data[i+1].id, "entry:"+e.slug));
+  const tag = readFileSync(join(OUT,"tag/phd-v2-0-p1-2/index.html"),"utf8");
+  assert.ok(tag.includes("/entry/2026-10-21-past-doctoral-theses/"));
 });
