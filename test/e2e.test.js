@@ -523,7 +523,7 @@ test('健身与 codex pro 为手动重点：首页只显示重点，普通记录
     .sort((a,b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)).slice(0,5);
   assert.equal(events.length, expected.length);
   events.forEach((event, index) => assert.ok(event[1].includes(`/entry/${expected[index].slug}/`)));
-  assert.match(home,/一分化·全身B/);assert.match(home,/充了个codex pro/);
+  // 首页只保留最近五条重点；较早重点仍在详情中保留标记。
   const workout=readFileSync(join(OUT,'entry/2026-10-17-workout-fullbody-b/index.html'),'utf8');
   assert.match(workout,/class="tag hl">重点/);
   assert.doesNotMatch(home,/晚餐：辣椒炒肉|早餐：星巴克/);
@@ -819,7 +819,8 @@ test("10月22日日总结与六条事件按原顺序呈现，显式阅读分类�
   assert.ok(entries, "10月22日记录应存在");
   assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：好利来长条面包+自制拿铁", "📖 读《写作成瘾》", "📖 本学院博士论文阅读", "🚧 改房间布局", "💪 一分化·全身B", "🍚 晚餐：胖哥俩+秋葵炒肉"]);
   assert.deepEqual(entries.map(e => e.order), [1,2,3,4,5,6]);
-  assert.ok(entries.every(e => e.type === "event" && !e.highlight));
+  assert.ok(entries.every(e => e.type === "event"));
+  assert.deepEqual(entries.map(e => e.highlight), [false,false,false,true,false,false]);
   for (const entry of entries.slice(1,3)) {
     assert.equal(entry.collectionName, "博士学位论文");
     assert.deepEqual(entry.tags, ["PhD V2.0 P1.2"]);
@@ -837,4 +838,13 @@ test("10月22日日总结与六条事件按原顺序呈现，显式阅读分类�
   assert.equal((data[0].html.match(/<p>/g)||[]).length, 3);
   assert.match(data[0].html, /界面也并非必要，自己知道该做什么即可。/);
   entries.forEach((entry,i) => assert.equal(data[i+1].id, "entry:" + entry.slug));
+});
+
+test("10月22日改房间布局为重点，首页显示完整正文", () => {
+  const { entries } = loadContent(process.cwd());
+  const entry = entries.find(e => e.slug === "2026-10-22-room-layout");
+  assert.equal(entry.highlight, true);
+  const home = readFileSync(join(OUT, "index.html"), "utf8");
+  assert.ok(home.includes("/entry/2026-10-22-room-layout/"));
+  assert.ok(home.includes(entry.body.trim()));
 });
