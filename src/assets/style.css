@@ -36,7 +36,7 @@ button{font:inherit;color:inherit}
 .index-layout{display:grid;grid-template-columns:236px minmax(0,1fr);gap:56px;align-items:start;padding-top:30px}
 .rail{position:sticky;top:calc(var(--top) + 24px)}
 .rail .blk:first-child{border-top:0;padding-top:0}
-.resrow{display:grid;grid-template-columns:104px minmax(0,1fr) 96px;gap:16px;padding:16px 0;
+.resrow{display:grid;grid-template-columns:104px minmax(0,1fr) minmax(96px,min-content);gap:16px;padding:16px 0;
   border-bottom:1px solid var(--rule);align-items:baseline}
 .resrow .r{text-align:right;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 .grid2{display:grid;grid-template-columns:1fr 1fr;margin-top:26px;
@@ -322,7 +322,7 @@ footer.note{margin-top:34px;padding-top:16px}
 .resrow .t{font-family:var(--serif);font-size:15.5px;font-weight:600;line-height:1.5}
 .resrow .t a:hover{color:var(--accent)}
 .resrow .t .sub{margin-top:6px;font-family:var(--serif);font-weight:400;font-size:12.5px;color:var(--ink-2);line-height:1.7;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.resrow .r .tag{font-family:var(--mono);font-size:9.5px;white-space:normal;overflow-wrap:anywhere;max-width:100%;min-width:0}
+.resrow .r .tag{font-family:var(--mono);font-size:9.5px;white-space:nowrap;flex-shrink:0}
 .kpi{background:var(--surface)}
 .kpi .n{font-family:var(--serif);font-weight:600;letter-spacing:-.02em;line-height:1}
 .kpi .n.acc{color:var(--accent)}

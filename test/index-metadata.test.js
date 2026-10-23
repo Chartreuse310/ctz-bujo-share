@@ -46,3 +46,11 @@ test('集子显示全部标签并隐藏集子，标签页显示集子并隐藏�
     rmSync(out, { recursive: true, force: true });
   }
 });
+
+test('筛选列表胶囊内部不换行且不压缩，胶囊之间可换行', () => {
+  const css = readFileSync('src/assets/style.css', 'utf8');
+  const tag = css.match(/\.resrow \.r \.tag\{([^}]+)\}/)[1];
+  assert.match(tag, /white-space:nowrap/);
+  assert.match(tag, /flex-shrink:0/);
+  assert.match(css, /\.resrow \.r\{[^}]*flex-wrap:wrap/);
+});
