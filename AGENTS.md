@@ -80,6 +80,8 @@
 
 ### 5.4 布局与视觉
 
+- **筛选列表胶囊（2026-10-23 拍板）**：集子页（含主集子）只显示类型与条目的全部标签，隐藏所属集子；标签页只显示类型与所属集子，隐藏全部标签。无标签时集子页只保留类型胶囊；长标签允许换行，不省略或裁切。侧栏筛选入口保持不变。
+
 - **思考条目标题（2026-10-19 拍板）**：所有思考条目标题恢复墨黑文字 `--ink`，采用低饱和灰蓝色 `--thought-highlight:#dce0e2` 文字背景高亮，替代深蓝字方案供对比；高亮采用完整实色背景，上下 0.08em、左右 0.22em 内边距包裹文字，跟随文字逐行延续，不铺满标题整行，文字与高亮对比至少 4.5:1。适用于首页、近日/日页、集子/tag 列表、详情、分享选项与分享卡片（含续页）；事件标题、日总结、正文与统计图配色保持不变。
 
 - **近日入口（2026-10-18 拍板）**：四屏导航及页面名称由「今日」改为「近日」，URL 保留 `/today/`；默认展示最近有内容的一天。小日历不标记真实今天，移除 today 底色与「今天」图例，保留所查看日期的选中态、记录与重点提示。分享入口使用「分享近日 / 返回近日」，具体日期的小结与卡片使用「当日小结 / 当日记录」。
@@ -175,6 +177,7 @@ node scripts/check-ui-constraints.mjs # CDP 硬约束验证（先起 9333 端口
 node scripts/check-home-constraints.mjs # 独立首页 CDP 回归（本地服务 + 9333，SITE_URL 可覆盖）
 node scripts/check-share-constraints.mjs # 分享卡片 CDP 回归（本地服务 + 9333，SITE_URL 可覆盖）
 node scripts/check-stats-constraints.mjs # 统计页 CDP 回归（SITE_URL 指向本地站点）
+node scripts/check-index-constraints.mjs # 集子/标签胶囊 CDP 回归（本地服务 + 9333，SITE_URL 可覆盖）
 node scripts/check-agents-md.mjs      # 改完本文件必跑：标题序号 / 引用路径 / § 条款号
 node scripts/verify-plan.mjs          # 改完实现计划必跑：抽出计划里的 lib/ 代码与测试，真跑 node --test
 ```

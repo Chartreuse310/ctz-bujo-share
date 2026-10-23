@@ -53,7 +53,7 @@ test("集子·标签页布局：侧栏在左 236px 列、主栏在右（g1 index
 
 test("集子·标签页列表行：resrow 三列结构 .d | .t(h4+.sub) | .r 胶囊（夜·十②⑥）", () => {
   const html = readFileSync(join(OUT, "collection/phd-thesis/index.html"), "utf8");
-  // 行结构：.d 日期列（日期<br>星期）、.t 包 h4+1 行摘要 .sub、.r 放类型胶囊 + 集子胶囊
+  // 行结构：.d 日期列（日期<br>星期）、.t 包 h4+1 行摘要 .sub、.r 放类型胶囊 + 标签（集子页）或集子（标签页）
   assert.match(html, /<a class="resrow"[^>]*>\s*<span class="d">2026-10-15<br>[^<]+<\/span>\s*<div class="t"><h4>/s, "行首应是 .d（日期+星期）后接 .t>h4");
   assert.match(html, /<div class="sub">/, ".t 里应有 1 行摘要 .sub");
   assert.match(html, /<div class="r"><span class="tag type">/, ".r 里应是 tag.type 胶囊（不是裸 .type）");
@@ -72,7 +72,7 @@ test("集子·标签页侧栏：复用 .blk/.blk-h/.idx，计数右挂 .n，选�
   assert.match(html, /<div class="idx">\s*<a[^>]*class="idx-row/s, ".idx 内应是 idx-row <a> 行");
   assert.match(html, /class="idx-row on"/, "当前集子行应有 on 选中态");
   // 侧栏集子块不列主集子「日常」（2026-10-16 用户拍板）：它是兜底归属，不是浏览入口；
-  // /collection/all/ 页面本身保留（tag 页与集子页的 .r 胶囊仍显示集子名）
+  // /collection/all/ 页面本身保留（tag 页的 .r 胶囊仍显示集子名）
   assert.ok(!/>日常<\/span><span class="n">/.test(html), "侧栏集子块不得列出「日常」");
   // # 带空格
   assert.match(html, /<span># PhD V2\.0 P1\.1<\/span><span class="n">/, "标签 idx 行应写「# 名称」（span 包裹 + 计数右挂）");
