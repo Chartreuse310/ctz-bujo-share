@@ -801,7 +801,7 @@ test("10月21日总结与四条事件录入，P1.2标签和借书分类按用户
   assert.ok(!entries[1].body.includes("#PhD"));
   assert.equal(taxonomy.tags.find(t => t.name === "PhD V2.0 P1.2").slug, "phd-v2-0-p1-2");
   assert.equal(dailyByDate["2026-10-21"].title, "学位论文P1.2 & 大闸蟹");
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  const html = readFileSync(join(OUT, "day/2026-10-21/index.html"), "utf8");
   assert.match(html, /data-date="2026-10-21"/);
   const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
   assert.equal(data.length, 5);
@@ -811,4 +811,30 @@ test("10月21日总结与四条事件录入，P1.2标签和借书分类按用户
   entries.forEach((e,i) => assert.equal(data[i+1].id, "entry:"+e.slug));
   const tag = readFileSync(join(OUT,"tag/phd-v2-0-p1-2/index.html"),"utf8");
   assert.ok(tag.includes("/entry/2026-10-21-past-doctoral-theses/"));
+});
+
+test("10月22日日总结与六条事件按原顺序呈现，显式阅读分类和分享完整", () => {
+  const { entriesByDate, dailyByDate } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-22"];
+  assert.ok(entries, "10月22日记录应存在");
+  assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：好利来长条面包+自制拿铁", "📖 读《写作成瘾》", "📖 本学院博士论文阅读", "🚧 改房间布局", "💪 一分化·全身B", "🍚 晚餐：胖哥俩+秋葵炒肉"]);
+  assert.deepEqual(entries.map(e => e.order), [1,2,3,4,5,6]);
+  assert.ok(entries.every(e => e.type === "event" && !e.highlight));
+  for (const entry of entries.slice(1,3)) {
+    assert.equal(entry.collectionName, "博士学位论文");
+    assert.deepEqual(entry.tags, ["PhD V2.0 P1.2"]);
+    assert.ok(!entry.body.includes("#PhD"));
+  }
+  assert.match(entries[1].body, /更“神圣”一些/);
+  assert.match(entries[2].body, /。 → 读了一篇/);
+  assert.deepEqual(entries[4].tags, ["一分化"]);
+  assert.equal(dailyByDate["2026-10-22"].title, "学位论文P1.2 & 改房间布局");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  assert.match(html, /data-date="2026-10-22"/);
+  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.equal(data.length, 7);
+  assert.equal(data[0].id, "daily");
+  assert.equal((data[0].html.match(/<p>/g)||[]).length, 3);
+  assert.match(data[0].html, /界面也并非必要，自己知道该做什么即可。/);
+  entries.forEach((entry,i) => assert.equal(data[i+1].id, "entry:" + entry.slug));
 });
