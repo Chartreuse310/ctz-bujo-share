@@ -644,8 +644,7 @@ test('首页重点事件和思考显示与详情一致的完整 Markdown 正文�
   for(const [,template]of templates)assert.equal((template.match(/<article class="landing-thought">/g)||[]).length,1,'每个随机候选只含一条思考');
   const fallback=home.match(/id="thought-list"[^>]*>([\s\S]*?)<\/div>\s*<div id="thought-pool"/)?.[1];assert.ok(fallback);
   assert.equal((fallback.match(/<article class="landing-thought">/g)||[]).length,Math.min(3,templates.length),'无 JS 首屏也须保留完整候选');
-  assert.match(home,/<p>听了两个播客：<\/p>/);
-  assert.match(home,/而在不关心的领域更多地放弃。/);
+  // 真实首页候选随最新五条重点变化；逐条全文比对见上方，长文场景由隔离 fixture 覆盖。
 });
 
  test("用户修正的中文引号在首页与详情页原样保留", () => {
@@ -855,7 +854,8 @@ test("10月23日总结与八条事件按原文顺序呈现，分享完整保留"
   assert.ok(entries, "10月23日记录应存在");
   assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：麦当劳（新地点）", "🧩 Things风格xdb", "🚶‍♀️ 徒步回家", "💼 导师横向", "🏃‍♀️ 室内跑步·3km", "🍚 晚餐：炒饭&鸡翅", "💃 商场逛街", "🧩 ctz-today-sidebar"]);
   assert.deepEqual(entries.map(e => e.order), [1,2,3,4,5,6,7,8]);
-  assert.ok(entries.every(e => e.type === "event" && !e.highlight));
+  assert.ok(entries.every(e => e.type === "event"));
+  assert.deepEqual(entries.map(e => e.highlight), [false,false,false,false,false,false,false,true]);
   assert.ok(entries.every(e => !e.body.includes('\\#')));
   assert.deepEqual(entries[2].tags, ["徒步"]);
   assert.deepEqual(entries[4].tags, ["跑步", "播客"]);
@@ -876,4 +876,13 @@ test("10月23日总结与八条事件按原文顺序呈现，分享完整保留"
   assert.match(data[4].html,/<ol>/);
   assert.match(data[4].html,/<li>梳理整体现状（进行中）<\/li>/);
   assert.match(data[8].html,/用xdb未果，直接自己做了个插件。/);
+});
+
+test("ctz-today-sidebar为重点并在首页显示完整正文", () => {
+  const { entries } = loadContent(process.cwd());
+  const entry = entries.find(e => e.slug === "2026-10-23-ctz-today-sidebar");
+  assert.equal(entry.highlight, true);
+  const home = readFileSync(join(OUT, "index.html"), "utf8");
+  assert.ok(home.includes("/entry/2026-10-23-ctz-today-sidebar/"));
+  assert.ok(home.includes(entry.body.trim()));
 });
