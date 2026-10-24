@@ -830,7 +830,7 @@ test("10月22日日总结与六条事件按原顺序呈现，显式阅读分类�
   assert.match(entries[2].body, /。 → 读了一篇/);
   assert.deepEqual(entries[4].tags, ["一分化"]);
   assert.equal(dailyByDate["2026-10-22"].title, "学位论文P1.2 & 改房间布局");
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  const html = readFileSync(join(OUT, "day/2026-10-22/index.html"), "utf8");
   assert.match(html, /data-date="2026-10-22"/);
   const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
   assert.equal(data.length, 7);
@@ -847,4 +847,33 @@ test("10月22日改房间布局为重点，首页显示完整正文", () => {
   const home = readFileSync(join(OUT, "index.html"), "utf8");
   assert.ok(home.includes("/entry/2026-10-22-room-layout/"));
   assert.ok(home.includes(entry.body.trim()));
+});
+
+test("10月23日总结与八条事件按原文顺序呈现，分享完整保留", () => {
+  const { entriesByDate, dailyByDate } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-23"];
+  assert.ok(entries, "10月23日记录应存在");
+  assert.deepEqual(entries.map(e => e.title), ["🥪 早餐：麦当劳（新地点）", "🧩 Things风格xdb", "🚶‍♀️ 徒步回家", "💼 导师横向", "🏃‍♀️ 室内跑步·3km", "🍚 晚餐：炒饭&鸡翅", "💃 商场逛街", "🧩 ctz-today-sidebar"]);
+  assert.deepEqual(entries.map(e => e.order), [1,2,3,4,5,6,7,8]);
+  assert.ok(entries.every(e => e.type === "event" && !e.highlight));
+  assert.ok(entries.every(e => !e.body.includes('\\#')));
+  assert.deepEqual(entries[2].tags, ["徒步"]);
+  assert.deepEqual(entries[4].tags, ["跑步", "播客"]);
+  assert.deepEqual(entries[5].tags, ["视频"]);
+  const hiking=readFileSync(join(OUT,"tag/hiking/index.html"),"utf8");
+  assert.ok(hiking.includes("/entry/2026-10-23-walk-home/"));
+  assert.equal(dailyByDate["2026-10-23"].title, "导师横向");
+  assert.deepEqual(entries[3].tags, ["导师横向"]);
+  assert.ok(entries[4].tags.includes("跑步"));
+  const html=readFileSync(join(OUT,"today/index.html"),"utf8");
+  assert.match(html,/data-date="2026-10-23"/);
+  const data=[...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+  assert.equal(data.length,9);
+  assert.equal(data[0].id,"daily");
+  assert.equal((data[0].html.match(/<p>/g)||[]).length,4);
+  assert.match(data[0].html,/ctz-today-sidebar（Obsidian 的直接插件）/);
+  entries.forEach((e,i)=>assert.equal(data[i+1].id,"entry:"+e.slug));
+  assert.match(data[4].html,/<ol>/);
+  assert.match(data[4].html,/<li>梳理整体现状（进行中）<\/li>/);
+  assert.match(data[8].html,/用xdb未果，直接自己做了个插件。/);
 });
