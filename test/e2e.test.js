@@ -897,7 +897,7 @@ test("10月24日核聚变总结与菇域幽城事件完整录入", () => {
   assert.equal(entries[0].collectionName, "书影音");
   assert.equal(entries[0].body.trim(), "第一次玩，探索隧道13。");
   assert.equal(dailyByDate["2026-10-24"].title, "核聚变");
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  const html = readFileSync(join(OUT, "day/2026-10-24/index.html"), "utf8");
   assert.match(html, /data-date="2026-10-24"/);
   const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
   assert.equal(data.length, 2);
@@ -913,4 +913,31 @@ test("游戏标签使用用户确认的game并关联菇域幽城", () => {
   assert.deepEqual(entries.find(e => e.slug === "2026-10-24-mushroom-dungeon").tags, ["游戏"]);
   const html = readFileSync(join(OUT, "tag/game/index.html"), "utf8");
   assert.ok(html.includes("/entry/2026-10-24-mushroom-dungeon/"));
+});
+
+test("10月25日总结与六条记录按输入排序，事件思考和分享全文正确", () => {
+  const { entriesByDate, dailyByDate } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-25"];
+  assert.ok(entries, "10月25日记录应存在");
+  assert.deepEqual(entries.map(e => e.title), ["ctz-today-sidebar的价值", "🥪 早餐：蛋挞&自制卡布奇诺", "🧩 ctz-today-sidebar 0.8.0", "e人音乐与i人音乐", "🍚 午餐：秋葵炒午餐肉&大闸蟹", "🧩 ctz-today-sidebar 0.23.1"]);
+  assert.deepEqual(entries.map(e => e.type), ["thought","event","event","thought","event","event"]);
+  assert.deepEqual(entries.map(e => e.order), [1,2,3,4,5,6]);
+  assert.equal(entries[3].collectionName, "书影音");
+  assert.deepEqual(entries[1].tags, ["视频"]);
+  assert.deepEqual(entries[3].tags, ["音乐"]);
+  assert.deepEqual(entries[4].tags, ["电视剧"]);
+  for (const [tag, slug] of [["music",entries[3].slug],["tv-series",entries[4].slug]]) {
+    const page=readFileSync(join(OUT,`tag/${tag}/index.html`),"utf8");
+    assert.ok(page.includes(`/entry/${slug}/`));
+  }
+  assert.equal(dailyByDate["2026-10-25"].title, "ctz-today-sidebar");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  assert.match(html, /data-date="2026-10-25"/);
+  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.equal(data.length, 7);
+  assert.equal(data[0].id, "daily");
+  entries.forEach((e,i) => assert.equal(data[i+1].id, "entry:" + e.slug));
+  assert.match(data[1].html, /<li>文件保存的位置≠心理认知的位置<\/li>/);
+  assert.match(data[4].html, /音乐的世界里好像根本没有te和ti。/);
+  assert.match(data[6].html, /基本完成，准备上线！/);
 });
