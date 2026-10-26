@@ -678,16 +678,16 @@ test("10月18日跑步记录关联用户确认的跑步与播客标签", () => {
   }
 });
 
-test("10月18日文件整理与室内跑步为重点并在首页显示全文", () => {
+test("10月18日文件整理与室内跑步保持重点且详情完整", () => {
   const { entries } = loadContent(process.cwd());
-  const home = readFileSync(join(OUT, "index.html"), "utf8");
   for (const slug of ["2026-10-18-file-organization", "2026-10-18-indoor-running-3km"]) {
     const entry = entries.find(e => e.slug === slug);
     assert.equal(entry.highlight, true, slug);
-    assert.ok(home.includes(`/entry/${slug}/`), slug);
+    const detail = readFileSync(join(OUT,`entry/${slug}/index.html`),"utf8");
+    assert.match(detail,/class="tag hl">重点/);
+    if(slug.endsWith('file-organization')) assert.ok(detail.includes("<li>笔记本（旧）</li>"));
+    else assert.ok(detail.includes("（跑步伴奏：嗨咻 003.在婚姻中追求爱情的我，傻么？）"));
   }
-  assert.ok(home.includes("<li>笔记本（旧）</li>"));
-  assert.ok(home.includes("（跑步伴奏：嗨咻 003.在婚姻中追求爱情的我，傻么？）"));
 });
 
 test("10月14日两条灯泡记录按用户的emoji默认规则归为事件", () => {
@@ -940,4 +940,22 @@ test("10月25日总结与六条记录按输入排序，事件思考和分享全�
   assert.match(data[1].html, /<li>文件保存的位置≠心理认知的位置<\/li>/);
   assert.match(data[4].html, /音乐的世界里好像根本没有te和ti。/);
   assert.match(data[6].html, /基本完成，准备上线！/);
+});
+
+test("ctz-today-sidebar 0.23.1为重点并在首页完整展示", () => {
+  const { entries } = loadContent(process.cwd());
+  const entry = entries.find(e => e.slug === "2026-10-25-ctz-today-sidebar-0-23-1");
+  assert.equal(entry.highlight, true);
+  const home=readFileSync(join(OUT,"index.html"),"utf8");
+  assert.ok(home.includes(`/entry/${entry.slug}/`));
+  assert.ok(home.includes(entry.body.trim()));
+});
+
+test("ctz-today-sidebar标签使用确认的slug并关联四条记录", () => {
+  const { entries, taxonomy }=loadContent(process.cwd());
+  assert.equal(taxonomy.tags.find(t=>t.name==='ctz-today-sidebar').slug,'ctz-today-sidebar');
+  const tagged=entries.filter(e=>e.tags.includes('ctz-today-sidebar'));
+  assert.deepEqual(tagged.map(e=>e.slug).sort(),['2026-10-23-ctz-today-sidebar','2026-10-25-ctz-today-sidebar-value','2026-10-25-ctz-today-sidebar-0-8-0','2026-10-25-ctz-today-sidebar-0-23-1'].sort());
+  const html=readFileSync(join(OUT,'tag/ctz-today-sidebar/index.html'),'utf8');
+  tagged.forEach(e=>assert.ok(html.includes(`/entry/${e.slug}/`)));
 });

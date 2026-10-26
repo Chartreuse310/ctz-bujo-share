@@ -4,6 +4,7 @@ title: ctz-today-sidebar的价值
 date: 2026-10-25
 order: 1
 highlight: false
+tags: ["ctz-today-sidebar"]
 ---
 
 1. 现有文件列表需要让文件不重名
