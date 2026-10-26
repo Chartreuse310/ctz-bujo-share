@@ -865,7 +865,7 @@ test("10月23日总结与八条事件按原文顺序呈现，分享完整保留"
   assert.equal(dailyByDate["2026-10-23"].title, "导师横向");
   assert.deepEqual(entries[3].tags, ["导师横向"]);
   assert.ok(entries[4].tags.includes("跑步"));
-  const html=readFileSync(join(OUT,"today/index.html"),"utf8");
+  const html=readFileSync(join(OUT,"day/2026-10-23/index.html"),"utf8");
   assert.match(html,/data-date="2026-10-23"/);
   const data=[...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
   assert.equal(data.length,9);
@@ -885,4 +885,24 @@ test("ctz-today-sidebar为重点并在首页显示完整正文", () => {
   const home = readFileSync(join(OUT, "index.html"), "utf8");
   assert.ok(home.includes("/entry/2026-10-23-ctz-today-sidebar/"));
   assert.ok(home.includes(entry.body.trim()));
+});
+
+test("10月24日核聚变总结与菇域幽城事件完整录入", () => {
+  const { entriesByDate, dailyByDate } = loadContent(process.cwd());
+  const entries = entriesByDate["2026-10-24"];
+  assert.ok(entries, "10月24日条目应存在");
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].title, "🎮 菇域幽城");
+  assert.equal(entries[0].type, "event");
+  assert.equal(entries[0].collectionName, "书影音");
+  assert.equal(entries[0].body.trim(), "第一次玩，探索隧道13。");
+  assert.equal(dailyByDate["2026-10-24"].title, "核聚变");
+  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  assert.match(html, /data-date="2026-10-24"/);
+  const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.equal(data.length, 2);
+  assert.equal(data[0].id, "daily");
+  assert.equal((data[0].html.match(/<p>/g)||[]).length, 2);
+  assert.match(data[0].html, /传达一种整体的体验。/);
+  assert.equal(data[1].id, "entry:" + entries[0].slug);
 });
