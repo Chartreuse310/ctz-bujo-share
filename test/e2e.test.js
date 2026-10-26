@@ -891,20 +891,27 @@ test("10月24日核聚变总结与菇域幽城事件完整录入", () => {
   const { entriesByDate, dailyByDate } = loadContent(process.cwd());
   const entries = entriesByDate["2026-10-24"];
   assert.ok(entries, "10月24日条目应存在");
-  assert.equal(entries.length, 1);
-  assert.equal(entries[0].title, "🎮 菇域幽城");
+  assert.equal(entries.length, 2);
+  assert.deepEqual(entries.map(e=>e.title), ["💃 核聚变", "🎮 菇域幽城"]);
   assert.equal(entries[0].type, "event");
-  assert.equal(entries[0].collectionName, "书影音");
-  assert.equal(entries[0].body.trim(), "第一次玩，探索隧道13。");
+  assert.equal(entries[0].highlight, true);
+  assert.equal(entries[0].body.trim(), "去首钢参观了北京核聚变2026。");
+  assert.equal(entries[1].title, "🎮 菇域幽城");
+  assert.equal(entries[0].type, "event");
+  assert.equal(entries[1].collectionName, "书影音");
+  assert.equal(entries[1].body.trim(), "第一次玩，探索隧道13。");
   assert.equal(dailyByDate["2026-10-24"].title, "核聚变");
   const html = readFileSync(join(OUT, "day/2026-10-24/index.html"), "utf8");
   assert.match(html, /data-date="2026-10-24"/);
   const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
-  assert.equal(data.length, 2);
+  assert.equal(data.length, 3);
   assert.equal(data[0].id, "daily");
   assert.equal((data[0].html.match(/<p>/g)||[]).length, 2);
   assert.match(data[0].html, /传达一种整体的体验。/);
-  assert.equal(data[1].id, "entry:" + entries[0].slug);
+  entries.forEach((entry,i)=>assert.equal(data[i+1].id,"entry:"+entry.slug));
+  const home=readFileSync(join(OUT,"index.html"),"utf8");
+  assert.ok(home.includes(`/entry/${entries[0].slug}/`));
+  assert.ok(home.includes(entries[0].body.trim()));
 });
 
 test("游戏标签使用用户确认的game并关联菇域幽城", () => {
