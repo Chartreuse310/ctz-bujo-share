@@ -906,3 +906,11 @@ test("10月24日核聚变总结与菇域幽城事件完整录入", () => {
   assert.match(data[0].html, /传达一种整体的体验。/);
   assert.equal(data[1].id, "entry:" + entries[0].slug);
 });
+
+test("游戏标签使用用户确认的game并关联菇域幽城", () => {
+  const { taxonomy, entries } = loadContent(process.cwd());
+  assert.equal(taxonomy.tags.find(t => t.name === "游戏").slug, "game");
+  assert.deepEqual(entries.find(e => e.slug === "2026-10-24-mushroom-dungeon").tags, ["游戏"]);
+  const html = readFileSync(join(OUT, "tag/game/index.html"), "utf8");
+  assert.ok(html.includes("/entry/2026-10-24-mushroom-dungeon/"));
+});
