@@ -2,7 +2,7 @@ import { loadContent } from "../lib/load.js";
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, cpSync, rmSync, mkdtempSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, cpSync, rmSync, mkdtempSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -11,6 +11,29 @@ const OUT = ".e2e-site/main";
 before(() => {
   rmSync(OUT, { recursive: true, force: true });
   execFileSync("npx", ["@11ty/eleventy", "--output", OUT], { stdio: "pipe" });
+});
+
+test("全部页面在 head 中仅加载一次 VibeCafé 浏览器统计，标识不进入 URL", () => {
+  const pages = readdirSync(OUT, { recursive: true }).filter(p => p.endsWith('.html'));
+  assert.ok(pages.length > 0);
+  for (const page of pages) {
+    const html = readFileSync(join(OUT, page), 'utf8');
+    const head = html.match(/<head>([\s\S]*?)<\/head>/i)?.[1];
+    assert.ok(head, `${page}: 缺少 head`);
+    const scripts = [...html.matchAll(/<script\b[^>]*>/gi)]
+      .map(m => m[0]).filter(tag => /vibecafe\.ai\/telemetry\//.test(tag));
+    assert.equal(scripts.length, 1, `${page}: 统计脚本必须唯一`);
+    const script = scripts[0];
+    assert.ok(head.includes(script), `${page}: 统计脚本必须在 head 内`);
+    assert.match(script, /\sdefer(?:\s|>)/);
+    const src = script.match(/\ssrc="([^"]+)"/)?.[1];
+    assert.equal(src, 'https://vibecafe.ai/telemetry/v1.js');
+    assert.match(script, /data-vc-product-id="cmvrf07r700pk07k17iv4fzrf"/);
+    assert.match(script, /data-vc-auth-key="vc_web_[^"]+"/);
+    for (const [, url] of html.matchAll(/(?:href|src|action)="([^"]*)"/gi)) {
+      assert.doesNotMatch(url, /vc_web_|cmvrf07r700pk07k17iv4fzrf/, `${page}: 标识不得用于 URL`);
+    }
+  }
 });
 
 test("关键页面产物都存在", () => {
