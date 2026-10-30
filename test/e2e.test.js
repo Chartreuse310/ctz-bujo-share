@@ -862,12 +862,12 @@ test("10月22日日总结与六条事件按原顺序呈现，显式阅读分类�
   entries.forEach((entry,i) => assert.equal(data[i+1].id, "entry:" + entry.slug));
 });
 
-test("10月22日改房间布局为重点，首页显示完整正文", () => {
+test("10月22日改房间布局为重点，详情保留完整正文", () => {
   const { entries } = loadContent(process.cwd());
   const entry = entries.find(e => e.slug === "2026-10-22-room-layout");
   assert.equal(entry.highlight, true);
-  const home = readFileSync(join(OUT, "index.html"), "utf8");
-  assert.ok(home.includes("/entry/2026-10-22-room-layout/"));
+  const home = readFileSync(join(OUT, "entry/2026-10-22-room-layout/index.html"), "utf8");
+  assert.match(home,/class="tag hl">重点/);
   assert.ok(home.includes(entry.body.trim()));
 });
 
@@ -1013,7 +1013,8 @@ test("10月27日总结和五条事件顺序、标签及分享全文正确", () =
  const entries=entriesByDate['2026-10-27'];
  assert.equal(entries.length,5);
  assert.deepEqual(entries.map(e=>e.order),[1,2,3,4,5]);
- assert.ok(entries.every(e=>e.type==='event'&&!e.highlight));
+ assert.ok(entries.every(e=>e.type==='event'));
+ assert.deepEqual(entries.map(e=>e.highlight),[false,false,false,false,true]);
  assert.deepEqual(entries[1].tags,['导师横向']);
  assert.deepEqual(entries[2].tags,['一分化','播客']);
  assert.deepEqual(entries[4].tags,['ctz-today-sidebar']);
@@ -1026,4 +1027,17 @@ test("10月27日总结和五条事件顺序、标签及分享全文正确", () =
  entries.forEach((e,i)=>assert.equal(data[i+1].id,'entry:'+e.slug));
  assert.match(data[5].html,/<li>微信公众号 ✅<\/li>/);
  assert.match(data[5].html,/写完文章后感觉不需要了/);
+});
+
+test("心路历程文章为重点且blog清单包含正确文章链接", () => {
+ const {entries}=loadContent(process.cwd());
+ const entry=entries.find(e=>e.slug==='2026-10-27-ctz-today-sidebar-journey');
+ assert.equal(entry.highlight,true);
+ const url='https://chartreuse310.github.io/blog-ctz-v3/writing/2026/10/why-i-built-today-sidebar/';
+ assert.ok(entry.body.includes(`3. blog ctz ✅ → [${url}](${url})`));
+ for(const path of ['index.html',`entry/${entry.slug}/index.html`]) {
+  const html=readFileSync(join(OUT,path),'utf8');
+  assert.ok(html.includes(`href="${url}"`));
+  assert.ok(!html.includes(url+'”'));
+ }
 });
