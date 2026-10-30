@@ -901,12 +901,12 @@ test("10月23日总结与八条事件按原文顺序呈现，分享完整保留"
   assert.match(data[8].html,/用xdb未果，直接自己做了个插件。/);
 });
 
-test("ctz-today-sidebar为重点并在首页显示完整正文", () => {
+test("ctz-today-sidebar为重点且详情保留完整正文", () => {
   const { entries } = loadContent(process.cwd());
   const entry = entries.find(e => e.slug === "2026-10-23-ctz-today-sidebar");
   assert.equal(entry.highlight, true);
-  const home = readFileSync(join(OUT, "index.html"), "utf8");
-  assert.ok(home.includes("/entry/2026-10-23-ctz-today-sidebar/"));
+  const home = readFileSync(join(OUT, "entry/2026-10-23-ctz-today-sidebar/index.html"), "utf8");
+  assert.match(home,/class="tag hl">重点/);
   assert.ok(home.includes(entry.body.trim()));
 });
 
@@ -1019,7 +1019,7 @@ test("10月27日总结和五条事件顺序、标签及分享全文正确", () =
  assert.deepEqual(entries[2].tags,['一分化','播客']);
  assert.deepEqual(entries[4].tags,['ctz-today-sidebar']);
  assert.equal(dailyByDate['2026-10-27'].title,'导师横向');
- const html=readFileSync(join(OUT,'today/index.html'),'utf8');
+ const html=readFileSync(join(OUT,'day/2026-10-27/index.html'),'utf8');
  assert.match(html,/data-date="2026-10-27"/);
  const data=[...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
  assert.equal(data.length,6);
@@ -1040,4 +1040,24 @@ test("心路历程文章为重点且blog清单包含正确文章链接", () => {
   assert.ok(html.includes(`href="${url}"`));
   assert.ok(!html.includes(url+'”'));
  }
+});
+
+test("10月28日四条事件按原序录入，初始化为重点，分享保留原链接", () => {
+ const {entriesByDate,dailyByDate}=loadContent(process.cwd());
+ const entries=entriesByDate['2026-10-28'];
+ assert.equal(entries.length,4);
+ assert.deepEqual(entries.map(e=>e.order),[1,2,3,4]);
+ assert.ok(entries.every(e=>e.type==='event'));
+ assert.deepEqual(entries.map(e=>e.highlight),[false,false,true,false]);
+ assert.equal(entries[1].collectionName,'绘画');
+ assert.equal(dailyByDate['2026-10-28'].title,'ctz-ai-workspace');
+ const html=readFileSync(join(OUT,'today/index.html'),'utf8');
+ assert.match(html,/data-date="2026-10-28"/);
+ const data=[...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+ assert.equal(data.length,5);
+ assert.equal((data[0].html.match(/<p>/g)||[]).length,5);
+ entries.forEach((e,i)=>assert.equal(data[i+1].id,'entry:'+e.slug));
+ assert.ok(data[3].html.includes('https://app.luzi.top/post-share#lzpo_YdyLT4dE-sCi2Eo0dWknplknQOO65pBLiDDGBPfL_KA'));
+ const home=readFileSync(join(OUT,'index.html'),'utf8');
+ assert.ok(home.includes(`/entry/${entries[2].slug}/`));
 });
