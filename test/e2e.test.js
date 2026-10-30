@@ -769,12 +769,12 @@ test("插画自主练习标签使用确认的slug并关联DAY01", () => {
   assert.ok(html.includes("/tag/self-directed-illustration-practice/"));
 });
 
-test("插画自主练习DAY01标为重点并在首页展示完整正文", () => {
+test("插画自主练习DAY01标为重点且详情保留完整正文", () => {
   const { entries } = loadContent(process.cwd());
   const entry = entries.find(e => e.slug === "2026-10-19-illustration-practice-day01");
   assert.equal(entry.highlight, true);
-  const home = readFileSync(join(OUT, "index.html"), "utf8");
-  assert.ok(home.includes("/entry/2026-10-19-illustration-practice-day01/"));
+  const home = readFileSync(join(OUT, "entry/2026-10-19-illustration-practice-day01/index.html"), "utf8");
+  assert.match(home,/class="tag hl">重点/);
   assert.ok(home.includes(entry.body.trim()));
 });
 
@@ -961,7 +961,7 @@ test("10月25日总结与六条记录按输入排序，事件思考和分享全�
     assert.ok(page.includes(`/entry/${slug}/`));
   }
   assert.equal(dailyByDate["2026-10-25"].title, "ctz-today-sidebar");
-  const html = readFileSync(join(OUT, "today/index.html"), "utf8");
+  const html = readFileSync(join(OUT, "day/2026-10-25/index.html"), "utf8");
   assert.match(html, /data-date="2026-10-25"/);
   const data = [...html.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
   assert.equal(data.length, 7);
@@ -984,8 +984,26 @@ test("ctz-today-sidebar 0.23.1为重点并在首页完整展示", () => {
 test("ctz-today-sidebar标签使用确认的slug并关联四条记录", () => {
   const { entries, taxonomy }=loadContent(process.cwd());
   assert.equal(taxonomy.tags.find(t=>t.name==='ctz-today-sidebar').slug,'ctz-today-sidebar');
-  const tagged=entries.filter(e=>e.tags.includes('ctz-today-sidebar'));
+  const tagged=entries.filter(e=>e.tags.includes('ctz-today-sidebar') && e.date <= '2026-10-25');
   assert.deepEqual(tagged.map(e=>e.slug).sort(),['2026-10-23-ctz-today-sidebar','2026-10-25-ctz-today-sidebar-value','2026-10-25-ctz-today-sidebar-0-8-0','2026-10-25-ctz-today-sidebar-0-23-1'].sort());
   const html=readFileSync(join(OUT,'tag/ctz-today-sidebar/index.html'),'utf8');
   tagged.forEach(e=>assert.ok(html.includes(`/entry/${e.slug}/`)));
+});
+
+test("10月26日上线重点与五条事件分类排序正确", () => {
+ const {entriesByDate,dailyByDate}=loadContent(process.cwd());
+ const entries=entriesByDate['2026-10-26'];
+ assert.equal(entries.length,5);
+ assert.deepEqual(entries.map(e=>e.order),[1,2,3,4,5]);
+ assert.ok(entries.every(e=>e.type==='event'));
+ assert.deepEqual(entries.map(e=>e.highlight),[false,true,false,false,false]);
+ assert.deepEqual(entries[1].tags,['ctz-today-sidebar']);
+ assert.deepEqual(entries[3].tags,['导师横向']);
+ assert.equal(dailyByDate['2026-10-26'].title,'ctz-today-sidebar & 导师横向');
+ const home=readFileSync(join(OUT,'index.html'),'utf8');
+ assert.ok(home.includes(`/entry/${entries[1].slug}/`));
+ assert.match(home,/想借此机会了解一下AI时代视频的工作流。/);
+ const day=readFileSync(join(OUT,'today/index.html'),'utf8');
+ assert.match(day,/data-date="2026-10-26"/);
+ assert.match(day,/<li>YouTube介绍视频<\/li>/);
 });
