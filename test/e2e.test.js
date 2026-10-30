@@ -1061,3 +1061,17 @@ test("10月28日四条事件按原序录入，初始化为重点，分享保留�
  const home=readFileSync(join(OUT,'index.html'),'utf8');
  assert.ok(home.includes(`/entry/${entries[2].slug}/`));
 });
+
+test("10月28日新增标签使用确认的slug，跑步补上播客", () => {
+ const {entriesByDate,taxonomy}=loadContent(process.cwd());
+ const entries=entriesByDate['2026-10-28'];
+ for(const [index,name,slug] of [[1,'学院路gamejam2026','xueyuanlu-gamejam-2026'],[2,'ctz-ai-workspace','ctz-ai-workspace']]) {
+  assert.equal(taxonomy.tags.find(t=>t.name===name).slug,slug);
+  assert.deepEqual(entries[index].tags,[name]);
+  const html=readFileSync(join(OUT,`tag/${slug}/index.html`),'utf8');
+  assert.ok(html.includes(`/entry/${entries[index].slug}/`));
+ }
+ assert.deepEqual(entries[3].tags,['跑步','播客']);
+ assert.equal(entries[1].collectionName,'绘画');
+ assert.equal(entries[2].highlight,true);
+});
