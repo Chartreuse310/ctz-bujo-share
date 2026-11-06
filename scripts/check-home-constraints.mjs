@@ -39,9 +39,15 @@ for(const [w,h] of [[375,812],[760,900],[761,900],[1440,900]]) {
  for(const url of new Set(links)){const response=await fetch(url);if(!response.ok)fail('链接 '+url+' '+response.status);}
  const full=await ev(`(async()=>{
   await document.fonts.ready;
-  const workout=[...document.querySelectorAll('.landing-event')].find(e=>e.textContent.includes('一分化·全身B'));
-  const prose=workout?.querySelector('.landing-event-excerpt');
-  const complete=!!prose&&prose.querySelectorAll('p').length===3&&prose.textContent.includes('而在不关心的领域更多地放弃。');
+  const events=[...document.querySelectorAll('.landing-event')];
+  let complete=true;
+  for(const article of events){
+    const response=await fetch(article.querySelector('h3 a').href);
+    if(!response.ok){complete=false;continue;}
+    const detail=new DOMParser().parseFromString(await response.text(),'text/html');
+    const body=detail.querySelector('.entry-body');
+    if(!body || body.innerHTML.trim()!==article.querySelector('.landing-event-excerpt').innerHTML.trim())complete=false;
+  }
   const box=document.querySelector('.landing-excerpt');
   box.insertAdjacentHTML('beforeend','<p><strong>长正文验证</strong> '+ '连续长文本'.repeat(120) + '</p><blockquote><p>引用内容</p></blockquote><pre><code>'+ 'long_code_'.repeat(100) + '</code></pre><p><a href="https://example.com">'+ 'long_link_'.repeat(100) +'</a></p><table><tr><td>'+ 'wide_cell_'.repeat(100) +'</td><td>第二列</td></tr></table>');
   const bodies=[...document.querySelectorAll('.landing-excerpt,.landing-event-excerpt')];
@@ -67,7 +73,7 @@ const shuffle=await ev(`(async()=>{
  const pool=document.querySelector('#thought-pool');
  pool.replaceChildren();
  for(let i=0;i<5;i++){const t=document.createElement('template');t.innerHTML='<article class="landing-thought"><h3>测试思考 '+i+'</h3></article>';pool.append(t);}
- await import('/assets/home.js?shuffle-test');
+ await import(document.querySelector('script[src$="/assets/home.js"]').src+'?shuffle-test');
  const titles=()=>[...document.querySelectorAll('#thought-list h3')].map(e=>e.textContent).sort().join();
  const before=titles();document.querySelector('#shuffle-thoughts').click();
  return {changed:before!==titles(),count:document.querySelectorAll('#thought-list article').length,hidden:document.querySelector('#shuffle-thoughts').hidden};
@@ -75,11 +81,11 @@ const shuffle=await ev(`(async()=>{
 if(!shuffle.changed || shuffle.count!==3 || shuffle.hidden)fail('换组隔离状态 '+JSON.stringify(shuffle));else ok('五条候选换一组 PASS');
 // 首页没有四屏手势；真实键盘事件不得改变 URL。
 await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});await sleep(400);
-if(await ev('location.pathname')!=='/') fail('首页错误加入四屏键盘切换');
+if(await ev('location.pathname')!==new URL(SITE+'/').pathname) fail('首页错误加入四屏键盘切换');
 // 品牌与今日是真实链接。
 await ev(`document.querySelector('.landing-links a').click()`);await sleep(400);
-if(await ev('location.pathname')!=='/today/')fail('今日入口');
+if(await ev('location.pathname')!==new URL(SITE+'/today/').pathname)fail('今日入口');
 await ev(`document.querySelector('.brand').click()`);await sleep(400);
-if(await ev('location.pathname')!=='/')fail('品牌返回首页');
+if(await ev('location.pathname')!==new URL(SITE+'/').pathname)fail('品牌返回首页');
 if(resources.length)fail('资源错误 '+JSON.stringify(resources));
 console.log(fails ? fails+' FAILURES':'ALL PASS');sock.close();process.exit(fails?1:0);

@@ -11,6 +11,9 @@ permalink: /
     {% if site.home.start %}
     <p class="landing-meta">始于 <time>{{ site.home.start }}</time><span>最近更新于 <time>{{ site.home.latest }}</time></span></p>
     {% endif %}
+    {% if site.archived %}
+    <p class="landing-meta">2026-11-06 起暂停日常更新。现有记录保留作为日记框架示例，不承诺功能更新与问题响应；本月及统计窗口以最后记录日期为准。</p>
+    {% endif %}
     <div class="landing-links"><a href="{{ base }}/today/">看看近日 →</a><a href="{{ base }}/month/{{ site.thisMonth }}/">按月翻阅 →</a></div>
   </header>
 

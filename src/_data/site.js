@@ -1,3 +1,4 @@
+import { archiveDate } from "../../lib/archive.js";
 import { buildHome } from "../../lib/home.js";
 import { loadContent } from "../../lib/load.js";
 import { totals, rankBy, withDelta, trendByDay, trendByMonth, windowRange, inRange } from "../../lib/stats.js";
@@ -23,7 +24,9 @@ export default function () {
   // ⚠️ 用**本地**日期算「今天」，不要用 toISOString()：后者是 UTC，
   // 在 UTC+8 凌晨（本地 00:00–08:00）会解析成昨天，「今日」页会显示前一天。
   const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const buildDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const archived = process.env.CTZ_ARCHIVED !== "false";
+  const today = archiveDate(entries, dailies, buildDate, archived);
   const thisMonth = monthKey(today);
   const thisYear = today.slice(0, 4);
 
@@ -34,7 +37,7 @@ export default function () {
   ];
   const tags = taxonomy.tags.map((t) => ({ ...t, url: withBase(`/tag/${t.slug}/`) }));
 
-  // 统计页默认窗口 = 本月（设计文档 §10）
+  // 统计页默认窗口 = 锚点月份（暂停模式见设计文档 §15）
   const windows = {};
   for (const kind of ["month", "year", "all"]) {
     const r = windowRange(kind, today);
@@ -103,6 +106,7 @@ export default function () {
   const windowKeys = ["month", "year", "all"];
 
   return {
+    archived,
     taxonomy, entries, dailies, collections, tags,
     home: buildHome(entries, dailies),
     months, days, today, thisMonth, thisYear, windows, windowKeys,
